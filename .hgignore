@@ -1,0 +1,10 @@
+aclocal.m4
+COPYING
+depcomp
+INSTALL
+install-sh
+missing
+configure
+config.h.in
+Makefile.in
+src/Makefile.in
