@@ -77,7 +77,7 @@ private:
     
     //! @brief compute all hybrid partition functions for common left ends
     //! @param i1 left end position in seqA
-    //! @param j1 left end position in seqB
+    //! @param i2 left end position in seqB
     void
     compute_hybrid_pf_common_start(size_t i1, size_t i2);
         
@@ -104,7 +104,7 @@ private:
 
     //! @brief pair type for pair of interacting positions
     //! @param i1 position in seqA
-    //! @param i1 position in seqB
+    //! @param i2 position in seqB
     //! @return pair type of i1.i2
     int
     pair_type(size_t i1, size_t i2) const;

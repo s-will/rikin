@@ -3,6 +3,7 @@
 
 #include "ViennaRNA/data_structures.h"
 
+//! Tag a funtion as deprecated if compiler supports this
 #ifdef __GNUC__
 #define DEPRECATED(func) func __attribute__ ((deprecated))
 #else

@@ -18,7 +18,7 @@ UnpairedPF::UnpairedPF(const std::string seq_)
 }
 
 UnpairedPF::pf_t 
-UnpairedPF::get_pf(size_t i, size_t j) const {
+UnpairedPF::get_unpaired_prob_single(size_t i, size_t j) const {
     return Q(i,j);
 }
 
