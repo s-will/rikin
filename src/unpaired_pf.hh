@@ -7,13 +7,17 @@ extern "C" {
 
 #include <LocARNA/matrices.hh>
 
-//! class for partition functions of single RNA with unpaired
+//! \brief class for unpaired partition functions
+
+//! of single RNA with unpaired
 //! ranges i..j
 class UnpairedPF {
     
 public:
     //! type of partition functions
     typedef FLT_OR_DBL pf_t;
+    //! type of probabilities
+    typedef FLT_OR_DBL prob_t;
     
     //! construct with sequence
     //!
@@ -32,7 +36,8 @@ public:
     //! @note -kT ln p equals -kT ln Z_unpaired/Z_total equals the
     //! energy difference E_unpaired - E_total, where E_unpaired = -kT
     //! ln Z_unpaired and E_total=-kT ln Z_total
-    pf_t
+    //! @see get_unpaired_prob_conditional
+    prob_t
     get_unpaired_prob_single(size_t i, size_t j) const;
 
     //! get probability of unpaired range under condition that
@@ -41,10 +46,10 @@ public:
     //! @param j right end of first range, position in sequence
     //! @param k left end of second range, position in sequence
     //! @param l right end of second range, position in sequence
-    //! @return probability p of first range unpaired under condition
-    //! that second range is unpaired
+    //! @return probability p that the first range is unpaired under the condition
+    //! that the second range is unpaired
     //! @see get_unpaired_prob_single
-    pf_t
+    prob_t
     get_unpaired_prob_conditional(size_t i, size_t j,size_t k, size_t l) const;
     
     // for convenience we consider to add methods that return joint
@@ -54,18 +59,47 @@ public:
 private:
     
     const std::string seq; //!< the RNA sequence
-    const size_t length; //!< length of the RNA sequence
 
-    LocARNA::Matrix<pf_t> Q; //!< matrix to hold partition functions
+    LocARNA::Matrix<prob_t> Psingle; //!< matrix to hold unpaired probabilities for single ranges
     
-    //! calculate all partition functions calling plfold subrouting of
+    //! matrix to hold conditional unpaired probabilities.
+    //! Pcond(i,j)(k,l) is the probability of range k..l unpaired under condition range i..j unpaired  
+    LocARNA::Matrix<LocARNA::Matrix<prob_t> > Pcond;
+    
+    //! \brief Calculates single range unpaired probabilities.
+    //!
+    //! Calculates all unpaired probabilities calling plfold of
     //! libRNA
-    //! \note Sequence seq has to be upper case and must not contain Ts
+    //! \note Sequence seq has to be upper case and must not
+    //! contain Ts
     void
-    computePFs();
+    computeSingleProbs();
+    
+    //! \brief Calculates conditional unpaired probabilities for one condition.
+    //!
+    //! Calculates unpaired probabilities under condition i..j unpaired calling
+    //! plfold of libRNA, which was modified to support unpaired constraints
+    //! \note Sequence seq has to be upper case and must not contain Ts
+    //! \post matrix Pcond(i,j) contains conditional probablities
+    void
+    computeCondProbs(size_t i, size_t j);
+
+    //! \brief calculate all conditional unpaired probabilities.
+    //! \post matrix of matrices Pcond contains all conditional probablities
+    void
+    computeCondProbs();
+
+    //! @brief Generic calculation of unpaired probabilities
+    //! @param[out] P matrix to hold probabilities
+    //! @param structure constraint structure string or NULL
+    //! @note Given a constraint string the probabilities will be conditioned.
+    //! Setting structure to NULL will compute unconditional probabilities.
+    void
+    computeProbsGeneric(LocARNA::Matrix<prob_t> &P, const char *structure);
+    
     
     //! total partition function of the sequence seq
-    //! \note UNUSED
+    //! \note not used currently
     pf_t
     total_pf() const;
 };

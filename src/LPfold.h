@@ -47,8 +47,13 @@ void    update_pf_paramsLP(int length);
  *  computed and saved in this array. If pUfp is given (i.e. not NULL), pU
  *  is not saved but put out imediately. If spup is given (i.e. is not NULL),
  *  the pair probabilities in pl are not saved but put out imediately.
+ *
+ *  Supports unpaired constraints specified by a structure string.
+ *  Constraints are used only if the global variable fold_constrained
+ *  is true.
+ *
  *  \param  sequence  RNA sequence
- *  \param  structure structure string used to constrain structures unless NULL
+ *  \param  structure structure string (specifies constraints)
  *  \param  winSize   size of the window
  *  \param  pairSize  maximum size of base pair
  *  \param  cutoffb   cutoffb for base pairs
@@ -58,7 +63,7 @@ void    update_pf_paramsLP(int length);
  *  \param  spup     file pointer for pair probabilities   
  *  \return list of pair probabilities       
  */
-plist *pfl_fold(char *sequence, char *structure, int winSize, int pairSize, float cutoffb, double **pU, struct plist **dpp2, FILE *pUfp, FILE *spup);
+plist *pfl_fold(char *sequence, const char *structure, int winSize, int pairSize, float cutoffb, double **pU, struct plist **dpp2, FILE *pUfp, FILE *spup);
 
 /**
  *  \brief Writes the unpaired probabilities (pU) or opening energies into a file

@@ -23,7 +23,7 @@
 #include "ViennaRNA/part_func.h"
 #include "ViennaRNA/params.h"
 #include "ViennaRNA/loop_energies.h"
-#include "ViennaRNA/LPfold.h"
+#include "LPfold.h"
 #include "ViennaRNA/Lfold.h"
 
 #ifdef _OPENMP
@@ -89,6 +89,7 @@ PRIVATE void  get_arrays_L(unsigned int length);
 PRIVATE void  free_pf_arrays_L(void);
 PRIVATE void  scale_pf_params(unsigned int length);
 PRIVATE void  GetPtype(int j, int pairsize, const short *S, int n);
+PRIVATE void  GetPtypeConstrained(int j, int pairsize, const short *S, int n, const char *structure);
 PRIVATE void  FreeOldArrays(int i);
 PRIVATE void  GetNewArrays(int j, int winSize);
 PRIVATE void  printpbar(FLT_OR_DBL **prb,int winSize, int i, int n);
@@ -220,12 +221,42 @@ PUBLIC void update_pf_paramsLP(int length){
 #endif
 }
 
-PUBLIC plist *pfl_fold(char *sequence, char *structure, int winSize, int pairSize, float cutoffb, double **pU, struct plist **dpp2, FILE *pUfp, FILE *spup){
+PUBLIC plist *pfl_fold(char *sequence, const char *structure, int winSize, int pairSize, float cutoffb, double **pU, struct plist **dpp2, FILE *pUfp, FILE *spup){
   int         n, m, i, j, k, l, u, u1, ii, type, type_2, tt, ov, do_dpp, simply_putout;
   double      max_real;
   FLT_OR_DBL  temp, Qmax, prm_MLb, prmt, prmt1, qbt1, *tmp, expMLclosing;
   plist       *dpp, *pl;
 
+  int only_unpaired;
+  
+  // check consistency of structure parameter and global variable fold_constrained
+  // furthermore, check validity of structure string
+  if (structure!=NULL && !fold_constrained) {
+      fprintf(stderr, "WARNING: pfl_fold(): non-NULL structure string provided but constrained folding not activated.\n");
+  }
+  if (structure!=NULL && fold_constrained) {
+      if (strlen(structure) != strlen(sequence)) {
+	  fprintf(stderr, "ERROR: pfl_fold(): structure length has to equal sequence length. Exit.\n");
+	  exit(-1);
+      }
+      
+      only_unpaired=-1;
+      for (i=0; only_unpaired && i<strlen(structure);i++) {
+	  only_unpaired |= (structure[i]=='.' || structure[i]=='x');
+      }
+      if (!only_unpaired) {
+	  fprintf(stderr, "WARNING: pfl_fold(): support only unpaired constraints 'x' in structure string.\n");
+      }
+  }
+  if (structure==NULL && fold_constrained) {
+      fprintf(stderr, "WARNING: pfl_fold(): constraint folding activated but no structure string provided.\n");
+  }
+  // end check of structure string
+
+  // Note that we handle unpaired constraints by modifying the ptype array.
+  // Therefore, we call GetPtypeConstrained (instead of GetPtype) that optionally
+  // sets pair types for bases with unpaired constraints to 0.
+  
   ov            = 0;
   Qmax          = 0;
   do_dpp        = 0;
@@ -288,13 +319,13 @@ PUBLIC plist *pfl_fold(char *sequence, char *structure, int winSize, int pairSiz
   /*ALWAYS q[i][j] => i>j!!*/
   for (j=1; j<MIN2(TURN+2,n); j++) { /*allocate start*/
     GetNewArrays(j, winSize);
-    GetPtype(j,pairSize,S,n);
+    GetPtypeConstrained(j,pairSize,S,n,structure);
     for (i=1; i<=j; i++) q[i][j]=scale[(j-i+1)];
   }
   for (j=TURN+2;j<=n+winSize; j++) {
     if (j<=n) {
       GetNewArrays(j, winSize);
-      GetPtype(j,pairSize,S,n);
+      GetPtypeConstrained(j,pairSize,S,n,structure);
       for (i=MAX2(1,j-winSize); i<=j/*-TURN*/; i++)
         q[i][j]=scale[(j-i+1)];
       for (i=j-TURN-1;i>=MAX2(1,(j-winSize+1)); i--) {
@@ -302,6 +333,7 @@ PUBLIC plist *pfl_fold(char *sequence, char *structure, int winSize, int pairSiz
         /*firstly that given i bound to j : qb(i,j) */
         u = j-i-1;
         type = ptype[i][j];
+
         if (type!=0) {
           /*hairpin contribution*/
           if (((type==3)||(type==4))&&no_closingGU) qbt1 = 0;
@@ -637,6 +669,15 @@ PRIVATE void GetNewArrays(int j, int winSize) {
 }
 
 
+
+//! \brief fill entries in the ptype array for a window
+//! \param i window start position
+//! \param winSize maximal size of window
+//! \param S encoded sequence 
+//! \param n length of sequence
+//! \pre array pair initialized for values in range
+//! \post writes pair types from array pair to array ptypes in the range of current window
+//! and for pairs with window start only
 PRIVATE void GetPtype(int i, int winSize,const short *S,int n) {
   /*make new entries in ptype array*/
   int j;
@@ -647,6 +688,51 @@ PRIVATE void GetPtype(int i, int winSize,const short *S,int n) {
   }
   return;
 }
+
+//! \brief fill entries in the ptype array for a window, constrained
+//! \param i window start position
+//! \param winSize maximal size of window
+//! \param S encoded sequence 
+//! \param n length of sequence
+//! \param structure constraint structure string
+//! \pre array pair initialized for values in range.
+//! \post writes pair types from array pair to array ptypes in the range of current window
+//! and for pairs with window start only. If for an entry i.j, i or j
+//! are constrainted to be unpaired, the type is set to 0.
+//! In this function, we handle only unpaired constraints.
+//! \note If constrained_fold is false or structure==NULL, don't constrain.
+PRIVATE void GetPtypeConstrained(int i, int winSize,const short *S,int n, const char *structure) {
+  /*make new entries in ptype array*/
+  int j;
+  int type;
+  
+  // if !constrained_fold or structure==NULL, don't constrain.
+  if (!fold_constrained || structure==NULL) {
+      GetPtype(i,winSize,S,n);
+      return;
+  }
+
+  // i constrained to be unpaired?
+  if (structure[i-1]=='x') {
+      for (j=i; j<=MIN2(i+winSize,n); j++) {
+	  ptype[i][j] = (char) 0;
+      }
+      return;
+  }
+
+  for (j=i; j<=MIN2(i+winSize,n); j++) {
+    type = pair[S[i]][S[j]];
+    
+    // j constrained to be unpaired?
+    if (structure[j-1]=='x') {
+	type=0;
+    }
+    
+    ptype[i][j] = (char) type;
+  }
+  return;
+}
+
 
 
 PRIVATE plist *get_plistW(plist *pl, int length,

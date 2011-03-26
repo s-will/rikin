@@ -1,3 +1,5 @@
+syntax: glob
+
 aclocal.m4
 COPYING
 depcomp
@@ -8,3 +10,17 @@ configure
 config.h.in
 Makefile.in
 src/Makefile.in
+doc
+autom4te.cache
+config.log
+config.status
+config.h
+stamp-h1
+TAGS
+src/TAGS
+src/.deps
+Makefile
+src/Makefile
+src/*.o
+
+*~
