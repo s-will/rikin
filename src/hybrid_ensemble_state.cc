@@ -1,4 +1,4 @@
-#include "hybrid_ensemble.hh"
+#include "hybrid_ensemble_state.hh"
 
 
 HybridEnsembleState* 
@@ -8,7 +8,9 @@ HybridEnsembleState::NeighborList::first(State::NeighborList::ItState** itstate)
     
     *itstate = new ItState(first);
     
-    HybridEnsembleState *elem=new HybridEnsembleState(nit.applyItState(first));
+    HybridEnsembleState *elem=new HybridEnsembleState();
+    
+    nit.applyItState(first,elem->sd);
     
     return elem;
 }
@@ -42,3 +44,14 @@ HybridEnsembleState::NeighborList::next(State::NeighborList::ItState* itstate_,
     return elem;
     
 }
+
+const std::string& 
+HybridEnsembleState::getID() const {
+    assert(false);
+    std::string ID="";
+    return ID;
+}
+
+// virtual desctructor
+HybridEnsembleState::~HybridEnsembleState()
+{}

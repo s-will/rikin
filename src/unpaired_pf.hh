@@ -7,7 +7,7 @@ extern "C" {
 
 #include <LocARNA/matrices.hh>
 
-//! \brief class for unpaired partition functions
+//! \brief Partition functions of RNA ensembles with unpaired sites
 
 //! of single RNA with unpaired
 //! ranges i..j

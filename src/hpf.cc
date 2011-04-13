@@ -35,7 +35,7 @@ extern "C" {
 
 #include "hybrid_pf.hh"
 
-#include "hybrid_ensemble.hh"
+#include "hybrid_ensemble_model.hh"
 
 int
 main()
@@ -67,10 +67,10 @@ main()
     double kT = GASCONST/1000.0 * (K0+temperature);
 
 
-    size_t min_hyb_size = 2; // minimal size of hybridisation
+    size_t min_hyb_size = 3; // minimal size of hybridisation
     
     // threshold on single site hybridization ensemble energy
-    double th_hyb_energy=1;
+    double th_hyb_energy=0;
 
     // Indexing for single hybridization 
     // ----\        /-----

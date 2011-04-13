@@ -7,7 +7,7 @@ extern "C" {
 
 #include <LocARNA/matrices.hh>
 
-//! \brief Class for hybrid partition functions.
+//! \brief Partition functions of hybridizations
 
 //! Computes and maintaines pf for all subsequences
 //! of two RNA sequences seqA and seqB.

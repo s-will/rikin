@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "hybrid_ensemble.hh"
+#include "hybrid_ensemble_model.hh"
 
 #include "aux.hh"
 
@@ -8,7 +8,9 @@
 // HybridEnsembleModel::StateDescription
 //
 
-HybridEnsembleModel::StateDescription::StateDescription() {
+HybridEnsembleModel::StateDescription::StateDescription() 
+    :isites(0)
+{
 }
 
 
@@ -102,39 +104,85 @@ HybridEnsembleModel::StateDescription::decode(const code_t &code) {
 
 
 // ----------------------------------------
-// HybridEnsembleModel::StateDescription::NeighborIterator
+// HybridEnsembleModel::ILMove/ILMoveIterator
 //
 
+HybridEnsembleModel::ILMove::mk_split=4;
+HybridEnsembleModel::ILMove::mk_newsite=5;
+HybridEnsembleModel::ILMove::mk_empty=6;
 
-HybridEnsembleModel::StateDescription::NeighborIterator::NeighborIterator(const StateDescription &origin_)
-    :origin(origin_)
-{    
+
+
+HybridEnsembleModel::ILMoveIterator::
+ILMoveIterator(const StateDescription &origin_, size_t maxloopsize_)
+    :origin(origin_),
+     maxloopsize(maxloopsize_)
+{
 }
 
-const HybridEnsembleModel::StateDescription::NeighborIterator::ItState
-HybridEnsembleModel::StateDescription::NeighborIterator::firstItState() const {
-    ...
-}
-
-
-const HybridEnsembleModel::StateDescription::NeighborIterator::ItState
-HybridEnsembleModel::StateDescription::NeighborIterator::nextItState(const ItState &itstate) const {
+HybridEnsembleModel::ILMove
+HybridEnsembleModel::ILMoveIterator::firstMove() const {
     
-    if ( itstate.isites.size() == origin.num_sites() ) {
-	// resize phase
-    } else if ( itstate.isites.size() > origin.num_sites() ) {
-	// insert new site phase
-    } else if ( itstate.isites.size() < origin.num_sites() ) {
-	// remove site phase
+    if (origin.num_sites()>0) {
+	//unless empty (=non-interacting) state
+	
+	// set to growing left end of first site
+	move_kind=0;
+	
+	xs.resize(4);
+	
+	// specify maximal (due to maxloopsize) allowed growth
+	xs[0]=max(origin.sites[0].i1,maxloopsize)-maxloopsize;
+	size_t maxloopsize2=origin.sites[0].i1-xs[0];
+	xs[1]=max(origin.sites[0].i2,maxloopsize2)-maxloopsize2;
+
+	xs[2]=origin.sites[0].j1;
+	xs[3]=origin.sites[0].j2;
+	
+    } else {
+	// no interaction site => directly go to introducing new sites 
+	move_kind=mk_newsite;
+	
+	
     }
 }
 
-void
-HybridEnsembleModel::StateDescription::NeighborIterator::applyItState(const ItState &itstate, StateDescription &sd) const {
-    ...
+
+const HybridEnsembleModel::ILMove &
+HybridEnsembleModel::ILMoveIterator::nextMove(ILMove &move) const {
+
+    assert(move_kind < mk_empty);
+    
+    vector<size_t &> ys;
+    
+    ys.push_back();
+    
+    // change iterator state
+    if (move_kind<=3) {
+	
+    } else if (move_kind==mk_split) {
+	
+    } else if (move_kind==mk_newsite) {
+	
+    } 
+ 
+    
+    return move;
 }
 
-StateDescription
-HybridEnsembleModel::StateDescription::NeighborIterator::applyItState(const ItState &itstate) const {
-    ...
+void
+HybridEnsembleModel::ILMove::applyMove(StateDescription &sd) const {
+    assert(false);
+}
+
+bool
+HybridEnsembleModel::ILMoveIterator::isEndMove(const ILMove &move) const {
+    return move.is_empty();
+}
+
+double
+HybridEnsembleModel::Move::
+energyOfTransitionState(StateDescription &sd,
+			const HybridEnsembleModel &model) const {
+    assert(false);
 }
