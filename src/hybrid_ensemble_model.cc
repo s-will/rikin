@@ -114,61 +114,100 @@ HybridEnsembleModel::ILMove::mk_empty=6;
 
 
 HybridEnsembleModel::ILMoveIterator::
-ILMoveIterator(const StateDescription &origin_, size_t maxloopsize_)
+ILMoveIterator(const StateDescription &origin_, size_t maxunpinloop_)
     :origin(origin_),
-     maxloopsize(maxloopsize_)
+     maxunpinloop(maxunpinloop_)
 {
 }
 
 HybridEnsembleModel::ILMove
 HybridEnsembleModel::ILMoveIterator::firstMove() const {
+    HybridEnsembleModel::ILMove m;
     
-    if (origin.num_sites()>0) {
-	//unless empty (=non-interacting) state
-	
-	// set to growing left end of first site
-	move_kind=0;
-	
-	xs.resize(4);
-	
-	// specify maximal (due to maxloopsize) allowed growth
-	xs[0]=max(origin.sites[0].i1,maxloopsize)-maxloopsize;
-	size_t maxloopsize2=origin.sites[0].i1-xs[0];
-	xs[1]=max(origin.sites[0].i2,maxloopsize2)-maxloopsize2;
-
-	xs[2]=origin.sites[0].j1;
-	xs[3]=origin.sites[0].j2;
-	
-    } else {
-	// no interaction site => directly go to introducing new sites 
-	move_kind=mk_newsite;
-	
-	
+    m=firstGrowShrinkMove();
+    
+    if (isEndMove(m)) {
+	m=firstSplitMove();
     }
+    
+    if (isEndMove(m)) {
+	m=firstNewSiteMove();
+    }
+    
+    return m;
 }
 
 
 const HybridEnsembleModel::ILMove &
-HybridEnsembleModel::ILMoveIterator::nextMove(ILMove &move) const {
+HybridEnsembleModel::ILMoveIterator::nextMove(ILMove &m) const {
 
-    assert(move_kind < mk_empty);
+    assert(!isEndMove(m));
     
-    vector<size_t &> ys;
+    size_t mk=m.move_kind;
     
-    ys.push_back();
-    
-    // change iterator state
-    if (move_kind<=3) {
+    if (mk < mk_split) {
+	nextGrowShrinkMove(m);
 	
-    } else if (move_kind==mk_split) {
-	
-    } else if (move_kind==mk_newsite) {
-	
-    } 
- 
+	if (m.isEndMove()) {
+	    mk=mk_split;
+	} else {
+	    return m;
+	}
+    }
     
-    return move;
+    if (mk == mk_split) {
+	if (m.isEndMove()) {
+	    m=firstSplitMove();
+	} else {
+	    nextSplitMove(m);
+	}
+	
+	if (m.isEndMove()) {
+	    mk=mk_newsite;
+	} else {
+	    return m;
+	}
+    }
+
+    if (mk==mk_newsite) {
+	if (m.isEndMove()) {
+	    m=firstNewSiteMove();
+	} else {
+	    nextNewSiteMove(m);
+	}
+    }
+    
+    return m;
 }
+
+HybridEnsembleModel::ILMove
+firstGrowShrinkMove() const {
+    ILMove m;
+    
+    //unless empty (=non-interacting) state
+    if (origin.num_sites()>0) {
+	m.set_empty();
+    }
+
+    // set to growing left end of first site
+    move_kind=0;
+    
+    xs.resize(4);
+    
+    // specify maximal (due to maxunpinloop) allowed growth
+    xs[0]=max(origin.sites[0].i1,maxunpinloop)-maxunpinloop;
+    xs[1]=max(origin.sites[0].i2,maxunpinloop2)-maxunpinloop2;
+    
+    xs[2]=origin.sites[0].j1;
+    xs[3]=origin.sites[0].j2;
+    
+    
+    // we assume that there is always a grow shrink move at the first site.
+    // This fails in the case of very small sequences and sites that span the whole sequences.
+
+    return m;
+}
+
 
 void
 HybridEnsembleModel::ILMove::applyMove(StateDescription &sd) const {
