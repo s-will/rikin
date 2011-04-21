@@ -46,7 +46,10 @@
 class HybridEnsembleModel {
     
 public:
-
+    
+    // forward ref
+    class Move;
+    
     typedef double energy_t;
     
     /**
@@ -79,6 +82,8 @@ public:
      */
     class StateDescription {
     public:
+	// befriend the move class
+	friend class Move;
 	
 	//! \brief an interaction site
 	//!
@@ -200,21 +205,21 @@ public:
 	virtual ~Move();
 	
 	/** 
-	 * @brief Return first move
+	 * @brief Set to first move of object type
 	 * 
-	 * @return Pointer to first move.
+	 * @return whether there is a first move
 	 */
 	virtual
-	Move *
+	bool
 	first() = 0;
 	
 	/** 
-	 * @brief return next move
+	 * @brief Set to next move of object type
 	 * 
-	 * @return Pointer to next move.
+	 * @return whether there is a next move
 	 */
 	virtual
-	Move *
+	bool
 	next() = 0;
 	
 	/** 
@@ -248,27 +253,202 @@ public:
 	 */
 	virtual
 	void
-	apply(const StateDescription &sd) const = 0;
+	apply(StateDescription &sd) const = 0;
     };
+    
+    /**
+     * @brief Move that grows or shrinks left ends
+     *
+     * Abstract class implementing common functionality for grow
+     * shrink moves
+     * 
+     */
+    class GrowShrinkMove : public Move {
+    protected:
+	size_t k1; //!< new position for site end in seq 1
+	size_t k2; //!< new position for site end in seq 2
+	
+	size_t i1; //!< original site end position in seq 1
+	size_t i2; //!< original site end position in seq 2
+	
+	size_t min1; //!< min position for site end in seq 1
+	size_t min2; //!< min position for site end in seq 2
+	size_t max1; //!< max position for site end in seq 1
+	size_t max2; //!< max position for site end in seq 2
+	
+	/** 
+	 * Construct with move iterator
+	 * 
+	 * @param mi_ 
+	 */
+	GrowShrinkMove(MoveIterator &mi_): mi(mi_)
+	{
+	}
+	
+	/** 
+	 * Virtual destructor
+	 */
+	virtual
+	~GrowShrinkMove();
+	
+	/** 
+	 * @brief generic first grow shrink move
+	 * 
+	 * @param i1_ 
+	 * @param i2_ 
+	 * @param min1_ 
+	 * @param min2_ 
+	 * @param max1_ 
+	 * @param max2_ 
+	 * 
+	 * @return whether there is a first move
+	 */
+	bool
+	first(size_t i1_,size_t i2_,
+	      size_t min1_,size_t min2_,
+	      size_t max1_,size_t max2_);
+	
+	/** 
+	 * @brief generic next grow shrink move
+	 * 
+	 * @return whether there is a next move
+	 */
+	bool
+	next();
+	
+	/** 
+	 * @brief generic first grow shrink move to left
+	 * 
+	 * @return whether there is a first move
+	 */
+	bool
+	firstLeft();
+	
+	/** 
+	 * @brief generic next grow shrink move to left
+	 * 
+	 * @return whether there is a next move
+	 */
+	bool
+	nextLeft();
+	
+	/** 
+	 * @brief generic first grow shrink move to right
+	 * 
+	 * @return whether there is a first move
+	 */
+	bool
+	firstRight();
 
+	/** 
+	 * @brief generic next grow shrink move to right
+	 * 
+	 * @return whether there is a next move
+	 */
+	bool
+	nextRight();
+	
+    };
+    
     /**
      * @brief Move that grows or shrinks left ends of first site 
      * 
      */
-    class GrowShrinkMove0 : public Move {
+    class GrowShrinkMoveFL : public GrowShrinkMove {
     public:
-	GrowShrinkMove0(MoveIterator &mi_): mi(mi_) {}
+	GrowShrinkMoveFL(MoveIterator &mi_);
     
 	virtual
-	~GrowShrinkMove0();
+	~GrowShrinkMoveFL();
 	
 	Move *
-	nextMoveType() const {return new GrowShrinkMove1(mi);}
+	nextMoveType() const;
 	
-	Move *
+	bool
 	first();
 	
+	bool
+	next();
+
+	energy_t
+	transitionEnergy(const StateDescription &sd) const;
+
+	void
+	apply(const StateDescription &sd) const;
+    };
+
+    /**
+     * @brief Move that grows or shrinks right ends of first site 
+     * 
+     */
+    class GrowShrinkMoveFR : public GrowShrinkMove {
+    public:
+	GrowShrinkMoveFR(MoveIterator &mi_);
+    
+	virtual
+	~GrowShrinkMoveFR();
+	
 	Move *
+	nextMoveType() const;
+	
+	bool
+	first();
+	
+	bool
+	next();
+
+	energy_t
+	transitionEnergy(const StateDescription &sd) const;
+
+	void
+	apply(const StateDescription &sd) const;
+    };
+
+    /**
+     * @brief Move that grows or shrinks left ends of second site 
+     * 
+     */
+    class GrowShrinkMoveSL : public GrowShrinkMove {
+    public:
+	GrowShrinkMoveSL(MoveIterator &mi_);
+    
+	virtual
+	~GrowShrinkMoveSL();
+	
+	Move *
+	nextMoveType() const;
+	
+	bool
+	first();
+	
+	bool
+	next();
+
+	energy_t
+	transitionEnergy(const StateDescription &sd) const;
+
+	void
+	apply(const StateDescription &sd) const;
+    };
+
+    /**
+     * @brief Move that grows or shrinks right ends of second site 
+     * 
+     */
+    class GrowShrinkMoveSR : public GrowShrinkMove {
+    public:
+	GrowShrinkMoveSR(MoveIterator &mi_);
+    
+	virtual
+	~GrowShrinkMoveSR();
+	
+	Move *
+	nextMoveType() const;
+	
+	bool
+	first();
+	
+	bool
 	next();
 
 	energy_t
@@ -290,12 +470,12 @@ public:
 	~StopMove();
 
 	Move *
-	nextMoveType() const {return NULL;}
+	nextMoveType() const;
 	
-	Move *
+	bool
 	first();
 	
-	Move *
+	bool
 	next();
 
 	energy_t
@@ -341,12 +521,16 @@ public:
 
     private:
 	//! origin state
-	const StateDescription &origin;
+	const StateDescription &origin_;
 	
-	const HybridEnsembleModel &model;
+	const HybridEnsembleModel &model_;
 	
-	//! maximal number of unpaired bases at one side of an interior/hybridization loop
+	//! maximal number of unpaired bases at one side of an
+	//! hybridization loop
 	const size_t maxunpinloop;
+	
+	//! minimal number of bases of a site in each sequence
+	const size_t m=minsitesize;
 	
     public:
 	
@@ -355,7 +539,18 @@ public:
 	 * 
 	 * @param origin Description of origin state 
 	 */
-	MoveIterator(const StateDescription &origin, const HybridEnsembleModel &model, size_t maxunpinloop);
+	MoveIterator(const StateDescription &origin, const HybridEnsembleModel &model, size_t maxunpinloop=5, size_t minsitesize=5);
+	
+	const StateDescription &
+	origin() const {
+	    return origin_;
+	}
+
+	const HybridEnsembleModel &
+	model() const {
+	    return model_;
+	}
+	
 	
 	/** 
 	 * @brief First move
@@ -419,6 +614,22 @@ public:
      */
     energy_t
     energy(const StateDescription &desc) const;
+  
+    /** 
+     * @brief Read sequence A
+     * 
+     * @return sequence A
+     */
+    const std::string &
+    seqA() const { return seqA; }
+
+    /** 
+     * @brief Read sequence B
+     * 
+     * @return sequence B
+     */
+    const std::string &
+    seqB() const { return seqB; }
     
 };
 
