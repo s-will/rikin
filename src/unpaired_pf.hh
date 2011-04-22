@@ -25,40 +25,70 @@ public:
     //! functions where a range i..j is unpaired for all ranges
     //! i..j, 1<=i<=j<=len
     //! @param seq The RNA sequence
-    UnpairedPF(const std::string seq);
-
+    UnpairedPF(const std::string seq); 
     //! get probability of unpaired range (i.e. pf divided by Z)
-    //! @param i left end of range, position in sequence
-    //! @param j right end of range, position in sequence
+    //! @param i left end of range
+    //! @param j right end of range
     //! @return probability p of range i..j is unpaired in object's sequence
     //! according to Turner energy model
     //! @note sequence positions in 1..len
-    //! @note -kT ln p equals -kT ln Z_unpaired/Z_total equals the
-    //! energy difference E_unpaired - E_total, where E_unpaired = -kT
-    //! ln Z_unpaired and E_total=-kT ln Z_total
-    //! @see get_unpaired_prob_conditional
+    //! @note -RT ln p equals -RT ln Z_unpaired/Z_total equals the
+    //! energy difference E_unpaired - E_total, where E_unpaired = -RT
+    //! ln Z_unpaired and E_total=-RT ln Z_total
+    //! @see unpaired_prob_conditional()
     prob_t
-    get_unpaired_prob_single(size_t i, size_t j) const;
+    unpaired_prob_single(size_t i, size_t j) const;
 
     //! get probability of unpaired range under condition that
     //! another range is unpaired
-    //! @param i left end of first range, position in sequence
-    //! @param j right end of first range, position in sequence
-    //! @param k left end of second range, position in sequence
-    //! @param l right end of second range, position in sequence
+    //! @param i left end of first range
+    //! @param j right end of first range
+    //! @param k left end of second range
+    //! @param l right end of second range
     //! @return probability p that the first range is unpaired under the condition
     //! that the second range is unpaired
-    //! @see get_unpaired_prob_single
+    //! @see unpaired_prob_single()
     prob_t
-    get_unpaired_prob_conditional(size_t i, size_t j,size_t k, size_t l) const;
+    unpaired_prob_conditional(size_t i, size_t j,size_t k, size_t l) const;
+
+    //! get joint probability that two ranges are unpaired at the same time
+    //! @param i left end of first range
+    //! @param j right end of first range
+    //! @param k left end of second range
+    //! @param l right end of second range
+    //! @return joint probability p that both ranges are unpaired
+    //! @see unpaired_prob_single()
+    prob_t
+    unpaired_prob_joint(size_t i, size_t j,size_t k, size_t l) const {
+	return
+	    unpaired_prob_single(k,l)
+	    *
+	    unpaired_prob_conditional(i,j,k,l);
+    }
+    
+    
     
     // for convenience we consider to add methods that return joint
     // probability and ensemble energy differences corresponding to
     // the various probabilities
     
+    /** 
+     * Scaling factor for partition functions
+     * 
+     * @return R * temperature
+     */
+    double
+    RT() const {return RT_;}
+    
 private:
     
     const std::string seq; //!< the RNA sequence
+    
+    //! @brief scaling factor for partition functions/boltzmann weights
+    //! @note has to be compatible to Vienna lib
+    double RT_;
+
+    
 
     LocARNA::Matrix<prob_t> Psingle; //!< matrix to hold unpaired probabilities for single ranges
     
@@ -99,7 +129,7 @@ private:
     
     
     //! total partition function of the sequence seq
-    //! \note not used currently
+    //! \note  currently unused
     pf_t
     total_pf() const;
 };

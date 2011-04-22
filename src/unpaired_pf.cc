@@ -11,14 +11,15 @@ extern "C" {
 
 
 UnpairedPF::UnpairedPF(const std::string seq_) 
-    : seq(seq_)
+    : seq(seq_),
+      RT_( (temperature+K0)*GASCONST/1000.0 )
 {
     computeSingleProbs();
     computeCondProbs();
 }
 
 UnpairedPF::prob_t 
-UnpairedPF::get_unpaired_prob_single(size_t i, size_t j) const {
+UnpairedPF::unpaired_prob_single(size_t i, size_t j) const {
     assert(1<=i);
     assert(i<=j);
     assert(j<=seq.size());
@@ -26,7 +27,7 @@ UnpairedPF::get_unpaired_prob_single(size_t i, size_t j) const {
 }
 
 UnpairedPF::prob_t
-UnpairedPF::get_unpaired_prob_conditional(size_t i, size_t j,size_t k, size_t l) const {
+UnpairedPF::unpaired_prob_conditional(size_t i, size_t j,size_t k, size_t l) const {
     return Pcond(k,l)(i,j);
 }
 

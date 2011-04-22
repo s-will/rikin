@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <math.h>
+
 
 #include "hybrid_ensemble_model.hh"
 
@@ -97,131 +99,44 @@ HybridEnsembleModel::StateDescription::decode(const code_t &code) {
 			       code[i*4+1],
 			       code[i*4+2],
 			       code[i*4+3]));
-    }    
+    }
 }
 
 
+// ------------------------------------------------------------
+// Implementation of HybridEnsembleModel
 
-
-// ----------------------------------------
-// HybridEnsembleModel::ILMove/ILMoveIterator
-//
-
-HybridEnsembleModel::ILMove::mk_split=4;
-HybridEnsembleModel::ILMove::mk_newsite=5;
-HybridEnsembleModel::ILMove::mk_empty=6;
-
-
-
-HybridEnsembleModel::ILMoveIterator::
-ILMoveIterator(const StateDescription &origin_, size_t maxunpinloop_)
-    :origin(origin_),
-     maxunpinloop(maxunpinloop_)
+HybridEnsembleModel::HybridEnsembleModel(std::string seqA, std::string seqB)
+    : seqA_(seqA),
+      seqB_(seqB),
+      hybridpf_(HybridPF(seqA,seqB)),
+      uppfA_(UnpairedPF(seqA)),
+      uppfB_(UnpairedPF(seqB)),
+      maxunpinloop_(5),
+      minsitesize_(5),
+      minsitedist_(6)
 {
 }
 
-HybridEnsembleModel::ILMove
-HybridEnsembleModel::ILMoveIterator::firstMove() const {
-    HybridEnsembleModel::ILMove m;
-    
-    m=firstGrowShrinkMove();
-    
-    if (isEndMove(m)) {
-	m=firstSplitMove();
-    }
-    
-    if (isEndMove(m)) {
-	m=firstNewSiteMove();
-    }
-    
-    return m;
+
+HybridEnsembleModel::energy_t
+HybridEnsembleModel::energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const {
+    return - hybridpf_.RT() * log( hybridpf_.partition_function(i1,i2,j1,j2) );
+}
+
+HybridEnsembleModel::energy_t
+HybridEnsembleModel::energy_unpair(const StateDescription::ISite &is) const {
+    return
+	- uppfA_.RT() * log( uppfA_.unpaired_prob_single(is.i1,is.j1) )
+	- uppfB_.RT() * log( uppfB_.unpaired_prob_single(is.i2,is.j2) );
 }
 
 
-const HybridEnsembleModel::ILMove &
-HybridEnsembleModel::ILMoveIterator::nextMove(ILMove &m) const {
-
-    assert(!isEndMove(m));
-    
-    size_t mk=m.move_kind;
-    
-    if (mk < mk_split) {
-	nextGrowShrinkMove(m);
-	
-	if (m.isEndMove()) {
-	    mk=mk_split;
-	} else {
-	    return m;
-	}
-    }
-    
-    if (mk == mk_split) {
-	if (m.isEndMove()) {
-	    m=firstSplitMove();
-	} else {
-	    nextSplitMove(m);
-	}
-	
-	if (m.isEndMove()) {
-	    mk=mk_newsite;
-	} else {
-	    return m;
-	}
-    }
-
-    if (mk==mk_newsite) {
-	if (m.isEndMove()) {
-	    m=firstNewSiteMove();
-	} else {
-	    nextNewSiteMove(m);
-	}
-    }
-    
-    return m;
+HybridEnsembleModel::energy_t
+HybridEnsembleModel::energy_unpair(const StateDescription::ISite &is1,const StateDescription::ISite &is2) const {
+    return
+	- uppfA_.RT() * log( uppfA_.unpaired_prob_joint(is1.i1,is1.j1,is2.i1,is2.j1) ) //seq 1
+	- uppfB_.RT() * log( uppfB_.unpaired_prob_joint(is1.i2,is1.j2,is2.i2,is2.j2) ) //seq 2
+	;
 }
-
-HybridEnsembleModel::ILMove
-firstGrowShrinkMove() const {
-    ILMove m;
     
-    //unless empty (=non-interacting) state
-    if (origin.num_sites()>0) {
-	m.set_empty();
-    }
-
-    // set to growing left end of first site
-    move_kind=0;
-    
-    xs.resize(4);
-    
-    // specify maximal (due to maxunpinloop) allowed growth
-    xs[0]=max(origin.sites[0].i1,maxunpinloop)-maxunpinloop;
-    xs[1]=max(origin.sites[0].i2,maxunpinloop2)-maxunpinloop2;
-    
-    xs[2]=origin.sites[0].j1;
-    xs[3]=origin.sites[0].j2;
-    
-    
-    // we assume that there is always a grow shrink move at the first site.
-    // This fails in the case of very small sequences and sites that span the whole sequences.
-
-    return m;
-}
-
-
-void
-HybridEnsembleModel::ILMove::applyMove(StateDescription &sd) const {
-    assert(false);
-}
-
-bool
-HybridEnsembleModel::ILMoveIterator::isEndMove(const ILMove &move) const {
-    return move.is_empty();
-}
-
-double
-HybridEnsembleModel::Move::
-energyOfTransitionState(StateDescription &sd,
-			const HybridEnsembleModel &model) const {
-    assert(false);
-}

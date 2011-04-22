@@ -85,13 +85,13 @@ main()
 	    for (size_t i2=1; i2<=seqB.length(); i2++) {
 		for (size_t j2=i2+min_hyb_size-1; j2<=seqB.length(); j2++) {
 		    
-		    HybridPF::pf_t pfhyb = hybrid_pf.get_pf(i1,j1,i2,j2);
+		    HybridPF::pf_t pfhyb = hybrid_pf.partition_function(i1,j1,i2,j2);
 		    double ensemble_energy_hyb = - kT * log(pfhyb);
 
 		    if ( ensemble_energy_hyb > th_hyb_energy ) continue;
 		    
-		    UnpairedPF::pf_t upfA=unpaired_pf_A.get_unpaired_prob_single(i1,j1);
-		    UnpairedPF::pf_t upfB=unpaired_pf_B.get_unpaired_prob_single(i2,j2);
+		    UnpairedPF::pf_t upfA=unpaired_pf_A.unpaired_prob_single(i1,j1);
+		    UnpairedPF::pf_t upfB=unpaired_pf_B.unpaired_prob_single(i2,j2);
 		    double ensemble_energy_A = - kT * log(upfA);
 		    double ensemble_energy_B = - kT * log(upfB);
 		    
@@ -127,7 +127,7 @@ main()
 	    for (size_t i2=1; i2<=seqB.length(); i2++) {
 		for (size_t j2=i2+min_hyb_size-1; j2<=seqB.length(); j2++) {
 		    
-		    HybridPF::pf_t pfhyb_ij = hybrid_pf.get_pf(i1,j1,i2,j2);
+		    HybridPF::pf_t pfhyb_ij = hybrid_pf.partition_function(i1,j1,i2,j2);
 		    double ensemble_energy_hyb_ij = - kT * log(pfhyb_ij);
 		    
 		    if ( ensemble_energy_hyb_ij > th_hyb_energy ) continue;
@@ -136,8 +136,8 @@ main()
 			for (size_t l1=k1+min_hyb_size-1; l1<=seqA.length(); l1++) {
 			    
 			    UnpairedPF::pf_t upfA=
-				unpaired_pf_A.get_unpaired_prob_single(k1,l1)
-				* unpaired_pf_A.get_unpaired_prob_conditional(i1,j1,k1,l1);
+				unpaired_pf_A.unpaired_prob_single(k1,l1)
+				* unpaired_pf_A.unpaired_prob_conditional(i1,j1,k1,l1);
 			    
 			    double ensemble_energy_A = - kT * log(upfA);
 			    
@@ -145,10 +145,10 @@ main()
 				for (size_t l2=k2+min_hyb_size-1; l2<=seqB.length(); l2++) {
 				    
 				    UnpairedPF::pf_t upfB=
-					unpaired_pf_B.get_unpaired_prob_single(k2,l2)
-					* unpaired_pf_B.get_unpaired_prob_conditional(i2,j2,k2,l2);
+					unpaired_pf_B.unpaired_prob_single(k2,l2)
+					* unpaired_pf_B.unpaired_prob_conditional(i2,j2,k2,l2);
 				    
-				    HybridPF::pf_t pfhyb_kl = hybrid_pf.get_pf(k1,l1,k2,l2);
+				    HybridPF::pf_t pfhyb_kl = hybrid_pf.partition_function(k1,l1,k2,l2);
 				    double ensemble_energy_hyb_kl = - kT * log(pfhyb_kl);
 				    
 				    if (ensemble_energy_hyb_kl > th_hyb_energy) continue;

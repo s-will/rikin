@@ -82,8 +82,6 @@ public:
      */
     class StateDescription {
     public:
-	// befriend the move class
-	friend class Move;
 	
 	//! \brief an interaction site
 	//!
@@ -101,13 +99,14 @@ public:
 	    size_t i2; //!< start position in second sequence
 	    size_t j2; //!< end position in second sequence  
 	    
-	    // /**
-	    //  * Default constructor
-	    //  * Initialize with 0
-	    //  */
-	    // ISite()
-	    // 	: i1(0),j1(0),i2(0),j2(0)
-	    // {}
+	    /**
+	     * @brief Default constructor
+	     *
+	     * Initialize with 0
+	     */
+	    ISite()
+	     	: i1(0),j1(0),i2(0),j2(0)
+	    {}
 	    
 	    
 	    /** 
@@ -121,7 +120,7 @@ public:
 		: i1(i1_),j1(j1_),i2(i2_),j2(j2_)
 	    {}
 	};
-
+	
 	//! type of encoded class representation
 	//typedef std::vector<char> code_t;
 	typedef std::vector<unsigned char> code_t;   
@@ -177,10 +176,14 @@ public:
 	void
 	decode(const code_t &code);
 	
-    private:
 	//! positions of hybridization sites
+	//! @note making this public is somewhat ugly design. We actually need
+	//! write access for the moves only (method apply()).
 	std::vector<ISite> isites;
     };
+    
+    // forward reference
+    class MoveIterator;
     
     /** @brief A move by adding/removing an interior loop
      *
@@ -196,8 +199,9 @@ public:
      * redefining the new and delete operators for moves.
      */
     class Move {
+    protected:
 	//! a move knows its iterator
-	const MoveIterator & const mi; 
+	const MoveIterator & mi; 
 	
     public:
 	Move(const MoveIterator &mi_): mi(mi_) {}
@@ -232,7 +236,7 @@ public:
 	 */
 	virtual
 	Move *
-	nextMoveType() = 0;
+	nextMoveType() const = 0;
 	
 	/** 
 	 * Energy of transition state
@@ -244,7 +248,7 @@ public:
 	 */
 	virtual
 	energy_t
-	transitionEnergy(const StateDescription &sd) const = 0;
+	transitionEnergy() const = 0;
 	
 	/** 
 	 * Apply move to a state
@@ -276,30 +280,21 @@ public:
 	size_t max1; //!< max position for site end in seq 1
 	size_t max2; //!< max position for site end in seq 2
 	
-	/** 
-	 * Construct with move iterator
-	 * 
-	 * @param mi_ 
-	 */
-	GrowShrinkMove(MoveIterator &mi_): mi(mi_)
-	{
-	}
-	
-	/** 
-	 * Virtual destructor
-	 */
+	GrowShrinkMove(const MoveIterator &mi);
+
 	virtual
 	~GrowShrinkMove();
 	
+
 	/** 
 	 * @brief generic first grow shrink move
 	 * 
-	 * @param i1_ 
-	 * @param i2_ 
-	 * @param min1_ 
-	 * @param min2_ 
-	 * @param max1_ 
-	 * @param max2_ 
+	 * @param i1_ position of moved site end in seq 1
+	 * @param i2_ position of moved site end in seq 2
+	 * @param min1_ minimal position of new site end seq 1
+	 * @param min2_ minimal position of new site end seq 2
+	 * @param max1_ maximal position of new site end seq 1
+	 * @param max2_ maximal position of new site end seq 2
 	 * 
 	 * @return whether there is a first move
 	 */
@@ -348,6 +343,35 @@ public:
 	bool
 	nextRight();
 	
+	/** 
+	 * @brief generic transition state energy calculation
+	 * 
+	 * @param sd_small state description
+	 * @param sd_large state description
+	 * @param loop_i1 left position of loop sequence 1
+	 * @param loop_i2 left position of loop sequence 2
+	 * @param loop_j1 right tposition of loop sequence 1
+	 * @param loop_j2 right position of loop sequence 1
+	 * 
+	 * @return energy of transition state where the loop is attached to
+	 * the smaller state in order to yield the larger state
+	 */	
+	energy_t transitionEnergy(const StateDescription &sd_small,
+				  const StateDescription &sd_large,
+				  size_t loop_i1, size_t loop_i2, size_t loop_j1, size_t loop_j2
+				  ) const;
+	
+	/** 
+	 * @brief generic transition state energy calculation
+	 * 
+	 * @param site modified interaction site
+	 * @param left whether left end is modified by move
+	 * 
+	 * @return transition energy where the loop by i1.i2, k1.k2 is attached to 
+	 * the specified end of specified site
+	 */
+	energy_t
+	transitionEnergy(size_t site, size_t left) const;	
     };
     
     /**
@@ -356,7 +380,7 @@ public:
      */
     class GrowShrinkMoveFL : public GrowShrinkMove {
     public:
-	GrowShrinkMoveFL(MoveIterator &mi_);
+	GrowShrinkMoveFL(const MoveIterator &mi_);
     
 	virtual
 	~GrowShrinkMoveFL();
@@ -367,14 +391,11 @@ public:
 	bool
 	first();
 	
-	bool
-	next();
-
 	energy_t
-	transitionEnergy(const StateDescription &sd) const;
+	transitionEnergy() const;
 
 	void
-	apply(const StateDescription &sd) const;
+	apply(StateDescription &sd) const;
     };
 
     /**
@@ -383,7 +404,7 @@ public:
      */
     class GrowShrinkMoveFR : public GrowShrinkMove {
     public:
-	GrowShrinkMoveFR(MoveIterator &mi_);
+	GrowShrinkMoveFR(const MoveIterator &mi_);
     
 	virtual
 	~GrowShrinkMoveFR();
@@ -394,14 +415,11 @@ public:
 	bool
 	first();
 	
-	bool
-	next();
-
 	energy_t
-	transitionEnergy(const StateDescription &sd) const;
+	transitionEnergy() const;
 
 	void
-	apply(const StateDescription &sd) const;
+	apply(StateDescription &sd) const;
     };
 
     /**
@@ -410,7 +428,7 @@ public:
      */
     class GrowShrinkMoveSL : public GrowShrinkMove {
     public:
-	GrowShrinkMoveSL(MoveIterator &mi_);
+	GrowShrinkMoveSL(const MoveIterator &mi_);
     
 	virtual
 	~GrowShrinkMoveSL();
@@ -420,15 +438,12 @@ public:
 	
 	bool
 	first();
-	
-	bool
-	next();
 
 	energy_t
-	transitionEnergy(const StateDescription &sd) const;
+	transitionEnergy() const;
 
 	void
-	apply(const StateDescription &sd) const;
+	apply(StateDescription &sd) const;
     };
 
     /**
@@ -437,7 +452,7 @@ public:
      */
     class GrowShrinkMoveSR : public GrowShrinkMove {
     public:
-	GrowShrinkMoveSR(MoveIterator &mi_);
+	GrowShrinkMoveSR(const MoveIterator &mi_);
     
 	virtual
 	~GrowShrinkMoveSR();
@@ -447,15 +462,12 @@ public:
 	
 	bool
 	first();
-	
-	bool
-	next();
 
 	energy_t
-	transitionEnergy(const StateDescription &sd) const;
+	transitionEnergy() const;
 
 	void
-	apply(const StateDescription &sd) const;
+	apply(StateDescription &sd) const;
     };
     
     //! @brief stopper class for the chain of move classes
@@ -464,7 +476,7 @@ public:
     //! immediately deletes itself and returns NULL
     class StopMove : public Move {
     public:
-	StopMove(MoveIterator &mi_): mi(mi_) {}
+	StopMove(const MoveIterator &mi_): Move(mi_) {}
 	
 	virtual
 	~StopMove();
@@ -479,10 +491,10 @@ public:
 	next();
 
 	energy_t
-	transitionEnergy(const StateDescription &sd) const;
+	transitionEnergy() const;
 
 	void
-	apply(const StateDescription &sd) const;
+	apply(StateDescription &sd) const;
     };
     
     
@@ -524,14 +536,7 @@ public:
 	const StateDescription &origin_;
 	
 	const HybridEnsembleModel &model_;
-	
-	//! maximal number of unpaired bases at one side of an
-	//! hybridization loop
-	const size_t maxunpinloop;
-	
-	//! minimal number of bases of a site in each sequence
-	const size_t m=minsitesize;
-	
+		
     public:
 	
 	/** 
@@ -539,7 +544,7 @@ public:
 	 * 
 	 * @param origin Description of origin state 
 	 */
-	MoveIterator(const StateDescription &origin, const HybridEnsembleModel &model, size_t maxunpinloop=5, size_t minsitesize=5);
+	MoveIterator(const StateDescription &origin, const HybridEnsembleModel &model);
 	
 	const StateDescription &
 	origin() const {
@@ -550,7 +555,7 @@ public:
 	model() const {
 	    return model_;
 	}
-	
+		
 	
 	/** 
 	 * @brief First move
@@ -621,15 +626,170 @@ public:
      * @return sequence A
      */
     const std::string &
-    seqA() const { return seqA; }
-
+    seqA() const {
+	return seqA_;
+    }
+    
     /** 
      * @brief Read sequence B
      * 
      * @return sequence B
      */
     const std::string &
-    seqB() const { return seqB; }
+    seqB() const {
+	return seqB_;
+    }
+
+    /** 
+     * Energy of a hybridization at one interaction site
+     * 
+     * @param i1 left end of interaction site in seq 1
+     * @param i2 left end of interaction site in seq 2
+     * @param j1 right end of interaction site in seq 1
+     * @param j2 right end of interaction site in seq 2
+     * 
+     * @return ensemble energy of the hybridization
+     *
+     * @todo implement
+     */
+    energy_t
+    energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const;
+
+    /** 
+     * Energy of a hybridization at one interaction site
+     * 
+     * @param is interaction site 
+     * 
+     * @return ensemble energy of the hybridization
+     *
+     */
+    energy_t
+    energy_hybrid(const StateDescription::ISite &is) const {
+	return energy_hybrid(is.i1,is.i2,is.j1,is.j2);
+    }
+    
+
+    /** 
+     * Energy of unpairing of one interaction site
+     * 
+     * @param is interaction site
+     *
+     * @return energy difference of the unpairing
+     */
+    energy_t
+    energy_unpair(const StateDescription::ISite &is) const;
+    
+    /** 
+     * Energy of unpairing of two interaction sites
+     * 
+     * @param is1 interaction site 1
+     * @param is2 interaction site 1
+     *
+     * @return energy difference of the unpairing
+     * @todo implement
+     */
+    energy_t
+    energy_unpair(const StateDescription::ISite &is1,
+		  const StateDescription::ISite &is2) const;
+    
+    /** 
+     * Energy of one hybridisation loop
+     * 
+     * @param i1 left base pair, position in seq 1
+     * @param i2 left base pair, position in seq 2
+     * @param j1 right base pair, position in seq 1
+     * @param j2 right base pair, position in seq 2
+     * 
+     * @return energy of hybridisation loop closed by i1.i2 and enclosing j1.j2
+     */
+    energy_t
+    energy_hybrid_loop(size_t i1,size_t i2,size_t j1,size_t j2) const {
+	return hybridpf_.ILoopE(i1,i2,j1,j2);
+    }
+
+public:
+    // give access to some constants of the model
+    
+    /** 
+     * Size of interaction loops
+     * 
+     * @return Maximal number of unpaired bases at one side of an interaction loop
+     */
+    const size_t
+    maxunpinloop() const {
+	return maxunpinloop_;
+    }
+    
+    /** 
+     * Minimal size of interaction sites
+     * 
+     * @return Minimal number of bases of a site in each sequence
+     */
+    const size_t
+    minsitesize() const {
+	return minsitesize_;
+    }
+    
+    /** 
+     * Minimal separation of two sites
+     *  
+     * @return Minimal number of bases that seperate two sites in each sequence 
+     *
+     * @note in our model, we explicitely set such a speparation
+     * distance.  In order to make ensembles with two sites disjoint
+     * from ensembles with one site, it will suffice to make this
+     * distance larger than maxunpinloop_
+     */
+    const size_t
+    minsitedist() const {
+	return minsitedist_;
+    }
+    
+private:
+    const std::string &seqA_; //!< sequence A
+    const std::string &seqB_; //!< sequence B
+    const HybridPF &hybridpf_; //!< hybrid pf
+    
+    const UnpairedPF &uppfA_; //!< unpaired pf sequence A
+    const UnpairedPF &uppfB_; //!< unpaired pf sequence A
+
+
+    // DO WE NEED THESE ACCESS FUNCTIONS?:
+    /** 
+     * @brief Read access to hybrid partition functions
+     * 
+     * @return hybrid pfs
+     */
+    const HybridPF &
+    hybridPF() const {
+	return hybridpf_;
+    }
+
+    /** 
+     * @brief Read access to unpaired partition functions of seqA
+     * 
+     * @return unpaired pfs
+     */
+    const UnpairedPF &
+    unpairedPFA() const {
+	return uppfA_;
+    }
+    
+    /** 
+     * @brief Read access to unpaired partition functions of seqA
+     * 
+     * @return unpaired pfs
+     */
+    const UnpairedPF &
+    unpairedPFB() const {
+	return uppfB_;
+    }
+
+    const size_t maxunpinloop_;
+    
+    const size_t minsitesize_;
+    
+    const size_t minsitedist_;
     
 };
 

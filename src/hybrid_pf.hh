@@ -18,6 +18,7 @@ public:
     
     //! type of partition functions
     typedef FLT_OR_DBL pf_t;
+    typedef double energy_t;
     
     //! @brief construct with sequences A and B
     //! @param seqA sequence A (3' - 5')
@@ -32,12 +33,19 @@ public:
     //! @return partition function of hybridization of seqA[i1..j1] and seqB[i2..j2],
     //!          where i1.i2 and j1.j2 interact
     pf_t
-    get_pf(size_t i1, size_t j1,size_t i2, size_t j2) const;
+    partition_function(size_t i1, size_t j1,size_t i2, size_t j2) const;
     
-
-
+    /** 
+     * Scaling factor for partition functions
+     * 
+     * @return R * temperature
+     */
+    double
+    RT() const {return RT_;}
+    
 private:
-
+    
+    
     //! 4D matrix for holding partition functions.
     typedef LocARNA::Matrix<LocARNA::Matrix<FLT_OR_DBL> > PFMatrix4D;
 
@@ -47,11 +55,20 @@ private:
     //! scaled to current temperature
     pf_paramT *pf_params; 
 
+    //! \brief structure containing energy parameter
+    //! 
+    //! scaled to current temperature
+    paramT *params; 
+
     const std::string &seqA; //!< sequence A
     const std::string &seqB; //!< sequence B
     
     const size_t lenA; //!< length of seqA
     const size_t lenB; //!< length of seqB
+
+    //! @brief scaling factor for partition functions/boltzmann weights
+    //! @note has to be compatible to Vienna lib
+    double RT_;
 
     short *SA; //!< encoded sequence A (type 0)
     short *SA1; //!< encoded sequence A (type 1)
@@ -90,7 +107,27 @@ private:
     //! free space of temporary data structures
     void
     free_temporary();
+
+    //! @brief pair type for pair of interacting positions
+    //! @param i1 position in seqA
+    //! @param i2 position in seqB
+    //! @return pair type of i1.i2
+    int
+    pair_type(size_t i1, size_t i2) const;
+
+public:
+    //! @brief Energy of interaction loop
+    //! @param i1 3' position in sequence A
+    //! @param j1 5' position in sequence A
+    //! @param i2 5' position in reverse sequence B
+    //! @param j2 3' position in reverse sequence B
+    //!
+    //! @return Energy of interaction loop closed by i1.i2 
+    //!         base pair with interior base pair j1.j2 in kcal/mol
+    energy_t
+    ILoopE(size_t i1, size_t j1, size_t i2, size_t j2) const;
     
+   
     //! @brief Boltzmann weight of interaction loop
     //! @param i1 3' position in sequence A
     //! @param j1 5' position in sequence A
@@ -100,14 +137,6 @@ private:
     //!          base pair with interior base pair j1.j2
     pf_t
     exp_ILoopE(size_t i1, size_t j1, size_t i2, size_t j2) const;
-    
-
-    //! @brief pair type for pair of interacting positions
-    //! @param i1 position in seqA
-    //! @param i2 position in seqB
-    //! @return pair type of i1.i2
-    int
-    pair_type(size_t i1, size_t i2) const;
 
 };
 
