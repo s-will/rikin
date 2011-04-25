@@ -12,7 +12,7 @@
  * In our model microstates are ensembles of hybridization structures,
  * which share the same hybridization sites.
  * 
- * An object of HybridEnsembleModel knows the RNA sequences and
+ * An object of HybEnsModel knows the RNA sequences and
  * computes/stores all ensemble energies, it knows how to describe a
  * state of the model (zero, one or two 4-tuples, possible extension:
  * several 4-tuples) and compute the energy of a state.  It defines
@@ -20,15 +20,15 @@
  * state. (Maybe neighborship test?)
  *
  * In our model, we don't explicitely represent all O(n^8) many states
- * but sparsify the 'microstate' space. The HybridEnsembleModel
+ * but sparsify the 'microstate' space. The HybEnsModel
  * object needs to know this kind of sparsification and how to
  * enumerate all states (maybe sorted!?, what do we need for the
  * barrier tree construction in ELL?).
  *
  * The model class is used to implement the HybridEnsembleState class,
  * wich interfaces to the ELL.  An object of this class knows its
- * description (HybridEnsembleModel::StateDescription) and its model
- * (HybridEnsembleModel) in order to compute its energy.
+ * description (HybEnsModel::StateDescription) and its model
+ * (HybEnsModel) in order to compute its energy.
  *
  */
 
@@ -43,7 +43,7 @@
  * @todo Specification, Implementation
  *
  */
-class HybridEnsembleModel {
+class HybEnsModel {
     
 public:
     
@@ -380,7 +380,7 @@ public:
      */
     class GrowShrinkMoveFL : public GrowShrinkMove {
     public:
-	GrowShrinkMoveFL(const MoveIterator &mi_);
+	GrowShrinkMoveFL(const MoveIterator &mi);
     
 	virtual
 	~GrowShrinkMoveFL();
@@ -404,7 +404,7 @@ public:
      */
     class GrowShrinkMoveFR : public GrowShrinkMove {
     public:
-	GrowShrinkMoveFR(const MoveIterator &mi_);
+	GrowShrinkMoveFR(const MoveIterator &mi);
     
 	virtual
 	~GrowShrinkMoveFR();
@@ -428,7 +428,7 @@ public:
      */
     class GrowShrinkMoveSL : public GrowShrinkMove {
     public:
-	GrowShrinkMoveSL(const MoveIterator &mi_);
+	GrowShrinkMoveSL(const MoveIterator &mi);
     
 	virtual
 	~GrowShrinkMoveSL();
@@ -445,14 +445,14 @@ public:
 	void
 	apply(StateDescription &sd) const;
     };
-
+ 
     /**
      * @brief Move that grows or shrinks right ends of second site 
      * 
      */
     class GrowShrinkMoveSR : public GrowShrinkMove {
     public:
-	GrowShrinkMoveSR(const MoveIterator &mi_);
+	GrowShrinkMoveSR(const MoveIterator &mi);
     
 	virtual
 	~GrowShrinkMoveSR();
@@ -469,24 +469,69 @@ public:
 	void
 	apply(StateDescription &sd) const;
     };
-    
-    //! @brief stopper class for the chain of move classes
-    //!
-    //! on invokation of first()
-    //! immediately deletes itself and returns NULL
-    class StopMove : public Move {
-    public:
-	StopMove(const MoveIterator &mi_): Move(mi_) {}
-	
-	virtual
-	~StopMove();
 
+
+    /**
+     * @brief Move that removes an interaction site
+     *
+     * @note A site can be removed only if the site is not larger than
+     * one interaction loop (checks HybEnsModel::maxunpinloop()) 
+     *
+     * @note the tranition state for these moves is defined by
+     * changing the to be removed site into one interaction loop
+     * closed by the end base pairs of the site.
+     */
+    class RemoveSiteMove : public Move {
+	size_t site; //!< number of site that is removed
+    public:
+	RemoveSiteMove(const MoveIterator &mi);
+    
+	virtual
+	~RemoveSiteMove();
+	
 	Move *
 	nextMoveType() const;
 	
 	bool
 	first();
+
+	bool
+	next();
+
+	energy_t
+	transitionEnergy() const;
+
+	void
+	apply(StateDescription &sd) const;
+    private:
+	bool
+	thisornext();
+    };
+    
+    /**
+     * @brief Move that introduces the first interaction site
+     *
+     * @note New sites have exactly the minimal size of an interaction site (HybEnsModel::minsitesize()) 
+     *
+     * @note the transition state for these moves is defined by
+     * changing the new site into one interaction loop
+     * closed by the end base pairs of the site.
+     */
+    class NewSiteMoveF : public Move {
+	size_t i1; //!< left end of new site in seq 1
+	size_t i2; //!< left end of new site in seq 2
+    public:
+	NewSiteMoveF(const MoveIterator &mi);
+    
+	virtual
+	~NewSiteMoveF();
 	
+	Move *
+	nextMoveType() const;
+	
+	bool
+	first();
+
 	bool
 	next();
 
@@ -497,6 +542,152 @@ public:
 	apply(StateDescription &sd) const;
     };
     
+
+    /**
+     * @brief Move that introduces a new interaction site at the left
+     *
+     * @note New sites have exactly the minimal size of an interaction site (HybEnsModel::minsitesize()) 
+     *
+     * @note the transition state for these moves is defined by
+     * changing the new site into one interaction loop
+     * closed by the end base pairs of the site.
+     */
+    class NewSiteMoveL : public Move {
+	size_t i1; //!< left end of new site in seq 1
+	size_t i2; //!< left end of new site in seq 2
+    public:
+	NewSiteMoveL(const MoveIterator &mi);
+    
+	virtual
+	~NewSiteMoveL();
+	
+	Move *
+	nextMoveType() const;
+	
+	bool
+	first();
+
+	bool
+	next();
+
+	energy_t
+	transitionEnergy() const;
+
+	void
+	apply(StateDescription &sd) const;
+    };
+    
+     /**
+     * @brief Move that introduces a new interaction site at the right
+     *
+     * @note New sites have exactly the minimal size of an interaction
+     * site (HybEnsModel::minsitesize())
+     *
+     * @todo CHECK: requiring an exactly fixed size, could in practice
+     * almost limit new sites to perfect stems.
+     *
+     * @note the transition state for these moves is defined by
+     * changing the new site into one interaction loop
+     * closed by the end base pairs of the site.
+     */
+    class NewSiteMoveR : public Move {
+	size_t i1; //!< left end of new site in seq 1
+	size_t i2; //!< left end of new site in seq 2
+    public:
+	NewSiteMoveR(const MoveIterator &mi);
+    
+	virtual
+	~NewSiteMoveR();
+	
+	Move *
+	nextMoveType() const;
+	
+	bool
+	first();
+
+	bool
+	next();
+
+	energy_t
+	transitionEnergy() const;
+
+	void
+	apply(StateDescription &sd) const;
+    };
+    
+
+    /**
+     * @brief Move that merges two interaction sites
+     *
+     * Merging of two sites is allowed iff the site distance is model.minsitedist()
+     *
+     * @todo CHECK: do we have to relax size of merge/split sites. Fixing the distance is not justified.
+     *
+     * @note the transition state for these moves is defined by
+     * conditioning the ensemble energy of the new single site by the
+     * interaction base pairs at the old site ends
+     *
+     */
+    class MergeMove : public Move {
+    public:
+	MergeMove(const MoveIterator &mi);
+    
+	virtual
+	~MergeMove();
+	
+	Move *
+	nextMoveType() const;
+	
+	bool
+	first();
+
+	bool
+	next();
+
+	energy_t
+	transitionEnergy() const;
+
+	void
+	apply(StateDescription &sd) const;
+    };
+    
+    /**
+     * @brief Move that splits two interaction sites
+     *
+     * Splitting of a site separates the new sites by exactly model.minsitedist()
+     *
+     * @todo CHECK: do we have to relax size of merge/split sites. Fixing the distance is not justified.
+     *
+     * @note the transition state for these moves is defined by
+     * conditioning the ensemble energy of the single site by the
+     * interaction base pairs at the new site ends
+     *
+     */
+    class SplitMove : public Move {
+	size_t i1; //!< left end of split site in seq 1
+	size_t i2; //!< left end of split site in seq 2
+    public:
+	SplitMove(const MoveIterator &mi);
+    
+	virtual
+	~SplitMove();
+	
+	Move *
+	nextMoveType() const;
+	
+	bool
+	first();
+
+	bool
+	next();
+
+	energy_t
+	transitionEnergy() const;
+
+	void
+	apply(StateDescription &sd) const;
+    };
+        
     
     /**
      * @brief Defines iteration over moves (together with Move).
@@ -535,7 +726,7 @@ public:
 	//! origin state
 	const StateDescription &origin_;
 	
-	const HybridEnsembleModel &model_;
+	const HybEnsModel &model_;
 		
     public:
 	
@@ -544,14 +735,14 @@ public:
 	 * 
 	 * @param origin Description of origin state 
 	 */
-	MoveIterator(const StateDescription &origin, const HybridEnsembleModel &model);
+	MoveIterator(const StateDescription &origin, const HybEnsModel &model);
 	
 	const StateDescription &
 	origin() const {
 	    return origin_;
 	}
 
-	const HybridEnsembleModel &
+	const HybEnsModel &
 	model() const {
 	    return model_;
 	}
@@ -606,7 +797,7 @@ public:
     //! construct from sequences
     //! @param seqA sequence A
     //! @param seqB sequence B
-    HybridEnsembleModel(std::string seqA, std::string seqB);
+    HybEnsModel(std::string seqA, std::string seqB);
     
     /** 
      * @brief energy of a state
@@ -752,38 +943,6 @@ private:
     
     const UnpairedPF &uppfA_; //!< unpaired pf sequence A
     const UnpairedPF &uppfB_; //!< unpaired pf sequence A
-
-
-    // DO WE NEED THESE ACCESS FUNCTIONS?:
-    /** 
-     * @brief Read access to hybrid partition functions
-     * 
-     * @return hybrid pfs
-     */
-    const HybridPF &
-    hybridPF() const {
-	return hybridpf_;
-    }
-
-    /** 
-     * @brief Read access to unpaired partition functions of seqA
-     * 
-     * @return unpaired pfs
-     */
-    const UnpairedPF &
-    unpairedPFA() const {
-	return uppfA_;
-    }
-    
-    /** 
-     * @brief Read access to unpaired partition functions of seqA
-     * 
-     * @return unpaired pfs
-     */
-    const UnpairedPF &
-    unpairedPFB() const {
-	return uppfB_;
-    }
 
     const size_t maxunpinloop_;
     

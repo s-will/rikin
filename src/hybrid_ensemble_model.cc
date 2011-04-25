@@ -7,23 +7,23 @@
 #include "aux.hh"
 
 // ----------------------------------------
-// HybridEnsembleModel::StateDescription
+// HybEnsModel::StateDescription
 //
 
-HybridEnsembleModel::StateDescription::StateDescription() 
+HybEnsModel::StateDescription::StateDescription() 
     :isites(0)
 {
 }
 
 
-HybridEnsembleModel::StateDescription::StateDescription(size_t i1, size_t j1, size_t i2, size_t j2)
+HybEnsModel::StateDescription::StateDescription(size_t i1, size_t j1, size_t i2, size_t j2)
     : isites(1,ISite(i1,j1,i2,j2))
 {
 }
 
 
-HybridEnsembleModel::StateDescription::StateDescription(size_t i1, size_t j1, size_t i2, size_t j2,
-							size_t k1, size_t l1, size_t k2, size_t l2)
+HybEnsModel::StateDescription::StateDescription(size_t i1, size_t j1, size_t i2, size_t j2,
+						size_t k1, size_t l1, size_t k2, size_t l2)
     : isites()
 {
     isites.reserve(2);
@@ -33,7 +33,7 @@ HybridEnsembleModel::StateDescription::StateDescription(size_t i1, size_t j1, si
 
 
 size_t
-HybridEnsembleModel::StateDescription::num_sites() const {
+HybEnsModel::StateDescription::num_sites() const {
     return isites.size();
 }
 
@@ -51,7 +51,7 @@ HybridEnsembleModel::StateDescription::num_sites() const {
 unsigned char
 fail_on_toolarge(size_t x) {
     if (x>255) {
-	std::cerr << "HybridEnsembleModel::StateDescription::encode: "
+	std::cerr << "HybEnsModel::StateDescription::encode: "
 		  << "Encoding does not support positions >=256."<<std::endl
 		  << "  Use smaller sequence or implement more flexible coding." << std::endl;
 	exit(-1);
@@ -67,7 +67,7 @@ fail_on_toolarge(size_t x) {
 //
 //
 void
-HybridEnsembleModel::StateDescription::encode(code_t &code) const {
+HybEnsModel::StateDescription::encode(code_t &code) const {
 
     code.resize(num_sites()*2,0);
 
@@ -89,7 +89,7 @@ HybridEnsembleModel::StateDescription::encode(code_t &code) const {
 }
 
 void
-HybridEnsembleModel::StateDescription::decode(const code_t &code) {
+HybEnsModel::StateDescription::decode(const code_t &code) {
     assert(code.size()%4==0);
     
     isites.reserve(code.size()/4);
@@ -104,36 +104,36 @@ HybridEnsembleModel::StateDescription::decode(const code_t &code) {
 
 
 // ------------------------------------------------------------
-// Implementation of HybridEnsembleModel
+// Implementation of HybEnsModel
 
-HybridEnsembleModel::HybridEnsembleModel(std::string seqA, std::string seqB)
+HybEnsModel::HybEnsModel(std::string seqA, std::string seqB)
     : seqA_(seqA),
       seqB_(seqB),
       hybridpf_(HybridPF(seqA,seqB)),
       uppfA_(UnpairedPF(seqA)),
       uppfB_(UnpairedPF(seqB)),
       maxunpinloop_(5),
-      minsitesize_(5),
+      minsitesize_(3),
       minsitedist_(6)
 {
 }
 
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const {
+HybEnsModel::energy_t
+HybEnsModel::energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const {
     return - hybridpf_.RT() * log( hybridpf_.partition_function(i1,i2,j1,j2) );
 }
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::energy_unpair(const StateDescription::ISite &is) const {
+HybEnsModel::energy_t
+HybEnsModel::energy_unpair(const StateDescription::ISite &is) const {
     return
 	- uppfA_.RT() * log( uppfA_.unpaired_prob_single(is.i1,is.j1) )
 	- uppfB_.RT() * log( uppfB_.unpaired_prob_single(is.i2,is.j2) );
 }
 
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::energy_unpair(const StateDescription::ISite &is1,const StateDescription::ISite &is2) const {
+HybEnsModel::energy_t
+HybEnsModel::energy_unpair(const StateDescription::ISite &is1,const StateDescription::ISite &is2) const {
     return
 	- uppfA_.RT() * log( uppfA_.unpaired_prob_joint(is1.i1,is1.j1,is2.i1,is2.j1) ) //seq 1
 	- uppfB_.RT() * log( uppfB_.unpaired_prob_joint(is1.i2,is1.j2,is2.i2,is2.j2) ) //seq 2

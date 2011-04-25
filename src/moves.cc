@@ -3,22 +3,22 @@
 /**
  * @file moves.cc
  *
- * @brief Moves and Move Iteration for HybridEnsembleModel
+ * @brief Moves and Move Iteration for HybEnsModel
  */
 
 // ------------------------------------------------------------
 // Move
-HybridEnsembleModel::Move::~Move() {}
+HybEnsModel::Move::~Move() {}
 
 // ------------------------------------------------------------
 // Grow-Shrink Move
 
-HybridEnsembleModel::GrowShrinkMove::GrowShrinkMove(const MoveIterator &mi): Move(mi) {}
+HybEnsModel::GrowShrinkMove::GrowShrinkMove(const MoveIterator &mi): Move(mi) {}
 
-HybridEnsembleModel::GrowShrinkMove::~GrowShrinkMove() {}
+HybEnsModel::GrowShrinkMove::~GrowShrinkMove() {}
 
 bool
-HybridEnsembleModel::GrowShrinkMove::firstLeft() {        
+HybEnsModel::GrowShrinkMove::firstLeft() {        
     // try add/remove largest loop to the left
     k1 = min1;
     k2 = min2;
@@ -27,7 +27,7 @@ HybridEnsembleModel::GrowShrinkMove::firstLeft() {
 }
     
 bool
-HybridEnsembleModel::GrowShrinkMove::firstRight() {        
+HybEnsModel::GrowShrinkMove::firstRight() {        
     // try add/remove smallest loop to the right
     k1 = std::min(max1,i1+1);
     k2 = std::min(max2,i2+1);
@@ -37,12 +37,12 @@ HybridEnsembleModel::GrowShrinkMove::firstRight() {
 }
 
 bool
-HybridEnsembleModel::GrowShrinkMove::first(size_t i1_,
-					   size_t i2_,
-					   size_t min1_,
-					   size_t min2_,
-					   size_t max1_,
-					   size_t max2_) {
+HybEnsModel::GrowShrinkMove::first(size_t i1_,
+				   size_t i2_,
+				   size_t min1_,
+				   size_t min2_,
+				   size_t max1_,
+				   size_t max2_) {
     i1=i1_;
     i2=i2_;
     min1=min1_;
@@ -50,7 +50,7 @@ HybridEnsembleModel::GrowShrinkMove::first(size_t i1_,
     min1=min1_;
     max2=max2_;
 
-    const HybridEnsembleModel &m=mi.model();
+    const HybEnsModel &m=mi.model();
         
     // constrain max and min by max loop size
     min1 = std::max(min1+m.maxunpinloop()+1,i1)-m.maxunpinloop()-1;
@@ -62,7 +62,7 @@ HybridEnsembleModel::GrowShrinkMove::first(size_t i1_,
 }
 
 bool
-HybridEnsembleModel::GrowShrinkMove::nextLeft() {
+HybEnsModel::GrowShrinkMove::nextLeft() {
     assert(k1<i1);
        
     // mode "grow/shrink to left"
@@ -78,7 +78,7 @@ HybridEnsembleModel::GrowShrinkMove::nextLeft() {
 }
 
 bool
-HybridEnsembleModel::GrowShrinkMove::nextRight() {
+HybEnsModel::GrowShrinkMove::nextRight() {
     assert(k1>i1);
 
     // mode "grow/shrink to right"
@@ -98,7 +98,7 @@ HybridEnsembleModel::GrowShrinkMove::nextRight() {
 }
 
 bool
-HybridEnsembleModel::GrowShrinkMove::next() {        
+HybEnsModel::GrowShrinkMove::next() {        
     if (k1<i1) {
 	return nextLeft() || firstRight();
     } else {
@@ -106,8 +106,8 @@ HybridEnsembleModel::GrowShrinkMove::next() {
     }
 }
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::GrowShrinkMove::transitionEnergy(size_t site, size_t left) const {
+HybEnsModel::energy_t
+HybEnsModel::GrowShrinkMove::transitionEnergy(size_t site, size_t left) const {
     
     const StateDescription &sd=mi.origin();
     StateDescription sd2(sd);
@@ -126,33 +126,30 @@ HybridEnsembleModel::GrowShrinkMove::transitionEnergy(size_t site, size_t left) 
 	transitionEnergy(sd_small,sd_large,i1,i2,k1,k2);
 }
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
-						      const StateDescription &sd_large,
-						      size_t loop_i1, size_t loop_i2, size_t loop_j1, size_t loop_j2
-						      ) const {
+HybEnsModel::energy_t
+HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
+					      const StateDescription &sd_large,
+					      size_t loop_i1, size_t loop_i2, size_t loop_j1, size_t loop_j2
+					      ) const {
     // assert some of the preconditions
     assert(sd_small.num_sites()!=0);
     assert(sd_large.num_sites()==sd_small.num_sites());
         
-    const HybridEnsembleModel &model = mi.model();
+    const HybEnsModel &model = mi.model();
         
-    energy_t e_hyb;
-    energy_t e_loop;
-    energy_t e_unp;
-    
     	
     // pf of transition state all sites without added/removed loop
-    e_hyb=
+    energy_t e_hyb =
 	model.energy_hybrid(sd_small.isites[0])
 	+
 	((sd_small.num_sites()==2)?model.energy_hybrid(sd_small.isites[1]):0);
-	
+    
     // Energy of added hybridization loop
-    e_loop=model.energy_hybrid_loop(loop_i1,loop_i2,loop_j1,loop_j2);
+    energy_t e_loop = 
+	model.energy_hybrid_loop(loop_i1,loop_i2,loop_j1,loop_j2);
     
     // energy difference for unpairing
-    e_unp=
+    energy_t e_unp =
 	(sd_small.num_sites()==1)
 	?
 	model.energy_unpair(sd_large.isites[0])
@@ -172,22 +169,22 @@ HybridEnsembleModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd
 // ------------------------------------------------------------
 // Grow-Shrink Move First site Left end
 
-HybridEnsembleModel::GrowShrinkMoveFL::GrowShrinkMoveFL(const MoveIterator &mi):GrowShrinkMove(mi) {}
+HybEnsModel::GrowShrinkMoveFL::GrowShrinkMoveFL(const MoveIterator &mi):GrowShrinkMove(mi) {}
 
-HybridEnsembleModel::GrowShrinkMoveFL::~GrowShrinkMoveFL() {}
+HybEnsModel::GrowShrinkMoveFL::~GrowShrinkMoveFL() {}
 
-HybridEnsembleModel::Move *
-HybridEnsembleModel::GrowShrinkMoveFL::nextMoveType() const {
+HybEnsModel::Move *
+HybEnsModel::GrowShrinkMoveFL::nextMoveType() const {
     return new GrowShrinkMoveFR(mi);
 }
 
 bool
-HybridEnsembleModel::GrowShrinkMoveFL::first() {
+HybEnsModel::GrowShrinkMoveFL::first() {
     
     // set to first move of this type if there is one
     
     const StateDescription &o=mi.origin();
-    const HybridEnsembleModel &m=mi.model();
+    const HybEnsModel &m=mi.model();
 
     // fail if there is no site
     if (o.num_sites() == 0) {
@@ -195,24 +192,24 @@ HybridEnsembleModel::GrowShrinkMoveFL::first() {
     }
 
     return 
-	HybridEnsembleModel::GrowShrinkMove::first(o.isites[0].i1,
-						   o.isites[0].i2, 
-						   1, 
-						   1,
-						   o.isites[0].j1-m.minsitesize()+1,
-						   o.isites[0].j2-m.minsitesize()+1
-						   );
+	HybEnsModel::GrowShrinkMove::first(o.isites[0].i1,
+					   o.isites[0].i2, 
+					   1, 
+					   1,
+					   o.isites[0].j1-m.minsitesize()+1,
+					   o.isites[0].j2-m.minsitesize()+1
+					   );
 }
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::GrowShrinkMoveFL::transitionEnergy() const {
+HybEnsModel::energy_t
+HybEnsModel::GrowShrinkMoveFL::transitionEnergy() const {
     return
-	HybridEnsembleModel::GrowShrinkMove::transitionEnergy(0,true);
+	HybEnsModel::GrowShrinkMove::transitionEnergy(0,true);
 }
     
 
 void
-HybridEnsembleModel::GrowShrinkMoveFL::apply(StateDescription &sd) const {
+HybEnsModel::GrowShrinkMoveFL::apply(StateDescription &sd) const {
     sd.isites[0].i1=k1;
     sd.isites[0].i2=k2;
 }
@@ -221,21 +218,21 @@ HybridEnsembleModel::GrowShrinkMoveFL::apply(StateDescription &sd) const {
 // Grow-Shrink Move First site Right end
 
 
-HybridEnsembleModel::GrowShrinkMoveFR::GrowShrinkMoveFR(const MoveIterator &mi):GrowShrinkMove(mi) {}
+HybEnsModel::GrowShrinkMoveFR::GrowShrinkMoveFR(const MoveIterator &mi):GrowShrinkMove(mi) {}
 
-HybridEnsembleModel::GrowShrinkMoveFR::~GrowShrinkMoveFR() {}
+HybEnsModel::GrowShrinkMoveFR::~GrowShrinkMoveFR() {}
 
-HybridEnsembleModel::Move *
-HybridEnsembleModel::GrowShrinkMoveFR::nextMoveType() const {
+HybEnsModel::Move *
+HybEnsModel::GrowShrinkMoveFR::nextMoveType() const {
     return new GrowShrinkMoveSL(mi);
 }
 
 bool
-HybridEnsembleModel::GrowShrinkMoveFR::first() {
+HybEnsModel::GrowShrinkMoveFR::first() {
     
     // set to first move of this type if there is one
     const StateDescription &o=mi.origin();
-    const HybridEnsembleModel &m=mi.model();
+    const HybEnsModel &m=mi.model();
     
     // fail if there is no site
     if (o.num_sites() == 0) {
@@ -246,28 +243,28 @@ HybridEnsembleModel::GrowShrinkMoveFR::first() {
     size_t len2 = m.seqB().length();
 
     return 
-	HybridEnsembleModel::GrowShrinkMove::first(
-						   o.isites[0].j1,
-						   o.isites[0].j2, 
-						   o.isites[0].i1,
-						   o.isites[0].i2,
-						   (o.num_sites()==2)
-						   ? o.isites[1].i1-m.minsitesize()+1
-						   : len1,
-						   (o.num_sites()==2)
-						   ? o.isites[1].i2-m.minsitesize()+1
-						   : len2
-						   );
+	HybEnsModel::GrowShrinkMove::first(
+					   o.isites[0].j1,
+					   o.isites[0].j2, 
+					   o.isites[0].i1,
+					   o.isites[0].i2,
+					   (o.num_sites()==2)
+					   ? o.isites[1].i1-m.minsitesize()+1
+					   : len1,
+					   (o.num_sites()==2)
+					   ? o.isites[1].i2-m.minsitesize()+1
+					   : len2
+					   );
 }
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::GrowShrinkMoveFR::transitionEnergy() const {
+HybEnsModel::energy_t
+HybEnsModel::GrowShrinkMoveFR::transitionEnergy() const {
     return
-	HybridEnsembleModel::GrowShrinkMove::transitionEnergy(0,false);
+	HybEnsModel::GrowShrinkMove::transitionEnergy(0,false);
 }
 
 void
-HybridEnsembleModel::GrowShrinkMoveFR::apply(StateDescription &sd) const {
+HybEnsModel::GrowShrinkMoveFR::apply(StateDescription &sd) const {
     sd.isites[0].j1=k1;
     sd.isites[0].j2=k2;
 }
@@ -275,22 +272,22 @@ HybridEnsembleModel::GrowShrinkMoveFR::apply(StateDescription &sd) const {
 // ------------------------------------------------------------
 // Grow-Shrink Move Second site Left end
 
-HybridEnsembleModel::GrowShrinkMoveSL::GrowShrinkMoveSL(const MoveIterator &mi):GrowShrinkMove(mi) {}
+HybEnsModel::GrowShrinkMoveSL::GrowShrinkMoveSL(const MoveIterator &mi):GrowShrinkMove(mi) {}
 
-HybridEnsembleModel::GrowShrinkMoveSL::~GrowShrinkMoveSL() {}
+HybEnsModel::GrowShrinkMoveSL::~GrowShrinkMoveSL() {}
 
-HybridEnsembleModel::Move *
-HybridEnsembleModel::GrowShrinkMoveSL::nextMoveType() const {
+HybEnsModel::Move *
+HybEnsModel::GrowShrinkMoveSL::nextMoveType() const {
     return new GrowShrinkMoveSR(mi);
 }
 
 bool
-HybridEnsembleModel::GrowShrinkMoveSL::first() {
+HybEnsModel::GrowShrinkMoveSL::first() {
     
     // set to first move of this type if there is one
     
     const StateDescription &o=mi.origin();
-    const HybridEnsembleModel &m=mi.model();
+    const HybEnsModel &m=mi.model();
 
     // fail if there are less than two sites
     if (o.num_sites() < 2) {
@@ -298,24 +295,24 @@ HybridEnsembleModel::GrowShrinkMoveSL::first() {
     }
     
     return 
-	HybridEnsembleModel::GrowShrinkMove::first(
-						   o.isites[1].i1,
-						   o.isites[1].i2, 
-						   o.isites[0].j1+m.minsitedist(),
-						   o.isites[0].j2+m.minsitedist(),
-						   o.isites[1].j1-m.minsitesize()+1,
-						   o.isites[1].j2-m.minsitesize()+1
-						   );
+	HybEnsModel::GrowShrinkMove::first(
+					   o.isites[1].i1,
+					   o.isites[1].i2, 
+					   o.isites[0].j1+m.minsitedist(),
+					   o.isites[0].j2+m.minsitedist(),
+					   o.isites[1].j1-m.minsitesize()+1,
+					   o.isites[1].j2-m.minsitesize()+1
+					   );
 }
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::GrowShrinkMoveSL::transitionEnergy() const {
+HybEnsModel::energy_t
+HybEnsModel::GrowShrinkMoveSL::transitionEnergy() const {
     return
-	HybridEnsembleModel::GrowShrinkMove::transitionEnergy(1,true);
+	HybEnsModel::GrowShrinkMove::transitionEnergy(1,true);
 }
 
 void
-HybridEnsembleModel::GrowShrinkMoveSL::apply(StateDescription &sd) const {
+HybEnsModel::GrowShrinkMoveSL::apply(StateDescription &sd) const {
     sd.isites[1].i1 = k1;
     sd.isites[1].i2 = k2;
 }
@@ -323,22 +320,22 @@ HybridEnsembleModel::GrowShrinkMoveSL::apply(StateDescription &sd) const {
 // ------------------------------------------------------------
 // Grow-Shrink Move Second site Right end
 
-HybridEnsembleModel::GrowShrinkMoveSR::GrowShrinkMoveSR(const MoveIterator &mi):GrowShrinkMove(mi) {}
+HybEnsModel::GrowShrinkMoveSR::GrowShrinkMoveSR(const MoveIterator &mi):GrowShrinkMove(mi) {}
 
-HybridEnsembleModel::GrowShrinkMoveSR::~GrowShrinkMoveSR() {}
+HybEnsModel::GrowShrinkMoveSR::~GrowShrinkMoveSR() {}
 
-HybridEnsembleModel::Move *
-HybridEnsembleModel::GrowShrinkMoveSR::nextMoveType() const {
-    return new StopMove(mi);
+HybEnsModel::Move *
+HybEnsModel::GrowShrinkMoveSR::nextMoveType() const {
+    return new RemoveSiteMove(mi);
 }
 
 bool
-HybridEnsembleModel::GrowShrinkMoveSR::first() {
+HybEnsModel::GrowShrinkMoveSR::first() {
     
     // set to first move of this type if there is one
 
     const StateDescription &o=mi.origin();
-    const HybridEnsembleModel &m=mi.model();
+    const HybEnsModel &m=mi.model();
 
     size_t len1 = m.seqA().length();
     size_t len2 = m.seqB().length();
@@ -349,78 +346,531 @@ HybridEnsembleModel::GrowShrinkMoveSR::first() {
     }
     
     return 
-	HybridEnsembleModel::GrowShrinkMove::first(
-						   o.isites[1].j1,
-						   o.isites[1].j2, 
-						   o.isites[1].i1+m.minsitesize()+1,
-						   o.isites[1].i2+m.minsitesize()+1,
-						   len1,
-						   len2
-						   );
+	HybEnsModel::GrowShrinkMove::first(
+					   o.isites[1].j1,
+					   o.isites[1].j2, 
+					   o.isites[1].i1+m.minsitesize()+1,
+					   o.isites[1].i2+m.minsitesize()+1,
+					   len1,
+					   len2
+					   );
 }
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::GrowShrinkMoveSR::transitionEnergy() const {    
+HybEnsModel::energy_t
+HybEnsModel::GrowShrinkMoveSR::transitionEnergy() const {    
     return
-	HybridEnsembleModel::GrowShrinkMove::transitionEnergy(1,false);
+	HybEnsModel::GrowShrinkMove::transitionEnergy(1,false);
 }
 
 void
-HybridEnsembleModel::GrowShrinkMoveSR::apply(StateDescription &sd) const {
+HybEnsModel::GrowShrinkMoveSR::apply(StateDescription &sd) const {
     sd.isites[1].j1=k1;
     sd.isites[1].j2=k2;
 }
 
-
 // ------------------------------------------------------------
-// Stop Move
+// Move that removes a site
+//
 
-HybridEnsembleModel::StopMove::~StopMove() {}
+HybEnsModel::RemoveSiteMove::RemoveSiteMove(const MoveIterator &mi) : Move(mi) {}
 
-HybridEnsembleModel::Move *
-HybridEnsembleModel::StopMove::nextMoveType() const {
-    return NULL;
+HybEnsModel::RemoveSiteMove::~RemoveSiteMove() {}
+
+HybEnsModel::Move *
+HybEnsModel::RemoveSiteMove::nextMoveType() const {
+    return new NewSiteMoveL(mi);
 }
 
 bool
-HybridEnsembleModel::StopMove::first() {
+HybEnsModel::RemoveSiteMove::thisornext() {
+    const HybEnsModel &m=mi.model();
+	
+    for(;site<mi.origin().num_sites();site++) {
+	// test whether it is allowed to remove the site,
+	// and return true on success
+	
+	const StateDescription::ISite &is=mi.origin().isites[site];
+	
+	if ((is.j1-is.i1-1 <= m.maxunpinloop())
+	    &&
+	    (is.j2-is.i2-1 <= m.maxunpinloop()))
+	    {
+		return true;
+	    }
+    }
     return false;
 }
 
 bool
-HybridEnsembleModel::StopMove::next() {
-    // this should never be called
-    assert(false);
+HybEnsModel::RemoveSiteMove::first() {
+    site=0;
+    return thisornext();
 }
 
-HybridEnsembleModel::energy_t
-HybridEnsembleModel::StopMove::transitionEnergy() const {
-    // this should never be called
-    assert(false);
+bool
+HybEnsModel::RemoveSiteMove::next() {
+    site++;
+    return thisornext();
+}
+
+HybEnsModel::energy_t
+HybEnsModel::RemoveSiteMove::transitionEnergy() const {
+    // make removed site interaction loop and score
+    const HybEnsModel &model = mi.model();
+
+    assert(site<2);
+
+    const StateDescription::ISite &is=mi.origin().isites[site];
+    const StateDescription::ISite &is2=mi.origin().isites[1-site];
+    
+    energy_t E_unp =
+	    (mi.origin().num_sites()==1)
+	    ?
+	    model.energy_unpair(is)
+	    :
+	    model.energy_unpair(is, is2);
+        	
+    energy_t E_loop =
+	model.energy_hybrid_loop(is.i1,is.i2,is.j1,is.j2);
+    
+    energy_t E_hyb = 0;
+    if (mi.origin().num_sites()==2) {
+	E_hyb = model.energy_hybrid(is2);	    
+    }
+    
+    return E_unp + E_loop + E_hyb;
 }
 
 void
-HybridEnsembleModel::StopMove::apply(StateDescription &sd) const {
-    // this should never be called
-    assert(false);
+HybEnsModel::RemoveSiteMove::apply(StateDescription &sd) const {
+    assert(site<2);
+    
+    if (site==0) {
+	sd.isites[0]=sd.isites[1];
+	sd.isites.resize(1);
+    } else {
+	sd.isites.resize(1);
+    }
 }
+
+// ------------------------------------------------------------
+// Move that creates a new site as the first interaction site
+//
+
+HybEnsModel::NewSiteMoveF::NewSiteMoveF(const MoveIterator &mi) : Move(mi) {}
+
+HybEnsModel::NewSiteMoveF::~NewSiteMoveF() {}
+
+HybEnsModel::Move *
+HybEnsModel::NewSiteMoveF::nextMoveType() const {
+    return new NewSiteMoveL(mi);
+}
+
+bool
+HybEnsModel::NewSiteMoveF::first() {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+
+    size_t len1 = model.seqA().length();
+    
+    if (o.num_sites()!=0) {
+	return false;
+    }
+    
+    i1=1;
+    i2=0;
+    
+    return (i1 + model.minsitesize() < len1) 
+	&& 
+	next();
+}
+
+bool
+HybEnsModel::NewSiteMoveF::next() {
+    const HybEnsModel &model=mi.model();
+    
+    size_t len1 = model.seqA().length();
+    size_t len2 = model.seqB().length();
+    
+    i2++;
+    if (i2 + model.minsitesize() < len2) {
+	return true;
+    } else {
+	i1++;
+	i2=1;
+	return (i1 + model.minsitesize()  < len1);
+    }
+}
+
+HybEnsModel::energy_t
+HybEnsModel::NewSiteMoveF::transitionEnergy() const {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+    
+    const StateDescription::ISite is_new=
+	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
+    
+    energy_t E_loop =
+	model.energy_hybrid_loop(is_new.i1,is_new.i2,is_new.j1,is_new.j2);
+    
+    assert (o.num_sites()==0);
+    
+    energy_t E_unp =
+	model.energy_unpair(is_new);
+    
+    return E_unp + E_loop;
+    
+}
+
+void
+HybEnsModel::NewSiteMoveF::apply(StateDescription &sd) const {
+    const HybEnsModel &model=mi.model();
+    
+    const StateDescription::ISite is_new=
+	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
+    
+    assert (sd.num_sites()==0);
+    
+    sd.isites.push_back(is_new);
+    
+}
+
+
+// ------------------------------------------------------------
+// Move that creates a new site on the left
+//
+
+HybEnsModel::NewSiteMoveL::NewSiteMoveL(const MoveIterator &mi) : Move(mi) {}
+
+HybEnsModel::NewSiteMoveL::~NewSiteMoveL() {}
+
+HybEnsModel::Move *
+HybEnsModel::NewSiteMoveL::nextMoveType() const {
+    return new NewSiteMoveR(mi);
+}
+
+bool
+HybEnsModel::NewSiteMoveL::first() {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+    
+    if (o.num_sites()!=1) {
+	return false;
+    }
+    
+    i1=1; 
+    i2=0;
+    
+    return (i1 + model.minsitesize() + model.minsitedist() < o.isites[0].i1) 
+	&& 
+	next();
+}
+
+bool
+HybEnsModel::NewSiteMoveL::next() {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+        
+    i2++;
+    if (i2 + model.minsitesize() + model.minsitedist() < o.isites[0].i2) {
+	return true;
+    } else {
+	i1++;
+	i2=1;
+	return (i1 + model.minsitesize() + model.minsitedist() < o.isites[0].i1);
+    }
+}
+
+HybEnsModel::energy_t
+HybEnsModel::NewSiteMoveL::transitionEnergy() const {
+    const StateDescription &o=mi.origin();
+    assert(o.num_sites()==1);
+    
+    const HybEnsModel &model=mi.model();
+    
+    const StateDescription::ISite is_new=
+	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
+    
+    const StateDescription::ISite &is=mi.origin().isites[0];
+    
+    energy_t E_loop =
+	model.energy_hybrid_loop(is_new.i1,is_new.i2,is_new.j1,is_new.j2);
+    
+    energy_t E_unp =
+	model.energy_unpair(is_new,is);
+    
+    energy_t E_hyb = model.energy_hybrid(is);	    
+    
+    return E_unp + E_loop + E_hyb;
+}
+
+void
+HybEnsModel::NewSiteMoveL::apply(StateDescription &sd) const {
+    const HybEnsModel &model=mi.model();
+    
+    const StateDescription::ISite is_new=
+	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
+    
+    const StateDescription::ISite is=sd.isites[0];
+    sd.isites[0] = is_new;
+    sd.isites.push_back(is);       
+}
+
+// ------------------------------------------------------------
+// Move that creates a new site on the right
+//
+
+HybEnsModel::NewSiteMoveR::NewSiteMoveR(const MoveIterator &mi) : Move(mi) {}
+
+HybEnsModel::NewSiteMoveR::~NewSiteMoveR() {}
+
+HybEnsModel::Move *
+HybEnsModel::NewSiteMoveR::nextMoveType() const {
+    return new MergeMove(mi);
+}
+
+bool
+HybEnsModel::NewSiteMoveR::first() {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+
+    size_t len1 = model.seqA().length();
+    
+    const StateDescription::ISite &is=o.isites[0];
+    
+    if (o.num_sites()!=1) {
+	return false;
+    }
+    
+    i1=is.j1+model.minsitedist()+2; 
+    i2=is.j2+model.minsitedist()+1;
+    
+    return (i1 + model.minsitesize() < len1) 
+	&& 
+	next();
+}
+
+bool
+HybEnsModel::NewSiteMoveR::next() {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+    
+    size_t len1 = model.seqA().length();
+    size_t len2 = model.seqB().length();
+
+    const StateDescription::ISite &is=o.isites[0];
+    
+    i2++;
+    if (i2 + model.minsitesize() < len2) {
+	return true;
+    } else {
+	i1++;
+	i2=is.j2+model.minsitedist()+2;
+	
+	return (i1 + model.minsitesize() < len1 );
+    }
+}
+
+HybEnsModel::energy_t
+HybEnsModel::NewSiteMoveR::transitionEnergy() const {
+    const StateDescription &o=mi.origin();
+    assert(o.num_sites()==1);
+    
+    const HybEnsModel &model=mi.model();
+    
+    const StateDescription::ISite is_new=
+	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
+    
+    const StateDescription::ISite &is=mi.origin().isites[0];
+    
+    energy_t E_loop =
+	model.energy_hybrid_loop(is_new.i1,is_new.i2,is_new.j1,is_new.j2);
+    
+    energy_t E_unp =
+	model.energy_unpair(is,is_new);
+    
+    energy_t E_hyb = model.energy_hybrid(is);	    
+    
+    return E_unp + E_loop + E_hyb;
+}
+
+void
+HybEnsModel::NewSiteMoveR::apply(StateDescription &sd) const {
+    const HybEnsModel &model=mi.model();
+    
+    const StateDescription::ISite is_new=
+	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
+        
+    sd.isites.push_back(is_new);
+}
+
+
+
+// ------------------------------------------------------------
+// Move that merges two sites
+//
+
+HybEnsModel::MergeMove::MergeMove(const MoveIterator &mi) : Move(mi) {}
+
+HybEnsModel::MergeMove::~MergeMove() {}
+
+HybEnsModel::Move *
+HybEnsModel::MergeMove::nextMoveType() const {
+    return new SplitMove(mi);
+}
+
+bool
+HybEnsModel::MergeMove::first() {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+    
+    if (o.num_sites()!=2) {
+	return false;
+    }
+    
+    return 
+	( o.isites[0].j1 + model.minsitedist() + 1 == o.isites[1].i1 )
+	&&
+	( o.isites[0].j2 + model.minsitedist() + 1 == o.isites[1].i2 );
+}
+
+bool
+HybEnsModel::MergeMove::next() {
+    return false;
+}
+
+HybEnsModel::energy_t
+HybEnsModel::MergeMove::transitionEnergy() const {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+    
+    
+    const StateDescription::ISite is_between=
+	StateDescription::ISite(o.isites[0].j1,o.isites[0].j2,o.isites[1].i1,o.isites[1].i2);
+
+    const StateDescription::ISite is_merged=
+	StateDescription::ISite(o.isites[0].i1,o.isites[0].i2,o.isites[1].j1,o.isites[1].j2);
+    
+    energy_t E_unp =
+	model.energy_unpair(is_merged);
+    
+    energy_t E_hyb =
+	model.energy_hybrid(is_between) 
+	+ model.energy_hybrid(mi.origin().isites[0]) 
+	+ model.energy_hybrid(mi.origin().isites[1]);
+    
+    return E_unp + E_hyb;
+}
+
+void
+HybEnsModel::MergeMove::apply(StateDescription &sd) const {   
+    const StateDescription::ISite is_merged=
+	StateDescription::ISite(sd.isites[0].i1,sd.isites[0].i2,sd.isites[1].j1,sd.isites[1].j2);
+    
+    sd.isites[0] = is_merged;
+    sd.isites.resize(1);
+}
+
+// ------------------------------------------------------------
+// Move that splits one site into two
+//
+
+HybEnsModel::SplitMove::SplitMove(const MoveIterator &mi) : Move(mi) {}
+
+HybEnsModel::SplitMove::~SplitMove() {}
+
+HybEnsModel::Move *
+HybEnsModel::SplitMove::nextMoveType() const {
+    return NULL;
+}
+
+bool
+HybEnsModel::SplitMove::first() {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+    
+    if (o.num_sites()!=1) {
+	return false;
+    }
+    
+    i1 = o.isites[0].i1 + model.minsitesize() - 1;
+    i2 = o.isites[0].i1 + model.minsitesize() - 1;
+    
+    return 
+	( i1 + model.minsitedist() + model.minsitesize() <= o.isites[0].j1 )
+	&&
+	( i2 + model.minsitedist() + model.minsitesize() <= o.isites[0].j2 );
+}
+
+bool
+HybEnsModel::SplitMove::next() {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+        
+    i2++;
+    if (i2 + model.minsitedist() + model.minsitesize() < o.isites[0].j2) {
+	return true;
+    } else {
+	i1++;
+	i2=o.isites[0].i1 + model.minsitesize() - 1;
+	return (i1 + model.minsitedist() + model.minsitesize() < o.isites[0].j1);
+    }
+}
+
+HybEnsModel::energy_t
+HybEnsModel::SplitMove::transitionEnergy() const {
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+    
+    
+    const StateDescription::ISite &is_orig = o.isites[0];
+
+    const StateDescription::ISite is_between=
+	StateDescription::ISite(i1,i2,i1+model.minsitedist()+1,i2+model.minsitedist()+1);
+
+    const StateDescription::ISite is1=
+	StateDescription::ISite(o.isites[0].i1,o.isites[0].i2,o.isites[1].j1,o.isites[1].j2);
+
+    const StateDescription::ISite is2=
+	StateDescription::ISite(o.isites[0].i1,o.isites[0].i2,o.isites[1].j1,o.isites[1].j2);
+    
+    energy_t E_unp =
+	model.energy_unpair(is_orig);
+    
+    energy_t E_hyb =
+	model.energy_hybrid(is_between) 
+	+ model.energy_hybrid(mi.origin().isites[0]) 
+	+ model.energy_hybrid(mi.origin().isites[1]);
+    
+    return E_unp + E_hyb;
+}
+
+void
+HybEnsModel::SplitMove::apply(StateDescription &sd) const {
+    const StateDescription::ISite is_merged=
+	StateDescription::ISite(sd.isites[0].i1,sd.isites[0].i2,sd.isites[1].j1,sd.isites[1].j2);
+    
+    sd.isites[0] = is_merged;
+    sd.isites.resize(1);
+}
+
 
 
 // ------------------------------------------------------------
 // Move Iterator
 
 
-HybridEnsembleModel::MoveIterator::
+HybEnsModel::MoveIterator::
 MoveIterator(const StateDescription &origin,
-	     const HybridEnsembleModel &model)
+	     const HybEnsModel &model)
     :origin_(origin),
      model_(model)
 {
 }
 
 
-HybridEnsembleModel::Move *
-HybridEnsembleModel::MoveIterator::firstMove() const {
+HybEnsModel::Move *
+HybEnsModel::MoveIterator::firstMove() const {
     Move *m = new GrowShrinkMoveFL(*this);
     
     while( ! m->first() ) {
@@ -432,8 +882,8 @@ HybridEnsembleModel::MoveIterator::firstMove() const {
 }
 
 
-HybridEnsembleModel::Move *
-HybridEnsembleModel::MoveIterator::nextMove(Move *m) const {
+HybEnsModel::Move *
+HybEnsModel::MoveIterator::nextMove(Move *m) const {
     assert( m != NULL );
 
     if ( m->next() ) {
@@ -451,6 +901,6 @@ HybridEnsembleModel::MoveIterator::nextMove(Move *m) const {
 }
 
 void
-HybridEnsembleModel::MoveIterator::disposeMove(Move *move) const {
+HybEnsModel::MoveIterator::disposeMove(Move *move) const {
     if (move!=NULL) delete move;
 }
