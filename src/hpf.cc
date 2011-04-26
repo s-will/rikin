@@ -48,15 +48,48 @@ main()
     //                      0        1         2         3         4         5         6         7         8         9         0         1         2
     //                      12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345
     // const std::string seqA="GUUGGGAACUAGACCGAUCGCCAAUCCGUUUAUCUUUCAUAGAAGCCGGGAUUUAUCAGCUAUGUCGAAGAAUUUUAACUUGCUAUUGGGCACCCUGGUGGGGGUUAGUUUAGUUUUUCCCCAGG";
-    const std::string seqA="CCAAUCCGUUUAUCUUUCAUAGAAGCCGGGAUUUAUCAGCUAUGUCGAAGAAUUUUAACUUGCUA";
+    //const std::string seqA="CCAAUCCGUUUAUCUUUCAUAGAAGCCGGGAUUUAUCAGCUAUGUCGAAGAAUUUUAACUUGCUA";
+    
+    
     //                                        UAUCUU...           ...UACA
     //const std::string seqA="CCCCGGGG";
+    
+    const std::string seqA="AAGCGGGAUUUAUCAGCUAUGUGAA";
     
     //                      123456789012345678901234567
     const std::string seqB="ACAUAGCUGAUAAAUCCCGGCUUCUAU";
     
     //const std::string seqB="GGGGGCCCCC";
     
+        
+    // ------------------------------------------------------------
+    // enumerate moves
+
+    std::cout << "Generate model ..." << std::endl;
+    HybEnsModel model(seqA,seqB);
+    std::cout << "    DONE." << std::endl;
+    
+    HybEnsModel::StateDescription state;
+    
+    HybEnsModel::MoveIterator mi(state,model);
+    
+    HybEnsModel::Move *move = mi.firstMove();
+    if (move==NULL) {
+	std::cout << "No moves!" << std::endl;
+    } else {
+	std::cout << " " << move->transitionEnergy() << std::endl;
+	while ( (move = mi.nextMove(move))!=NULL ) {
+	    std::cout << " " << move->transitionEnergy() << std::endl;
+	    HybEnsModel::StateDescription state2=state;
+	    move->apply(state2);
+	}
+	std::cout << std::endl;
+    }
+    
+    exit(0);
+    
+    // ------------------------------------------------------------
+    // enumerate states
     
 
     UnpairedPF unpaired_pf_A(seqA);

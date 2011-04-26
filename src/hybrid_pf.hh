@@ -24,6 +24,10 @@ public:
     //! @param seqA sequence A (3' - 5')
     //! @param seqB sequence B (3' - 5')
     HybridPF(const std::string &seqA,const std::string &seqB);
+
+    //! Destructor frees librna arrays
+    //!
+    ~HybridPF();
     
     //! @brief get partition funtion of hybridization of subsequences
     //! @param i1 start position in sequence A

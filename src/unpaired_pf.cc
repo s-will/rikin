@@ -10,10 +10,11 @@ extern "C" {
 }
 
 
-UnpairedPF::UnpairedPF(const std::string seq_) 
+UnpairedPF::UnpairedPF(const std::string &seq_) 
     : seq(seq_),
       RT_( (temperature+K0)*GASCONST/1000.0 )
 {
+    std::cout << "Create UnpairedPF from sequence "<<seq<<" ("<<seq.size()<<")"<<std::endl;
     computeSingleProbs();
     computeCondProbs();
 }
@@ -48,12 +49,12 @@ UnpairedPF::total_pf() const {
 
     pf_scale = -1;
     
-    //update_pf_params(seq.size()());
+    //update_pf_params(seq.size());
     
     // calculate Gibb's free energy in kcal/mol
     double G = pf_fold(sequence,NULL);
 
-    free_pf_arrays();
+    // free_pf_arrays();
     
     return exp( - G / (GASCONST/1000.0*(temperature+K0)) );
 }

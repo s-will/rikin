@@ -17,7 +17,7 @@ HybEnsModel::StateDescription::StateDescription()
 
 
 HybEnsModel::StateDescription::StateDescription(size_t i1, size_t j1, size_t i2, size_t j2)
-    : isites(1,ISite(i1,j1,i2,j2))
+    : isites(1,ISite(i1,i2,j1,j2))
 {
 }
 
@@ -27,8 +27,8 @@ HybEnsModel::StateDescription::StateDescription(size_t i1, size_t j1, size_t i2,
     : isites()
 {
     isites.reserve(2);
-    isites.push_back(ISite(i1,j1,i2,j2));
-    isites.push_back(ISite(k1,l1,k2,l2));
+    isites.push_back(ISite(i1,i2,j1,j2));
+    isites.push_back(ISite(k1,k2,l1,l2));
 }
 
 
@@ -109,9 +109,9 @@ HybEnsModel::StateDescription::decode(const code_t &code) {
 HybEnsModel::HybEnsModel(std::string seqA, std::string seqB)
     : seqA_(seqA),
       seqB_(seqB),
-      hybridpf_(HybridPF(seqA,seqB)),
-      uppfA_(UnpairedPF(seqA)),
-      uppfB_(UnpairedPF(seqB)),
+      uppfA_(seqA),
+      uppfB_(seqB),
+      hybridpf_(seqA,seqB),
       maxunpinloop_(5),
       minsitesize_(3),
       minsitedist_(6)
@@ -139,4 +139,4 @@ HybEnsModel::energy_unpair(const StateDescription::ISite &is1,const StateDescrip
 	- uppfB_.RT() * log( uppfB_.unpaired_prob_joint(is1.i2,is1.j2,is2.i2,is2.j2) ) //seq 2
 	;
 }
-    
+

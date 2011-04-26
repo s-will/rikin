@@ -13,22 +13,24 @@ extern "C" {
 HybridPF::HybridPF(const std::string &seqA_,const std::string &seqB_):
     seqA(seqA_),
     seqB(seqB_),
-    lenA(seqA.length()),
-    lenB(seqB.length()),
+    lenA(seqA_.length()),
+    lenB(seqB_.length()),
     RT_( (temperature+K0)*GASCONST/1000.0 )
 {
+    std::cout << "Create HybridPF from sequences "<<seqA<<" and "<<seqB<<std::endl; 
     
     create_temporary();
     
     compute_hybrid_pf();
     
+}
+
+HybridPF::~HybridPF() {
     free_temporary();
 }
 
-
 void
-HybridPF::create_temporary() {   
-
+HybridPF::create_temporary() {
     SA = encode_sequence(seqA.c_str(),0);
     SA1 = encode_sequence(seqA.c_str(),1);
     
@@ -42,7 +44,6 @@ HybridPF::create_temporary() {
     pf_params = get_scaled_pf_parameters();
 
     make_pair_matrix();
-
 }
 
 void
@@ -56,8 +57,10 @@ HybridPF::free_temporary() {
 
 int
 HybridPF::pair_type(size_t i1, size_t i2) const {
-    assert(1 <= i1 && i1 <= lenA);
-    assert(1 <= i2 && i2 <= lenB);
+    assert(1 <= i1);
+    assert(i1 <= lenA);
+    assert(1 <= i2);
+    assert(i2 <= lenB);
     
     return pair[SA[i1]][SB[i2]];
 }
@@ -83,11 +86,11 @@ HybridPF::exp_ILoopE(size_t i1, size_t i2, size_t k1,  size_t k2) const {
 
 HybridPF::energy_t
 HybridPF::ILoopE(size_t i1, size_t i2, size_t k1,  size_t k2) const {
-        
+    
     int ptype_closing = pair_type(i1,i2);
-    int ptype_enclosed = rtype[pair_type(k1,k2)]; // note: enclosed bp type
-					   // 'turned around' for lib
-					   // call
+    
+    // note: enclosed bp type 'turned around' for lib call
+    int ptype_enclosed = rtype[pair_type(k1,k2)]; 
     
     return
 	E_IntLoop(k1-i1-1,k2-i2-1, 
@@ -199,5 +202,3 @@ HybridPF::partition_function(size_t i1, size_t j1,size_t i2, size_t j2) const {
     assert(i2<=j2);
     return Q(i1,lenB-j2+1)(j1,lenB-i2+1);
 }
-
-

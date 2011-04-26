@@ -95,8 +95,8 @@ public:
 	//! </pre>
 	struct ISite {
 	    size_t i1; //!< start position in first sequence 
-	    size_t j1; //!< end position in first sequence   
 	    size_t i2; //!< start position in second sequence
+	    size_t j1; //!< end position in first sequence   
 	    size_t j2; //!< end position in second sequence  
 	    
 	    /**
@@ -105,20 +105,23 @@ public:
 	     * Initialize with 0
 	     */
 	    ISite()
-	     	: i1(0),j1(0),i2(0),j2(0)
+	     	: i1(0),i2(0),j1(0),j2(0)
 	    {}
 	    
 	    
 	    /** 
 	     * \brief construct with four sequence positions
 	     * @param i1_ start position in first sequence 
-	     * @param j1_ end position in first sequence   
 	     * @param i2_ start position in second sequence
+	     * @param j1_ end position in first sequence   
 	     * @param j2_ end position in second sequence  
 	     */
-	    ISite(size_t i1_,size_t j1_,size_t i2_,size_t j2_)
-		: i1(i1_),j1(j1_),i2(i2_),j2(j2_)
-	    {}
+	    ISite(size_t i1_,size_t i2_,size_t j1_,size_t j2_)
+		: i1(i1_),i2(i2_),j1(j1_),j2(j2_)
+	    {
+		assert(i1<=j1);
+		assert(i2<=j2);
+	    }
 	};
 	
 	//! type of encoded class representation
@@ -176,6 +179,34 @@ public:
 	void
 	decode(const code_t &code);
 	
+	
+	/** 
+	 * @brief Read access to interaction sites
+	 * 
+	 * @param i index of site
+	 * 
+	 * @return interation site number i
+	 */
+	const ISite & operator [](size_t i) const {return isites[i];}
+	
+	/** 
+	 * @brief Write access to interaction sites
+	 * 
+	 * @param i index of site
+	 * 
+	 * @return non-const reference to interaction site number i
+	 */
+	ISite & operator [](size_t i) {return isites[i];}
+	
+	/** 
+	 * @brief Set number of interaction sites
+	 * 
+	 * @param s new number of interaction sites
+	 */
+	void
+	resize(size_t s) {isites.resize(s);}
+	
+    private:
 	//! positions of hybridization sites
 	//! @note making this public is somewhat ugly design. We actually need
 	//! write access for the moves only (method apply()).
@@ -204,7 +235,8 @@ public:
 	const MoveIterator & mi; 
 	
     public:
-	Move(const MoveIterator &mi_): mi(mi_) {}
+	Move(const MoveIterator &mi_): mi(mi_) {
+	}
 	
 	virtual ~Move();
 	
@@ -939,11 +971,11 @@ public:
 private:
     const std::string &seqA_; //!< sequence A
     const std::string &seqB_; //!< sequence B
-    const HybridPF &hybridpf_; //!< hybrid pf
-    
-    const UnpairedPF &uppfA_; //!< unpaired pf sequence A
-    const UnpairedPF &uppfB_; //!< unpaired pf sequence A
 
+    const UnpairedPF uppfA_; //!< unpaired pf sequence A
+    const UnpairedPF uppfB_; //!< unpaired pf sequence A
+    const HybridPF hybridpf_; //!< hybrid pf
+    
     const size_t maxunpinloop_;
     
     const size_t minsitesize_;
