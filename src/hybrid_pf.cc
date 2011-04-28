@@ -17,10 +17,10 @@ HybridPF::HybridPF(const std::string &seqA_,const std::string &seqB_):
     lenB(seqB_.length()),
     RT_( (temperature+K0)*GASCONST/1000.0 )
 {
-    std::cout << "Create HybridPF from sequences "<<seqA<<" and "<<seqB<<std::endl; 
+    // std::cout << "Create HybridPF from sequences "<<seqA<<" and "<<seqB<<std::endl; 
     
     create_temporary();
-    
+
     compute_hybrid_pf();
     
 }
@@ -34,12 +34,9 @@ HybridPF::create_temporary() {
     SA = encode_sequence(seqA.c_str(),0);
     SA1 = encode_sequence(seqA.c_str(),1);
     
-    std::string revseqB = seqB;
-    reverse(revseqB.begin(),revseqB.end());
+    SB = encode_sequence(seqB.c_str(),0);
+    SB1 = encode_sequence(seqB.c_str(),1);
     
-    SB = encode_sequence(revseqB.c_str(),0);
-    SB1 = encode_sequence(revseqB.c_str(),1);
-
     params =  scale_parameters();
     pf_params = get_scaled_pf_parameters();
 
@@ -49,6 +46,7 @@ HybridPF::create_temporary() {
 void
 HybridPF::free_temporary() {
     free(pf_params);
+    free(params);
     free(SA);
     free(SA1);
     free(SB);
@@ -69,10 +67,11 @@ HybridPF::pf_t
 HybridPF::exp_ILoopE(size_t i1, size_t i2, size_t k1,  size_t k2) const {
         
     int ptype_closing = pair_type(i1,i2);
-    int ptype_enclosed = rtype[pair_type(k1,k2)]; // note: enclosed bp type
-					   // 'turned around' for lib
-					   // call
-    
+    // note: the enclosed bp type is 'turned around' for lib call
+    int ptype_enclosed = rtype[pair_type(k1,k2)];
+
+    if (ptype_closing==0 || ptype_enclosed==0) return 0;
+
     return
 	exp_E_IntLoop(k1-i1-1,k2-i2-1, 
 		      ptype_closing,
@@ -84,6 +83,7 @@ HybridPF::exp_ILoopE(size_t i1, size_t i2, size_t k1,  size_t k2) const {
 		      pf_params);
 }
 
+
 HybridPF::energy_t
 HybridPF::ILoopE(size_t i1, size_t i2, size_t k1,  size_t k2) const {
     
@@ -92,6 +92,8 @@ HybridPF::ILoopE(size_t i1, size_t i2, size_t k1,  size_t k2) const {
     // note: enclosed bp type 'turned around' for lib call
     int ptype_enclosed = rtype[pair_type(k1,k2)]; 
     
+    if (ptype_closing==0 || ptype_enclosed==0) return INF;
+
     return
 	E_IntLoop(k1-i1-1,k2-i2-1, 
 		  ptype_closing,
@@ -198,7 +200,11 @@ HybridPF::compute_hybrid_pf() {
 
 HybridPF::pf_t
 HybridPF::partition_function(size_t i1, size_t j1,size_t i2, size_t j2) const {
+    
+    // std::cout << "HybridPF::partition_function"
+    // 	      << i1 << "-" << j1 << "," << i2 << "-" << j2 << std::endl;
+    
     assert(i1<=j1);
     assert(i2<=j2);
-    return Q(i1,lenB-j2+1)(j1,lenB-i2+1);
+    return Q(i1,i2)(j1,j2);
 }

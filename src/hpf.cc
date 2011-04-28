@@ -54,14 +54,15 @@ main()
     //                                        UAUCUU...           ...UACA
     //const std::string seqA="CCCCGGGG";
     
-    const std::string seqA="AAGCGGGAUUUAUCAGCUAUGUGAA";
+    //                      12345678901234567890123456
+    const std::string seqA="AAGCGGGCAUUUAUCAGCUAUGUGAA";
     
     //                      123456789012345678901234567
     const std::string seqB="ACAUAGCUGAUAAAUCCCGGCUUCUAU";
     
     //const std::string seqB="GGGGGCCCCC";
     
-        
+    
     // ------------------------------------------------------------
     // enumerate moves
 
@@ -69,31 +70,50 @@ main()
     HybEnsModel model(seqA,seqB);
     std::cout << "    DONE." << std::endl;
     
-    HybEnsModel::StateDescription state;
+    HybEnsModel::StateDescription state(8,9,15,19);
+    //HybEnsModel::StateDescription state(4,8,15,19);
+    
+    
+    //check state energy
+    std::cout << "Energy of state "<<state<<" = "<< model.energy(state) << std::endl;
     
     HybEnsModel::MoveIterator mi(state,model);
     
+    size_t count_moves=0;
+    size_t count_neighbors=0;
+
     HybEnsModel::Move *move = mi.firstMove();
     if (move==NULL) {
 	std::cout << "No moves!" << std::endl;
     } else {
-	std::cout << " " << move->transitionEnergy() << std::endl;
-	while ( (move = mi.nextMove(move))!=NULL ) {
-	    std::cout << " " << move->transitionEnergy() << std::endl;
-	    HybEnsModel::StateDescription state2=state;
-	    move->apply(state2);
-	}
+	
+	do {
+	    count_moves++;
+	    std::cout << "Try move "; move->print(std::cout); std::cout<<std::endl;
+
+	    HybEnsModel::energy_t tE=move->transitionEnergy();
+	    //if (tE < 100000) {
+		count_neighbors++;
+		std::cout <<count_neighbors << " ("<<count_moves<<") ";
+		std::cout << state<<" >>> ";
+		move->print(std::cout);
+		std::cout << " " << tE << " >>> ";
+		HybEnsModel::StateDescription state2=state;
+		move->apply(state2);
+		std::cout << state2 << "( E="<<model.energy(state2)<<" )"<< std::endl;
+		//}	    
+	} while ( (move = mi.nextMove(move))!=NULL );
 	std::cout << std::endl;
     }
     
-    exit(0);
+    //exit(0);
     
     // ------------------------------------------------------------
     // enumerate states
     
 
-    UnpairedPF unpaired_pf_A(seqA);
-    UnpairedPF unpaired_pf_B(seqB);
+    UnpairedPF unpaired_pf_A(seqA,+1);
+    UnpairedPF unpaired_pf_B(seqB,-1);
     HybridPF hybrid_pf(seqA,seqB);
     
     // print all subsequence hybrid partition functions (for test purposes)
@@ -118,11 +138,17 @@ main()
 	    for (size_t i2=1; i2<=seqB.length(); i2++) {
 		for (size_t j2=i2+min_hyb_size-1; j2<=seqB.length(); j2++) {
 		    
+		    if ( (hybrid_pf.pair_type(i1,i2)==0) || (hybrid_pf.pair_type(j1,j2))==0 ) {
+			continue;
+		    }
+		    
 		    HybridPF::pf_t pfhyb = hybrid_pf.partition_function(i1,j1,i2,j2);
 		    double ensemble_energy_hyb = - kT * log(pfhyb);
 
-		    if ( ensemble_energy_hyb > th_hyb_energy ) continue;
+		    //if ( ensemble_energy_hyb > th_hyb_energy ) continue;
 		    
+		    
+
 		    UnpairedPF::pf_t upfA=unpaired_pf_A.unpaired_prob_single(i1,j1);
 		    UnpairedPF::pf_t upfB=unpaired_pf_B.unpaired_prob_single(i2,j2);
 		    double ensemble_energy_A = - kT * log(upfA);
@@ -133,8 +159,8 @@ main()
 			+ ensemble_energy_A
 			+ ensemble_energy_B;
 		    
-		    std::cout << i1 << " " << j1 << " "
-			      << i2 << " " << j2 <<" "
+		    std::cout << i1 << "-" << j1 << ","
+			      << i2 << "-" << j2 <<" "
 			      << total_ensemble_energy << " ("
 			      << ensemble_energy_hyb << "+"
 			      << ensemble_energy_A << "+"
@@ -145,6 +171,7 @@ main()
 	}
     }
 
+    exit(0);
     
     // Indexing for double hybridization 
     // ----\        /--------\       /---------

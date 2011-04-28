@@ -83,16 +83,18 @@ public:
     class StateDescription {
     public:
 	
-	//! \brief an interaction site
-	//!
-	//! an interaction site is a four tuple of sequence positions
-	//! 
-	//! <pre>
-	//! ----\        /-----
-	//!     i1------j1     
-	//!     i2------j2     
-	//!  ---/        \--------
-	//! </pre>
+	/**
+	 * \brief an interaction site
+	 *
+	 * an interaction site is a four tuple of sequence positions
+	 * 
+	 * <pre>
+	 * ----\        /-----
+	 *     i1------j1     
+	 *     i2------j2     
+	 *  ---/        \--------
+	 * </pre>
+	 */
 	struct ISite {
 	    size_t i1; //!< start position in first sequence 
 	    size_t i2; //!< start position in second sequence
@@ -137,29 +139,31 @@ public:
 	 * @brief construct with single site and ensemble energy
 	 * 
 	 * @param i1 start position in sequence 1
-	 * @param j1 end position in sequence 1
 	 * @param i2 start position in sequence 2
+	 * @param j1 end position in sequence 1
 	 * @param j2 end position in sequence 2
 	 */
-	StateDescription(size_t i1, size_t j1, size_t i2, size_t j2);
+	StateDescription(size_t i1, size_t i2, size_t j1, size_t j2);
     
 	/** 
 	 * @brief construct with two sites and ensemble energy
 	 * 
 	 * @param i1 start position first site in sequence 1
-	 * @param j1 end position first site in sequence 1
 	 * @param i2 start position first site in sequence 2
+	 * @param j1 end position first site in sequence 1
 	 * @param j2 end position first site in sequence 2
 	 * @param k1 start position second site in sequence 1
-	 * @param l1 end position second site in sequence 1
 	 * @param k2 start position second site in sequence 2
+	 * @param l1 end position second site in sequence 1
 	 * @param l2 end position second site in sequence 2
 	 */
-	StateDescription(size_t i1, size_t j1, size_t i2, size_t j2,
-			 size_t k1, size_t l1, size_t k2, size_t l2);
+	StateDescription(size_t i1, size_t i2, size_t j1, size_t j2,
+			 size_t k1, size_t k2, size_t l1, size_t l2);
 	
-	//! @brief Get number of hybridization sites
-	//! @return number of hybridization sites
+	/**
+	 * @brief Get number of hybridization sites
+	 * @return number of hybridization sites
+	 */
 	size_t
 	num_sites() const;
 	
@@ -195,6 +199,9 @@ public:
 	 * @param i index of site
 	 * 
 	 * @return non-const reference to interaction site number i
+	 
+	 * @note We actually need write access for the moves only
+	 * (method apply()). Consider restricting this.
 	 */
 	ISite & operator [](size_t i) {return isites[i];}
 	
@@ -207,11 +214,13 @@ public:
 	resize(size_t s) {isites.resize(s);}
 	
     private:
-	//! positions of hybridization sites
-	//! @note making this public is somewhat ugly design. We actually need
-	//! write access for the moves only (method apply()).
+	/**
+	 * @brief positions of hybridization sites
+	 *
+	 */
 	std::vector<ISite> isites;
     };
+    
     
     // forward reference
     class MoveIterator;
@@ -290,6 +299,20 @@ public:
 	virtual
 	void
 	apply(StateDescription &sd) const = 0;
+
+	/** 
+	 * Print move to stream (for debugging)
+	 *  
+	 * @param out output stream
+	 *
+	 * @return output stream
+	 *
+	 * @note since we want polymorphism, this cannot be realized
+	 * via operator <<
+	 */
+	virtual
+	std::ostream &
+	print(std::ostream &out) const;
     };
     
     /**
@@ -404,6 +427,17 @@ public:
 	 */
 	energy_t
 	transitionEnergy(size_t site, size_t left) const;	
+
+	/** 
+	 * Print move
+	 * 
+	 * @param out output stream
+	 * 
+	 * @return output stream
+	 */
+	virtual
+	std::ostream &
+	print(std::ostream &out) const;
     };
     
     /**
@@ -540,6 +574,21 @@ public:
 	thisornext();
     };
     
+    class NewSiteMove : public Move {
+    protected:
+	size_t i1; //!< left end of new site in seq 1
+	size_t i2; //!< left end of new site in seq 2
+    public:
+	NewSiteMove(const MoveIterator &mi);
+	
+	virtual
+	~NewSiteMove();
+	
+	std::ostream &
+	print(std::ostream &out) const;
+    };
+
+
     /**
      * @brief Move that introduces the first interaction site
      *
@@ -549,9 +598,7 @@ public:
      * changing the new site into one interaction loop
      * closed by the end base pairs of the site.
      */
-    class NewSiteMoveF : public Move {
-	size_t i1; //!< left end of new site in seq 1
-	size_t i2; //!< left end of new site in seq 2
+    class NewSiteMoveF : public NewSiteMove {
     public:
 	NewSiteMoveF(const MoveIterator &mi);
     
@@ -584,9 +631,7 @@ public:
      * changing the new site into one interaction loop
      * closed by the end base pairs of the site.
      */
-    class NewSiteMoveL : public Move {
-	size_t i1; //!< left end of new site in seq 1
-	size_t i2; //!< left end of new site in seq 2
+    class NewSiteMoveL : public NewSiteMove {
     public:
 	NewSiteMoveL(const MoveIterator &mi);
     
@@ -609,7 +654,7 @@ public:
 	apply(StateDescription &sd) const;
     };
     
-     /**
+    /**
      * @brief Move that introduces a new interaction site at the right
      *
      * @note New sites have exactly the minimal size of an interaction
@@ -622,9 +667,7 @@ public:
      * changing the new site into one interaction loop
      * closed by the end base pairs of the site.
      */
-    class NewSiteMoveR : public Move {
-	size_t i1; //!< left end of new site in seq 1
-	size_t i2; //!< left end of new site in seq 2
+    class NewSiteMoveR : public NewSiteMove {
     public:
 	NewSiteMoveR(const MoveIterator &mi);
     
@@ -681,6 +724,18 @@ public:
 
 	void
 	apply(StateDescription &sd) const;
+
+	/** 
+	 * Print move
+	 * 
+	 * @param out output stream
+	 * 
+	 * @return output stream
+	 */
+	virtual
+	std::ostream &
+	print(std::ostream &out) const;
+
     };
     
     /**
@@ -718,6 +773,17 @@ public:
 
 	void
 	apply(StateDescription &sd) const;
+
+	/** 
+	 * Print move
+	 * 
+	 * @param out output stream
+	 * 
+	 * @return output stream
+	 */
+	virtual
+	std::ostream &
+	print(std::ostream &out) const;
     };
         
     
@@ -826,13 +892,15 @@ public:
     };
     
     
-    //! construct from sequences
-    //! @param seqA sequence A
-    //! @param seqB sequence B
+    /**
+     * construct from sequences
+     * @param seqA sequence A
+     * @param seqB sequence B
+     */
     HybEnsModel(std::string seqA, std::string seqB);
     
     /** 
-     * @brief energy of a state
+     * @brief Energy of a state
      * 
      * @param desc Description of a state
      * 
@@ -872,8 +940,6 @@ public:
      * @param j2 right end of interaction site in seq 2
      * 
      * @return ensemble energy of the hybridization
-     *
-     * @todo implement
      */
     energy_t
     energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const;
@@ -884,14 +950,10 @@ public:
      * @param is interaction site 
      * 
      * @return ensemble energy of the hybridization
-     *
      */
     energy_t
-    energy_hybrid(const StateDescription::ISite &is) const {
-	return energy_hybrid(is.i1,is.i2,is.j1,is.j2);
-    }
+    energy_hybrid(const StateDescription::ISite &is) const;
     
-
     /** 
      * Energy of unpairing of one interaction site
      * 
@@ -983,6 +1045,12 @@ private:
     const size_t minsitedist_;
     
 };
+
+std::ostream &
+operator << (std::ostream &out, const HybEnsModel::StateDescription::ISite &isite);
+
+std::ostream &
+operator << (std::ostream &out, const HybEnsModel::StateDescription &sd);
 
 
 #endif

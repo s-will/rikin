@@ -10,12 +10,26 @@
 // Move
 HybEnsModel::Move::~Move() {}
 
+
+std::ostream &
+HybEnsModel::Move::print(std::ostream &out) const {
+    out << "[Generic Move]";
+    return out;
+}
+
 // ------------------------------------------------------------
 // Grow-Shrink Move
 
 HybEnsModel::GrowShrinkMove::GrowShrinkMove(const MoveIterator &mi): Move(mi) {}
 
 HybEnsModel::GrowShrinkMove::~GrowShrinkMove() {}
+
+std::ostream &
+HybEnsModel::GrowShrinkMove::print(std::ostream &out) const {
+    out << "[Grow Shrink Move "<<k1<<" "<<k2<<"]";
+    return out;
+}
+
 
 bool
 HybEnsModel::GrowShrinkMove::firstLeft() {        
@@ -134,7 +148,11 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
     // assert some of the preconditions
     assert(sd_small.num_sites()!=0);
     assert(sd_large.num_sites()==sd_small.num_sites());
-        
+    
+     std::cout <<std::endl << "GrowShrinkMove::transitionEnergy" << sd_small << " " << sd_large<< " " 
+     	      << loop_i1 << " "<< loop_i2 << " " << loop_j1 << " " << loop_j2
+     	      <<std::endl;
+    
     const HybEnsModel &model = mi.model();
     
     
@@ -156,7 +174,9 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
 	:
 	model.energy_unpair(sd_large[0],
 			    sd_large[1]);
-    
+
+    std::cout << "GrowShrinkMove::transitionEnergy returns " << e_hyb <<" + " << e_loop <<" + "<< e_unp << std::endl;
+
     return
 	e_hyb
 	+
@@ -453,15 +473,33 @@ HybEnsModel::RemoveSiteMove::apply(StateDescription &sd) const {
     }
 }
 
+
+// ------------------------------------------------------------
+// Move that creates a new site
+//
+
+HybEnsModel::NewSiteMove::NewSiteMove(const MoveIterator &mi) : Move(mi) {
+}
+
+HybEnsModel::NewSiteMove::~NewSiteMove() {}
+
+
+std::ostream &
+HybEnsModel::NewSiteMove::print(std::ostream &out) const {
+    out << "[New Site Move "<<i1<<" "<<i2<<"]";
+    return out;
+}
+
 // ------------------------------------------------------------
 // Move that creates a new site as the first interaction site
 //
 
-HybEnsModel::NewSiteMoveF::NewSiteMoveF(const MoveIterator &mi) : Move(mi) {
-    std::cout <<"New Site Move First"<<std::endl;
+HybEnsModel::NewSiteMoveF::NewSiteMoveF(const MoveIterator &mi) : NewSiteMove(mi) {
 }
 
 HybEnsModel::NewSiteMoveF::~NewSiteMoveF() {}
+
+
 
 HybEnsModel::Move *
 HybEnsModel::NewSiteMoveF::nextMoveType() const {
@@ -543,7 +581,7 @@ HybEnsModel::NewSiteMoveF::apply(StateDescription &sd) const {
 // Move that creates a new site on the left
 //
 
-HybEnsModel::NewSiteMoveL::NewSiteMoveL(const MoveIterator &mi) : Move(mi) {}
+HybEnsModel::NewSiteMoveL::NewSiteMoveL(const MoveIterator &mi) : NewSiteMove(mi) {}
 
 HybEnsModel::NewSiteMoveL::~NewSiteMoveL() {}
 
@@ -624,7 +662,7 @@ HybEnsModel::NewSiteMoveL::apply(StateDescription &sd) const {
 // Move that creates a new site on the right
 //
 
-HybEnsModel::NewSiteMoveR::NewSiteMoveR(const MoveIterator &mi) : Move(mi) {}
+HybEnsModel::NewSiteMoveR::NewSiteMoveR(const MoveIterator &mi) : NewSiteMove(mi) {}
 
 HybEnsModel::NewSiteMoveR::~NewSiteMoveR() {}
 
@@ -776,6 +814,12 @@ HybEnsModel::MergeMove::apply(StateDescription &sd) const {
     sd.resize(1);
 }
 
+std::ostream &
+HybEnsModel::MergeMove::print(std::ostream &out) const {
+    out << "[Merge Move]";
+    return out;
+}
+
 // ------------------------------------------------------------
 // Move that splits one site into two
 //
@@ -783,6 +827,13 @@ HybEnsModel::MergeMove::apply(StateDescription &sd) const {
 HybEnsModel::SplitMove::SplitMove(const MoveIterator &mi) : Move(mi) {}
 
 HybEnsModel::SplitMove::~SplitMove() {}
+
+std::ostream &
+HybEnsModel::SplitMove::print(std::ostream &out) const {
+    out << "[Split Move "<<i1<<" "<<i2<<"]";
+    return out;
+}
+
 
 HybEnsModel::Move *
 HybEnsModel::SplitMove::nextMoveType() const {
@@ -799,7 +850,7 @@ HybEnsModel::SplitMove::first() {
     }
     
     i1 = o[0].i1 + model.minsitesize() - 1;
-    i2 = o[0].i1 + model.minsitesize() - 1;
+    i2 = o[0].i2 + model.minsitesize() - 1;
     
     return 
 	( i1 + model.minsitedist() + model.minsitesize() <= o[0].j1 )
@@ -813,12 +864,12 @@ HybEnsModel::SplitMove::next() {
     const StateDescription &o=mi.origin();
         
     i2++;
-    if (i2 + model.minsitedist() + model.minsitesize() < o[0].j2) {
+    if (i2 + model.minsitedist() + model.minsitesize() <= o[0].j2) {
 	return true;
     } else {
 	i1++;
-	i2=o[0].i1 + model.minsitesize() - 1;
-	return (i1 + model.minsitedist() + model.minsitesize() < o[0].j1);
+	i2=o[0].i2 + model.minsitesize() - 1;
+	return (i1 + model.minsitedist() + model.minsitesize() <= o[0].j1);
     }
 }
 
@@ -826,37 +877,52 @@ HybEnsModel::energy_t
 HybEnsModel::SplitMove::transitionEnergy() const {
     const HybEnsModel &model=mi.model();
     const StateDescription &o=mi.origin();
-    
-    
+        
     const StateDescription::ISite &is_orig = o[0];
 
     const StateDescription::ISite is_between=
-	StateDescription::ISite(i1,i2,i1+model.minsitedist()+1,i2+model.minsitedist()+1);
+	StateDescription::ISite(i1,i2,
+				i1+model.minsitedist()+1,
+				i2+model.minsitedist()+1);
 
     const StateDescription::ISite is1=
-	StateDescription::ISite(o[0].i1,o[0].i2,o[1].j1,o[1].j2);
+	StateDescription::ISite(is_orig.i1,is_orig.i2,is_between.i1,is_between.i2);
 
     const StateDescription::ISite is2=
-	StateDescription::ISite(o[0].i1,o[0].i2,o[1].j1,o[1].j2);
+	StateDescription::ISite(is_between.j1,is_between.j2,is_orig.j1,is_orig.j2);
     
     energy_t E_unp =
 	model.energy_unpair(is_orig);
     
     energy_t E_hyb =
 	model.energy_hybrid(is_between) 
-	+ model.energy_hybrid(mi.origin()[0]) 
-	+ model.energy_hybrid(mi.origin()[1]);
+	+ model.energy_hybrid(is1) 
+	+ model.energy_hybrid(is2);
     
     return E_unp + E_hyb;
 }
 
 void
 HybEnsModel::SplitMove::apply(StateDescription &sd) const {
-    const StateDescription::ISite is_merged=
-	StateDescription::ISite(sd[0].i1,sd[0].i2,sd[1].j1,sd[1].j2);
     
-    sd[0] = is_merged;
-    sd.resize(1);
+    const HybEnsModel &model=mi.model();
+    const StateDescription &o=mi.origin();
+    const StateDescription::ISite &is_orig = o[0];
+
+    const StateDescription::ISite is_between=
+	StateDescription::ISite(i1,i2,
+				i1+model.minsitedist()+1,
+				i2+model.minsitedist()+1);
+
+    const StateDescription::ISite is1=
+	StateDescription::ISite(is_orig.i1,is_orig.i2,is_between.i1,is_between.i2);
+
+    const StateDescription::ISite is2=
+	StateDescription::ISite(is_between.j1,is_between.j2,is_orig.j1,is_orig.j2);
+    
+    sd.resize(2);
+    sd[0] = is1;
+    sd[1] = is2;
 }
 
 

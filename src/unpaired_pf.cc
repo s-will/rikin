@@ -10,11 +10,16 @@ extern "C" {
 }
 
 
-UnpairedPF::UnpairedPF(const std::string &seq_) 
+UnpairedPF::UnpairedPF(const std::string &seq_,int orientation_) 
     : seq(seq_),
+      orientation(orientation_),
       RT_( (temperature+K0)*GASCONST/1000.0 )
 {
-    std::cout << "Create UnpairedPF from sequence "<<seq<<" ("<<seq.size()<<")"<<std::endl;
+    assert(orientation==-1 || orientation==1);
+    
+    if (orientation==-1) { std::reverse(seq.begin(),seq.end()); }
+    
+    // std::cout << "Create UnpairedPF from sequence "<<seq<<" ("<<seq.size()<<")"<<std::endl;
     computeSingleProbs();
     computeCondProbs();
 }
@@ -24,11 +29,27 @@ UnpairedPF::unpaired_prob_single(size_t i, size_t j) const {
     assert(1<=i);
     assert(i<=j);
     assert(j<=seq.size());
+    
+    if (orientation==-1) {
+	i=seq.length()-i+1;
+	j=seq.length()-j+1;
+	std::swap(i,j);
+    }
+    
     return Psingle(i,j);
 }
 
 UnpairedPF::prob_t
 UnpairedPF::unpaired_prob_conditional(size_t i, size_t j,size_t k, size_t l) const {
+    if (orientation==-1) {
+	i=seq.length()-i+1;
+	j=seq.length()-j+1;
+	std::swap(i,j);
+	k=seq.length()-k+1;
+	l=seq.length()-l+1;
+	std::swap(k,l);
+    }
+    
     return Pcond(k,l)(i,j);
 }
 

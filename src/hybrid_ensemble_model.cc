@@ -16,14 +16,14 @@ HybEnsModel::StateDescription::StateDescription()
 }
 
 
-HybEnsModel::StateDescription::StateDescription(size_t i1, size_t j1, size_t i2, size_t j2)
+HybEnsModel::StateDescription::StateDescription(size_t i1, size_t i2, size_t j1, size_t j2)
     : isites(1,ISite(i1,i2,j1,j2))
 {
 }
 
 
-HybEnsModel::StateDescription::StateDescription(size_t i1, size_t j1, size_t i2, size_t j2,
-						size_t k1, size_t l1, size_t k2, size_t l2)
+HybEnsModel::StateDescription::StateDescription(size_t i1, size_t i2, size_t j1, size_t j2,
+						size_t k1, size_t k2, size_t l1, size_t l2)
     : isites()
 {
     isites.reserve(2);
@@ -109,19 +109,24 @@ HybEnsModel::StateDescription::decode(const code_t &code) {
 HybEnsModel::HybEnsModel(std::string seqA, std::string seqB)
     : seqA_(seqA),
       seqB_(seqB),
-      uppfA_(seqA),
-      uppfB_(seqB),
+      uppfA_(seqA,+1),
+      uppfB_(seqB,-1),
       hybridpf_(seqA,seqB),
-      maxunpinloop_(5),
-      minsitesize_(3),
-      minsitedist_(6)
+      maxunpinloop_(3),
+      minsitesize_(2),
+      minsitedist_(3)
 {
+}
+
+HybEnsModel::energy_t
+HybEnsModel::energy_hybrid(const StateDescription::ISite &is) const {
+    return energy_hybrid(is.i1,is.i2,is.j1,is.j2);
 }
 
 
 HybEnsModel::energy_t
-HybEnsModel::energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const {
-    return - hybridpf_.RT() * log( hybridpf_.partition_function(i1,i2,j1,j2) );
+HybEnsModel::energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const {    
+    return - hybridpf_.RT() * log( hybridpf_.partition_function(i1,j1,i2,j2) );
 }
 
 HybEnsModel::energy_t
@@ -138,5 +143,45 @@ HybEnsModel::energy_unpair(const StateDescription::ISite &is1,const StateDescrip
 	- uppfA_.RT() * log( uppfA_.unpaired_prob_joint(is1.i1,is1.j1,is2.i1,is2.j1) ) //seq 1
 	- uppfB_.RT() * log( uppfB_.unpaired_prob_joint(is1.i2,is1.j2,is2.i2,is2.j2) ) //seq 2
 	;
+}
+
+
+HybEnsModel::energy_t
+HybEnsModel::energy(const StateDescription &sd) const {
+    switch(sd.num_sites()) {
+    case 0:
+	return 4;
+    case 1:
+	// std::cout << "E = "<<energy_unpair(sd[0])<<"(unp) + "<<energy_hybrid(sd[0])<<"(hyb)"<<std::endl;
+	return energy_unpair(sd[0])+energy_hybrid(sd[0]);
+    case 2:
+	return energy_unpair(sd[0],sd[1]) + energy_hybrid(sd[0]) + energy_hybrid(sd[1]);
+    default:
+	assert(false);
+    }
+}
+
+
+std::ostream &
+operator << (std::ostream &out, const HybEnsModel::StateDescription::ISite &isite) {
+    out << "("
+	<< isite.i1 << "," 
+	<< isite.i2 << ")-(" 
+	<< isite.j1 << "," 
+	<< isite.j2 << ")";
+    return out;
+}
+
+
+
+std::ostream &
+operator << (std::ostream &out, const HybEnsModel::StateDescription &sd) {
+    out << "{";
+    for (size_t i=0; i<sd.num_sites(); i++) {
+	out << sd[i];
+	if (i<sd.num_sites()-1) {out << ",";}
+    }
+    out << "}";
+    return out;
 }
 
