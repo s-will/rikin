@@ -30,6 +30,15 @@
  * description (HybEnsModel::StateDescription) and its model
  * (HybEnsModel) in order to compute its energy.
  *
+ * @todo Splitting and merging is too restrictive, (and probably also
+ * new site creation)! Currently, splitting introduces separation
+ * always of exactly the same size and merge is only possible from
+ * exactly one fixed distance of sites.  Can splitting and merging be
+ * assymmetric?  The current strategy may be ok for splitting but
+ * seems to be worse for merging.  Requiring an exactly fixed size for
+ * new sites, will in practice almost limit new sites to perfect
+ * stems. Do we have to relax size of merge/split sites. Fixing the
+ * distance is not justified.
  */
 
 
@@ -39,9 +48,6 @@
  * This class computes pf/probability tables at construction, holds
  * the tables and for energy computation, looks up single energy terms
  * from tables and combines them.
- *
- * @todo Specification, Implementation
- *
  */
 class HybEnsModel {
     
@@ -77,8 +83,6 @@ public:
      * done by using the partition function where i1..j1 and k1..l1
      * are unpaired but the whole site i1..l1 is not unpaired (and the
      * same for the second molecule).
-     * 
-     * @todo Implementation
      */
     class StateDescription {
     public:
@@ -554,7 +558,7 @@ public:
     
 	virtual
 	~RemoveSiteMove();
-	
+
 	Move *
 	nextMoveType() const;
 	
@@ -569,6 +573,10 @@ public:
 
 	void
 	apply(StateDescription &sd) const;
+
+	std::ostream &
+	print(std::ostream &out) const; 
+
     private:
 	bool
 	thisornext();
@@ -660,9 +668,6 @@ public:
      * @note New sites have exactly the minimal size of an interaction
      * site (HybEnsModel::minsitesize())
      *
-     * @todo CHECK: requiring an exactly fixed size, could in practice
-     * almost limit new sites to perfect stems.
-     *
      * @note the transition state for these moves is defined by
      * changing the new site into one interaction loop
      * closed by the end base pairs of the site.
@@ -695,8 +700,6 @@ public:
      * @brief Move that merges two interaction sites
      *
      * Merging of two sites is allowed iff the site distance is model.minsitedist()
-     *
-     * @todo CHECK: do we have to relax size of merge/split sites. Fixing the distance is not justified.
      *
      * @note the transition state for these moves is defined by
      * conditioning the ensemble energy of the new single site by the
@@ -742,8 +745,6 @@ public:
      * @brief Move that splits two interaction sites
      *
      * Splitting of a site separates the new sites by exactly model.minsitedist()
-     *
-     * @todo CHECK: do we have to relax size of merge/split sites. Fixing the distance is not justified.
      *
      * @note the transition state for these moves is defined by
      * conditioning the ensemble energy of the single site by the
@@ -791,7 +792,6 @@ public:
      * @brief Defines iteration over moves (together with Move).
      *
      * The class supports iteration over all neighbors of an hybridization ensemble.
-     * @todo Implementation
      *
      * The transition state is defined by the ensemble that contains
      * the added/removed internal loop. 
@@ -971,7 +971,6 @@ public:
      * @param is2 interaction site 1
      *
      * @return energy difference of the unpairing
-     * @todo implement
      */
     energy_t
     energy_unpair(const StateDescription::ISite &is1,
@@ -991,6 +990,10 @@ public:
     energy_hybrid_loop(size_t i1,size_t i2,size_t j1,size_t j2) const {
 	return hybridpf_.ILoopE(i1,i2,j1,j2);
     }
+
+    energy_t
+    energy_duplex_init() const {return hybridpf_.DuplexInit();}
+
 
 public:
     // give access to some constants of the model
@@ -1029,6 +1032,8 @@ public:
     minsitedist() const {
 	return minsitedist_;
     }
+
+
     
 private:
     const std::string &seqA_; //!< sequence A

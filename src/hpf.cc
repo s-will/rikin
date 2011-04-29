@@ -8,7 +8,6 @@
    
    We start by defining classes for the computation of hybrid
    partition functions and joint probabilities for two unpaired sites.
-   
  */
 
 
@@ -55,10 +54,10 @@ main()
     //const std::string seqA="CCCCGGGG";
     
     //                      12345678901234567890123456
-    const std::string seqA="AAGCGGGCAUUUAUCAGCUAUGUGAA";
+    const std::string seqA="ACGGUCGGACGACAGUUACGGAUUACGGACG";
     
     //                      123456789012345678901234567
-    const std::string seqB="ACAUAGCUGAUAAAUCCCGGCUUCUAU";
+    const std::string seqB="AUGCCUGCCUGCUGUCAAUGCCUAAUGCCUGC";
     
     //const std::string seqB="GGGGGCCCCC";
     
@@ -70,8 +69,9 @@ main()
     HybEnsModel model(seqA,seqB);
     std::cout << "    DONE." << std::endl;
     
-    HybEnsModel::StateDescription state(8,9,15,19);
-    //HybEnsModel::StateDescription state(4,8,15,19);
+    //    HybEnsModel::StateDescription state(8,9,16,17);
+    // HybEnsModel::StateDescription state(8,9,16,17,22,23,24,25);
+    HybEnsModel::StateDescription state(4,5,18,19,22,23,27,28);
     
     
     //check state energy
@@ -89,10 +89,10 @@ main()
 	
 	do {
 	    count_moves++;
-	    std::cout << "Try move "; move->print(std::cout); std::cout<<std::endl;
-
+	    //std::cout << "Try move "; move->print(std::cout); std::cout<<std::endl;
+	    
 	    HybEnsModel::energy_t tE=move->transitionEnergy();
-	    //if (tE < 100000) {
+	    if (tE < 1e6) {
 		count_neighbors++;
 		std::cout <<count_neighbors << " ("<<count_moves<<") ";
 		std::cout << state<<" >>> ";
@@ -101,12 +101,12 @@ main()
 		HybEnsModel::StateDescription state2=state;
 		move->apply(state2);
 		std::cout << state2 << "( E="<<model.energy(state2)<<" )"<< std::endl;
-		//}	    
+	    }	    
 	} while ( (move = mi.nextMove(move))!=NULL );
 	std::cout << std::endl;
     }
     
-    //exit(0);
+    exit(0);
     
     // ------------------------------------------------------------
     // enumerate states

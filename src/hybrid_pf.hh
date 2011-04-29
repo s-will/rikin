@@ -173,6 +173,16 @@ public:
     pf_t
     exp_ILoopE(size_t i1, size_t j1, size_t i2, size_t j2) const;
     
+    /** 
+     * Duplex initiation energy
+     * 
+     * @return duplex init energy
+     */
+    energy_t
+    DuplexInit() const {
+	return params->DuplexInit;
+    }
+
 };
 
 

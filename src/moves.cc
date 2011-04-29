@@ -26,7 +26,12 @@ HybEnsModel::GrowShrinkMove::~GrowShrinkMove() {}
 
 std::ostream &
 HybEnsModel::GrowShrinkMove::print(std::ostream &out) const {
-    out << "[Grow Shrink Move "<<k1<<" "<<k2<<"]";
+    out << "[Grow Shrink Move "
+	<<k1<<" "<<k2 //<<" "
+	// <<min1<<" "<<min2<<" "
+	// <<i1<<" "<<i2 <<" "
+	// <<max1<<" "<<max2
+	<<"]";
     return out;
 }
 
@@ -61,7 +66,7 @@ HybEnsModel::GrowShrinkMove::first(size_t i1_,
     i2=i2_;
     min1=min1_;
     min2=min2_;
-    min1=min1_;
+    max1=max1_;
     max2=max2_;
 
     const HybEnsModel &m=mi.model();
@@ -101,7 +106,7 @@ HybEnsModel::GrowShrinkMove::nextRight() {
     // mode switch in next, in both cases, the condition is implied
     
     k2++;
-    if (k2<max2) {
+    if (k2<=max2) {
 	return true;
     } else {
 	k1++;
@@ -149,9 +154,11 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
     assert(sd_small.num_sites()!=0);
     assert(sd_large.num_sites()==sd_small.num_sites());
     
-     std::cout <<std::endl << "GrowShrinkMove::transitionEnergy" << sd_small << " " << sd_large<< " " 
+    /*
+    std::cout <<std::endl << "GrowShrinkMove::transitionEnergy" << sd_small << " " << sd_large<< " " 
      	      << loop_i1 << " "<< loop_i2 << " " << loop_j1 << " " << loop_j2
      	      <<std::endl;
+    */
     
     const HybEnsModel &model = mi.model();
     
@@ -175,7 +182,7 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
 	model.energy_unpair(sd_large[0],
 			    sd_large[1]);
 
-    std::cout << "GrowShrinkMove::transitionEnergy returns " << e_hyb <<" + " << e_loop <<" + "<< e_unp << std::endl;
+    //std::cout << "GrowShrinkMove::transitionEnergy returns " << e_hyb <<" + " << e_loop <<" + "<< e_unp << std::endl;
 
     return
 	e_hyb
@@ -349,6 +356,7 @@ HybEnsModel::GrowShrinkMoveSR::nextMoveType() const {
     return new RemoveSiteMove(mi);
 }
 
+
 bool
 HybEnsModel::GrowShrinkMoveSR::first() {
     
@@ -360,8 +368,8 @@ HybEnsModel::GrowShrinkMoveSR::first() {
     size_t len1 = m.seqA().length();
     size_t len2 = m.seqB().length();
     
-    // fail if there is no site
-    if (o.num_sites() == 0) {
+    // fail if there are less then two sites
+    if (o.num_sites() < 2)  {
 	return false;
     }
     
@@ -396,15 +404,23 @@ HybEnsModel::RemoveSiteMove::RemoveSiteMove(const MoveIterator &mi) : Move(mi) {
 
 HybEnsModel::RemoveSiteMove::~RemoveSiteMove() {}
 
+std::ostream &
+HybEnsModel::RemoveSiteMove::print(std::ostream &out) const {
+    out << "[Remove Site Move "<<site<<"]";
+    return out;
+}
+
+
 HybEnsModel::Move *
 HybEnsModel::RemoveSiteMove::nextMoveType() const {
     return new NewSiteMoveF(mi);
 }
 
+
 bool
 HybEnsModel::RemoveSiteMove::thisornext() {
     const HybEnsModel &m=mi.model();
-	
+       
     for(;site<mi.origin().num_sites();site++) {
 	// test whether it is allowed to remove the site,
 	// and return true on success
@@ -424,6 +440,7 @@ HybEnsModel::RemoveSiteMove::thisornext() {
 bool
 HybEnsModel::RemoveSiteMove::first() {
     site=0;
+    
     return thisornext();
 }
 
@@ -466,8 +483,11 @@ HybEnsModel::RemoveSiteMove::apply(StateDescription &sd) const {
     assert(site<2);
     
     if (site==0) {
-	sd[0]=sd[1];
-	sd.resize(1);
+	if (sd.num_sites()==2) {
+	    sd[0]=sd[1];
+	    
+	}
+	sd.resize(sd.num_sites()-1);
     } else {
 	sd.resize(1);
     }

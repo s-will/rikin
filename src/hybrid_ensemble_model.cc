@@ -150,7 +150,7 @@ HybEnsModel::energy_t
 HybEnsModel::energy(const StateDescription &sd) const {
     switch(sd.num_sites()) {
     case 0:
-	return 4;
+	return - energy_duplex_init(); // energy penalty for first interaction is added to empty state!!!
     case 1:
 	// std::cout << "E = "<<energy_unpair(sd[0])<<"(unp) + "<<energy_hybrid(sd[0])<<"(hyb)"<<std::endl;
 	return energy_unpair(sd[0])+energy_hybrid(sd[0]);

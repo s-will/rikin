@@ -92,7 +92,7 @@ HybridPF::ILoopE(size_t i1, size_t i2, size_t k1,  size_t k2) const {
     // note: enclosed bp type 'turned around' for lib call
     int ptype_enclosed = rtype[pair_type(k1,k2)]; 
     
-    if (ptype_closing==0 || ptype_enclosed==0) return INF;
+    if (ptype_closing==0 || ptype_enclosed==0) return INF/100.0;
 
     return
 	E_IntLoop(k1-i1-1,k2-i2-1, 
