@@ -22,5 +22,11 @@ src/.deps
 Makefile
 src/Makefile
 src/*.o
-
+src/rrikin_barriers
+src/rrikin_enum
+src/hpf
+src/rrikin_barriers_cmdline.c
+src/rrikin_barriers_cmdline.h
+src/rrikin_enum_cmdline.c
+src/rrikin_enum_cmdline.h
 *~

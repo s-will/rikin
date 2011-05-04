@@ -623,6 +623,8 @@ HybEnsModel::NewSiteMoveL::first() {
     i2=0;
     
     return (i1 + model.minsitesize() + model.minsitedist() < o[0].i1) 
+	&&
+	( i2 + 1 + model.minsitesize() + model.minsitedist() < o[0].i2 )
 	&& 
 	next();
 }
@@ -697,6 +699,7 @@ HybEnsModel::NewSiteMoveR::first() {
     const StateDescription &o=mi.origin();
 
     size_t len1 = model.seqA().length();
+    size_t len2 = model.seqB().length();
     
     const StateDescription::ISite &is=o[0];
     
@@ -708,6 +711,8 @@ HybEnsModel::NewSiteMoveR::first() {
     i2=is.j2+model.minsitedist()+1;
     
     return (i1 + model.minsitesize() < len1) 
+	&&
+	( i2 + 1 + model.minsitesize() < len2 )
 	&& 
 	next();
 }
@@ -729,7 +734,7 @@ HybEnsModel::NewSiteMoveR::next() {
 	i1++;
 	i2=is.j2+model.minsitedist()+2;
 	
-	return (i1 + model.minsitesize() < len1 );
+	return ( i1 + model.minsitesize() < len1 );
     }
 }
 

@@ -63,7 +63,7 @@ void    update_pf_paramsLP(int length);
  *  \param  spup     file pointer for pair probabilities   
  *  \return list of pair probabilities       
  */
-plist *pfl_fold(char *sequence, const char *structure, int winSize, int pairSize, float cutoffb, double **pU, struct plist **dpp2, FILE *pUfp, FILE *spup);
+plist *pfl_foldC(char *sequence, const char *structure, int winSize, int pairSize, float cutoffb, double **pU, struct plist **dpp2, FILE *pUfp, FILE *spup);
 
 /**
  *  \brief Writes the unpaired probabilities (pU) or opening energies into a file

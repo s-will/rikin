@@ -3,7 +3,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([HybridPF], [0.1], [])
+AC_INIT([RRIKin], [0.2], [])
 
 AM_INIT_AUTOMAKE
 
@@ -15,6 +15,15 @@ AC_LANG_CPLUSPLUS
 
 # Checks for header files.
 AC_HEADER_STDC
+
+## for compiling modified ViennaRNA code
+if test "$GCC" = yes; then
+   AC_DEFINE(UNUSED, __attribute__ ((unused)), avoid warning about unused variables)
+else
+   AC_DEFINE(UNUSED,, only for gcc)
+fi
+AC_CHECK_FUNCS(strdup strstr strchr erand48)
+
 
 ## ========================================
 ## DOXYGEN

@@ -128,11 +128,21 @@ public:
 		assert(i1<=j1);
 		assert(i2<=j2);
 	    }
+	    
+	    bool
+	    operator == (const ISite &is) const {
+		return
+		    ( (*this).i1 == is.i1 ) &&
+		    ( (*this).i2 == is.i2 ) &&
+		    ( (*this).j1 == is.j1 ) &&
+		    ( (*this).j2 == is.j2 )    
+		    ;
+	    }
+	    
 	};
 	
 	//! type of encoded class representation
-	//typedef std::vector<char> code_t;
-	typedef std::vector<unsigned char> code_t;   
+	typedef std::string code_t;   
 	
 	/** 
 	 * @brief Construct without interaction
@@ -174,17 +184,29 @@ public:
 	/** 
 	 * Encode class to compressed representation
 	 * 
-	 * @param[out] code Encoded, compressed representation.
+	 * @return code
 	 */
-	void
+	code_t
+	encode() const;
+	
+	/** 
+	 * Encode class to compressed representation
+	 * 
+	 * @param[out] code Encoded, compressed representation.
+	 *
+	 * @return reference to code
+	 */
+	code_t &
 	encode(code_t &code) const;
 
 	/** 
 	 * @brief Decode class from compressed representation
 	 * 
-	 * @param code Encoded, compressed representation. 
+	 * @param code Encoded, compressed representation.
+	 *
+	 * @return *this	 
 	 */
-	void
+	HybEnsModel::StateDescription &
 	decode(const code_t &code);
 	
 	
@@ -217,6 +239,15 @@ public:
 	void
 	resize(size_t s) {isites.resize(s);}
 	
+	bool
+	operator == (const StateDescription &sd) {
+	    bool equal = this->num_sites() == sd.num_sites();
+	    for (size_t i=0; i<this->num_sites() && equal; i++) {
+		equal = equal || (*this)[i] == sd[i];
+	    }
+	    return equal;
+	}
+
     private:
 	/**
 	 * @brief positions of hybridization sites
@@ -298,12 +329,12 @@ public:
 	/** 
 	 * Apply move to a state
 	 * 
-	 * @param sd origin state
+	 * @param[in,out] sd origin state
 	 */
 	virtual
 	void
 	apply(StateDescription &sd) const = 0;
-
+	
 	/** 
 	 * Print move to stream (for debugging)
 	 *  
@@ -993,6 +1024,18 @@ public:
 
     energy_t
     energy_duplex_init() const {return hybridpf_.DuplexInit();}
+
+    
+    /**
+     * @brief pair type for pair of interacting positions
+     * @param i1 position in sequence A
+     * @param i2 position in sequence B
+     * @return pair type of i1.i2
+     */
+    int
+    pair_type(size_t i1, size_t i2) const {
+	return hybridpf_.pair_type(i1,i2);
+    }
 
 
 public:

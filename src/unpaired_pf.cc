@@ -6,6 +6,7 @@
 extern "C" {
 #include "ViennaRNA/fold_vars.h"    
 #include <ViennaRNA/part_func.h>
+#include <ViennaRNA/utils.h>
 #include <LPfold.h>
 }
 
@@ -104,18 +105,18 @@ UnpairedPF::computeProbsGeneric(LocARNA::Matrix<prob_t> &P, const char *structur
 			      our results */
     
     // declare and alloc pup array
-    double ** pup = new double *[seq.size()+1];
+    double ** pup = (double **)space( sizeof(double *) * (seq.size()+1) );
     
-    pup[0] = new double[1]; /* we need only entry 0 */
+    pup[0] = (double *)space( sizeof(double) ); /* we need only entry 0 */
     pup[0][0] = (double) maxUnpairedRegionSize;
     
     // don't compute conditional probabilities
     plist *dpp=NULL;
     
-    pf_scale = -1;
+    pf_scale = 1;
     
     //! call libRNA
-    pfl_fold(const_cast<char *>(sequence), structure, plfW, plfL, cutoff, pup, &dpp, NULL, NULL);
+    plist *pl = pfl_foldC(const_cast<char *>(sequence), structure, plfW, plfL, cutoff, pup, &dpp, NULL, NULL);
     
     // copy result to matrix Psingle
     P.resize(seq.size()+1,seq.size()+1);
@@ -127,10 +128,14 @@ UnpairedPF::computeProbsGeneric(LocARNA::Matrix<prob_t> &P, const char *structur
 	}
     }
     
-    // free pup array
-    for (size_t i=0;i<=seq.size();i++) {delete pup[i];}
-    delete pup;
+    // free pl
+    if (pl) free(pl);
     
+    // free pup array
+    for (size_t i=0;i<=seq.size();i++) {free(pup[i]);}
+    //free(pup[0]);
+    free(pup);
+
     // restore state of global variable
     fold_constrained=fold_constrained_before;
 }

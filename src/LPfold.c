@@ -221,7 +221,7 @@ PUBLIC void update_pf_paramsLP(int length){
 #endif
 }
 
-PUBLIC plist *pfl_fold(char *sequence, const char *structure, int winSize, int pairSize, float cutoffb, double **pU, struct plist **dpp2, FILE *pUfp, FILE *spup){
+PUBLIC plist *pfl_foldC(char *sequence, const char *structure, int winSize, int pairSize, float cutoffb, double **pU, struct plist **dpp2, FILE *pUfp, FILE *spup){
   int         n, m, i, j, k, l, u, u1, ii, type, type_2, tt, ov, do_dpp, simply_putout;
   double      max_real;
   FLT_OR_DBL  temp, Qmax, prm_MLb, prmt, prmt1, qbt1, *tmp, expMLclosing;

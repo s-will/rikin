@@ -66,11 +66,11 @@ fail_on_toolarge(size_t x) {
 // the number of bits per sequence position
 //
 //
-void
+HybEnsModel::StateDescription::code_t &
 HybEnsModel::StateDescription::encode(code_t &code) const {
 
-    code.resize(num_sites()*2,0);
-
+    code.resize(num_sites()*4);
+    
     for (size_t i=0; i<num_sites(); i++) {
 	code[i*4+0]=fail_on_toolarge(isites[i].i1);
 	code[i*4+1]=fail_on_toolarge(isites[i].i2);
@@ -86,20 +86,35 @@ HybEnsModel::StateDescription::encode(code_t &code) const {
     // size_t bitsperpos=(int)ceiling(log(maxpos)/log(2));
     // code.push_back(bitsperpos,6); // bits per element
     
+    return code;
 }
 
-void
+HybEnsModel::StateDescription::code_t
+HybEnsModel::StateDescription::encode() const {
+
+    std::string code;
+    
+    encode(code);
+    
+    return code;
+}
+
+
+
+HybEnsModel::StateDescription &
 HybEnsModel::StateDescription::decode(const code_t &code) {
     assert(code.size()%4==0);
     
     isites.reserve(code.size()/4);
-    
+    isites.resize(0);
+
     for (size_t i=0; i<code.size()/4; i++) {
-	isites.push_back(ISite(code[i*4+0],
-			       code[i*4+1],
-			       code[i*4+2],
-			       code[i*4+3]));
+	isites.push_back(ISite((unsigned char)code[i*4+0],
+			       (unsigned char)code[i*4+1],
+			       (unsigned char)code[i*4+2],
+			       (unsigned char)code[i*4+3]));
     }
+    return *this;
 }
 
 

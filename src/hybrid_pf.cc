@@ -58,8 +58,12 @@ HybridPF::pair_type(size_t i1, size_t i2) const {
     assert(1 <= i1);
     assert(i1 <= lenA);
     assert(1 <= i2);
-    assert(i2 <= lenB);
     
+    if (! (i2 <= lenB) ) {
+	std::cerr <<"i2: "<<i2<<" lenB: "<<lenB<<std::endl;
+	assert(i2 <= lenB);
+    }
+
     return pair[SA[i1]][SB[i2]];
 }
 
