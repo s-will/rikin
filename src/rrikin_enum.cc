@@ -1,3 +1,17 @@
+/**
+   \mainpage
+   The goal of this project is the computation of RNA-RNA-Interaction
+   dynamics using a model of RNA that allows several interaction sites
+   and assumes simple hybridization at each site.  In the model, we
+   assume that single structures outside of the hybridization sites
+   and the hybridization sites itself are each equilibrated.
+   
+   We start by defining classes for the computation of hybrid
+   partition functions and joint probabilities for two unpaired sites.
+ */
+
+
+
 #include  <iostream>
 
 #include  <stdlib.h>
@@ -21,6 +35,19 @@ using std::endl;
 
 #include <LocARNA/matrices.hh>
 #include "hybrid_ensemble_model.hh"
+
+
+//! @brief Check validity of states (for debugging)
+void
+check_state_validity(const HybEnsModel::StateDescription &state, 
+		     const HybEnsModel &model) {
+#ifndef NDEBUG
+    if (not state.is_valid(model)) {
+	std::cerr << "ERROR: generated state "<<state<<" is not valid in model."<<std::endl;
+	abort();
+    }
+#endif
+}
 
 int
 main(int argc, char **argv)
@@ -54,6 +81,13 @@ main(int argc, char **argv)
     const size_t minsitesize=model.minsitesize();
     const size_t minsitedist=model.minsitedist();
 
+    // 0 interaction sites
+    
+    HybEnsModel::StateDescription empty_state;
+    
+    check_state_validity(empty_state,model);
+    printf("%f\n",model.energy(empty_state));
+    
     // Indexing for single hybridization 
     // ----\        /-----
     //     i1------j1     
@@ -74,6 +108,8 @@ main(int argc, char **argv)
 		    
 		    HybEnsModel::StateDescription state(i1,i2,j1,j2);
 		    		    
+		    check_state_validity(state,model);
+
 		    double energy_hyb = 
 			model.energy_hybrid(state[0]);
 		    
@@ -123,8 +159,8 @@ main(int argc, char **argv)
 		    
 		    if ( energy_hyb1 > th_hyb_energy ) continue;
 		    
-		    for (size_t k1=j1+minsitedist; k1<=seqA.length(); k1++) {
-			for (size_t k2=j2+minsitedist; k2<=seqB.length(); k2++) {
+		    for (size_t k1=j1+minsitedist+1; k1<=seqA.length(); k1++) {
+			for (size_t k2=j2+minsitedist+1; k2<=seqB.length(); k2++) {
 			    if ( (model.pair_type(k1,k2)==0) ) {
 				continue;
 			    }
@@ -138,6 +174,8 @@ main(int argc, char **argv)
 				    HybEnsModel::StateDescription::ISite is2(k1,k2,l1,l2);
 
 				    HybEnsModel::StateDescription state(i1,i2,j1,j2,k1,k2,l1,l2);
+
+				    check_state_validity(state,model);
 
 				    double energy_hyb2 = model.energy_hybrid(is2);
 				    

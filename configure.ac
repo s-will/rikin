@@ -5,7 +5,11 @@
 AC_PREREQ(2.59)
 AC_INIT([RRIKin], [0.2], [])
 
+# special dir for aux config files 
+AC_CONFIG_AUX_DIR(config)
+
 AM_INIT_AUTOMAKE
+
 
 # Checks for programs.
 AC_PROG_CXX
@@ -39,79 +43,79 @@ DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN(HybridPF, Doxyfile, doc)
 
 
-## ========================================
-## ELL (& BIU)
-#
+dnl ## ========================================
+dnl ## ELL (& BIU)
+dnl #
 
-# minimal reqired version of the BIU library
-BIU_REQUIRED_VERSION=2.3.5
-ELL_REQUIRED_VERSION=3.2.2
+dnl # minimal reqired version of the BIU library
+dnl BIU_REQUIRED_VERSION=2.3.5
+dnl ELL_REQUIRED_VERSION=3.2.2
 
-# BIU library path support, if not installed in usual directories
-AC_ARG_WITH(BIU,
-        AC_HELP_STRING(
-            [--with-BIU=PREFIX],
-            [alternative prefix path to BIU library]
-          ),
-          BIUPATHSET=1,
-          BIUPATHSET=0
-)
-if test  $BIUPATHSET = 1 ; then
-                CXXFLAGS="-I$with_BIU/include $CXXFLAGS"
-                LDFLAGS="-L$with_BIU/lib $LDFLAGS"
-                export PKG_CONFIG_PATH="$with_BIU/lib/pkgconfig/:$PKG_CONFIG_PATH"
-fi
+dnl # BIU library path support, if not installed in usual directories
+dnl AC_ARG_WITH(BIU,
+dnl         AC_HELP_STRING(
+dnl             [--with-BIU=PREFIX],
+dnl             [alternative prefix path to BIU library]
+dnl           ),
+dnl           BIUPATHSET=1,
+dnl           BIUPATHSET=0
+dnl )
+dnl if test  $BIUPATHSET = 1 ; then
+dnl                 CXXFLAGS="-I$with_BIU/include $CXXFLAGS"
+dnl                 LDFLAGS="-L$with_BIU/lib $LDFLAGS"
+dnl                 export PKG_CONFIG_PATH="$with_BIU/lib/pkgconfig/:$PKG_CONFIG_PATH"
+dnl fi
 
-# BIU library always needed
-LIBS="-lbiu $LIBS"
+dnl # BIU library always needed
+dnl LIBS="-lbiu $LIBS"
 
-# check for biu headers
-AC_MSG_CHECKING([for the BIU C++ library])
-AC_COMPILE_IFELSE(
-     [ #include <biu/VirtualList.hh> ],
-     [ 
-       AC_MSG_RESULT(yes)
-       BIUNOTFOUND=0;
-     ],
-         [
-       AC_MSG_RESULT(no)
-       BIUNOTFOUND=1;
-     ]
-)
-
-
-
-# ELL library path support, if not installed in usual directories
-AC_ARG_WITH(ELL,
-        AC_HELP_STRING(
-            [--with-ELL=prefix],
-            [try this for the ELL-library prefix install directory. Mandatory for latFold program.]
-          ),
-          ELLPATHSET=1,
-          ELLPATHSET=0
-)
-if test  $ELLPATHSET = 1 ; then
-        CXXFLAGS="$CXXFLAGS -I$with_ELL/include"
-        LDFLAGS="-L$with_ELL/lib $LDFLAGS"
-        export PKG_CONFIG_PATH="$with_ELL/lib/pkgconfig/:$PKG_CONFIG_PATH"
-fi
+dnl # check for biu headers
+dnl AC_MSG_CHECKING([for the BIU C++ library])
+dnl AC_COMPILE_IFELSE(
+dnl      [ #include <biu/VirtualList.hh> ],
+dnl      [ 
+dnl        AC_MSG_RESULT(yes)
+dnl        BIUNOTFOUND=0;
+dnl      ],
+dnl          [
+dnl        AC_MSG_RESULT(no)
+dnl        BIUNOTFOUND=1;
+dnl      ]
+dnl )
 
 
-# ELL library always needed
-LIBS="-lell $LIBS"
 
-AC_MSG_CHECKING([for the ELL C++ library])
-AC_COMPILE_IFELSE(
-     [ #include <ell/State.hh> ],
-     [ 
-       AC_MSG_RESULT(yes)
-       ELLNOTFOUND=0;
-     ],
-         [
-       AC_MSG_RESULT(no)
-       ELLNOTFOUND=1;
-     ]
-)
+dnl # ELL library path support, if not installed in usual directories
+dnl AC_ARG_WITH(ELL,
+dnl         AC_HELP_STRING(
+dnl             [--with-ELL=prefix],
+dnl             [try this for the ELL-library prefix install directory. Mandatory for latFold program.]
+dnl           ),
+dnl           ELLPATHSET=1,
+dnl           ELLPATHSET=0
+dnl )
+dnl if test  $ELLPATHSET = 1 ; then
+dnl         CXXFLAGS="$CXXFLAGS -I$with_ELL/include"
+dnl         LDFLAGS="-L$with_ELL/lib $LDFLAGS"
+dnl         export PKG_CONFIG_PATH="$with_ELL/lib/pkgconfig/:$PKG_CONFIG_PATH"
+dnl fi
+
+
+dnl # ELL library always needed
+dnl LIBS="-lell $LIBS"
+
+dnl AC_MSG_CHECKING([for the ELL C++ library])
+dnl AC_COMPILE_IFELSE(
+dnl      [ #include <ell/State.hh> ],
+dnl      [ 
+dnl        AC_MSG_RESULT(yes)
+dnl        ELLNOTFOUND=0;
+dnl      ],
+dnl          [
+dnl        AC_MSG_RESULT(no)
+dnl        ELLNOTFOUND=1;
+dnl      ]
+dnl )
 
 
 ##################
@@ -151,7 +155,7 @@ AC_ARG_WITH([vrna],
    VRNA_LDFLAGS="-L$withval/lib"],
   [])
 
-LIBS="-lg2 -lRNA $LIBS"
+LIBS="-lRNA $LIBS"
 
 #AC_SUBST([VRNA_CFLAGS])
 #AC_SUBST([VRNA_LDFLAGS])
@@ -205,20 +209,6 @@ AC_TYPE_SIZE_T
 
 DEPENDENCYNOTFOUND=0;
 
-# error output if BIU-headers not found
-if test "$BIUNOTFOUND" = "1"; then
-        AC_MSG_NOTICE()
-        AC_MSG_NOTICE(the BIU C++ library is required for building the ELL.)
-        AC_MSG_NOTICE(it can be obtained from http://www.bioinf.uni-freiburg.de/SW/BIU/.)
-        AC_MSG_NOTICE()
-        if test "$BIUPATHSET" = "1"; then
-                AC_MSG_NOTICE(cant find BIU in given path '$with_BIU'.)
-        else
-                AC_MSG_NOTICE(if BIU is installed elsewhere use --with-BIU=PREFIX.)
-        fi
-        DEPENDENCYNOTFOUND=1;
-fi
-
 # error output if ViennaRNA not found
 if test "$VRNANOTFOUND" = "1"; then
         AC_MSG_NOTICE()
@@ -228,19 +218,33 @@ if test "$VRNANOTFOUND" = "1"; then
         DEPENDENCYNOTFOUND=1;
 fi
 
-# error output if ELL-headers not found
-if test $ELLNOTFOUND = 1; then
-        AC_MSG_NOTICE()
-        AC_MSG_NOTICE(the ELL C++ library is required for building the tools.)
-        AC_MSG_NOTICE(it can be obtained from http://www.bioinf.uni-freiburg.de/SW/ELL/.)
-        AC_MSG_NOTICE()
-        if test $ELLPATHSET = 1; then
-                AC_MSG_NOTICE(cant find ELL in given path '$with_ELL'.)
-        else
-                AC_MSG_NOTICE(if ELL is installed elsewhere use --with-ELL=prefix.)
-        fi
-        DEPENDENCYNOTFOUND=1;
-fi
+dnl # error output if BIU-headers not found
+dnl if test "$BIUNOTFOUND" = "1"; then
+dnl         AC_MSG_NOTICE()
+dnl         AC_MSG_NOTICE(the BIU C++ library is required for building the ELL.)
+dnl         AC_MSG_NOTICE(it can be obtained from http://www.bioinf.uni-freiburg.de/SW/BIU/.)
+dnl         AC_MSG_NOTICE()
+dnl         if test "$BIUPATHSET" = "1"; then
+dnl                 AC_MSG_NOTICE(cant find BIU in given path '$with_BIU'.)
+dnl         else
+dnl                 AC_MSG_NOTICE(if BIU is installed elsewhere use --with-BIU=PREFIX.)
+dnl         fi
+dnl         DEPENDENCYNOTFOUND=1;
+dnl fi
+
+dnl # error output if ELL-headers not found
+dnl if test $ELLNOTFOUND = 1; then
+dnl         AC_MSG_NOTICE()
+dnl         AC_MSG_NOTICE(the ELL C++ library is required for building the tools.)
+dnl         AC_MSG_NOTICE(it can be obtained from http://www.bioinf.uni-freiburg.de/SW/ELL/.)
+dnl         AC_MSG_NOTICE()
+dnl         if test $ELLPATHSET = 1; then
+dnl                 AC_MSG_NOTICE(cant find ELL in given path '$with_ELL'.)
+dnl         else
+dnl                 AC_MSG_NOTICE(if ELL is installed elsewhere use --with-ELL=prefix.)
+dnl         fi
+dnl         DEPENDENCYNOTFOUND=1;
+dnl fi
 
 # error ABORT if on of the libraries was not found
 if test "$DEPENDENCYNOTFOUND" = "1"; then

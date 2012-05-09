@@ -1,4 +1,4 @@
-#include  <string.h> // strchr needed in pair_mat.h ! dependency BUG
+#include <string.h> // strchr needed in pair_mat.h ! dependency BUG
 #include <assert.h>
 
 #include "hybrid_pf.hh"

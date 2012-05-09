@@ -1,17 +1,3 @@
-/**
-   \mainpage
-   The goal of this project is the computation of RNA-RNA-Interaction
-   dynamics using a model of RNA that allows several interaction sites
-   and assumes simple hybridization at each site.  In the model, we
-   assume that single structures outside of the hybridization sites
-   and the hybridization sites itself are each equilibrated.
-   
-   We start by defining classes for the computation of hybrid
-   partition functions and joint probabilities for two unpaired sites.
- */
-
-
-
 #include  <stdlib.h>
 #include  <string.h>
 #include  <stdio.h>
@@ -52,14 +38,15 @@ main()
     //const std::string seqA="CCCCGGGG";
     
     //                      1234567890123456789012345678901
-    const std::string seqA="ACGGUCGGACGACAGUUACGGAUUACGGACG";
+    //const std::string seqA="CGCUACGUACGGAGCUAGCUGAAAC";
+    const std::string seqA="ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU";
     
     //                      12345678901234567890123456789012
-    const std::string seqB="AUGCCUGCCUGCUGUCAAUGCCUAAUGCCUGC";
+    // const std::string seqB="GAUGCAUGCCUCGAU";
+    const std::string seqB="GCUGCGAUGCAUGCCUCGAU";
     
     //const std::string seqB="GGGGGCCCCC";
-    
-    
+        
     // ------------------------------------------------------------
     // enumerate moves
 
@@ -68,9 +55,10 @@ main()
     std::cout << "    DONE." << std::endl;
     
     //    HybEnsModel::StateDescription state(8,9,16,17);
-    // HybEnsModel::StateDescription state(8,9,16,17,22,23,24,25);
-    HybEnsModel::StateDescription state(4,5,18,19,22,23,27,28);
-    
+    // HybEnsModel::StateDescription state(3,1,5,3);
+     //HybEnsModel::StateDescription state(1,1,3,13);
+    //HybEnsModel::StateDescription state(3,1,14,9);
+    HybEnsModel::StateDescription state(3,3,4,9,12,17,50,19);
     
     //check state energy
     std::cout << "Energy of state "<<state<<" = "<< model.energy(state) << std::endl;
@@ -99,7 +87,8 @@ main()
 		HybEnsModel::StateDescription state2=state;
 		move->apply(state2);
 		std::cout << state2 << "( E="<<model.energy(state2)<<" )"<< std::endl;
-	    }	    
+		assert(state2.is_valid(model));
+	    }
 	} while ( (move = mi.nextMove(move))!=NULL );
 	std::cout << std::endl;
     }

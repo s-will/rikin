@@ -4,6 +4,9 @@
  * @file moves.cc
  *
  * @brief Moves and Move Iteration for HybEnsModel
+ *
+ * @todo check limits for all moves
+ * @todo check symmetry of move set
  */
 
 // ------------------------------------------------------------
@@ -154,11 +157,11 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
     assert(sd_small.num_sites()!=0);
     assert(sd_large.num_sites()==sd_small.num_sites());
     
-    /*
-    std::cout <<std::endl << "GrowShrinkMove::transitionEnergy" << sd_small << " " << sd_large<< " " 
-     	      << loop_i1 << " "<< loop_i2 << " " << loop_j1 << " " << loop_j2
-     	      <<std::endl;
-    */
+    
+    //std::cout <<std::endl << "GrowShrinkMove::transitionEnergy" << sd_small << " " << sd_large<< " " 
+    // 	      << loop_i1 << " "<< loop_i2 << " " << loop_j1 << " " << loop_j2
+    // 	      <<std::endl;
+    
     
     const HybEnsModel &model = mi.model();
     
@@ -170,9 +173,12 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
 	((sd_small.num_sites()==2)?model.energy_hybrid(sd_small[1]):0);
     
     // Energy of added hybridization loop
-    energy_t e_loop = 
-	model.energy_hybrid_loop(loop_i1,loop_i2,loop_j1,loop_j2);
-    
+    if (loop_i1>loop_j1) {
+	std::swap(loop_i1,loop_j1);
+	std::swap(loop_i2,loop_j2);
+    }
+    energy_t e_loop = model.energy_hybrid_loop(loop_i1,loop_i2,loop_j1,loop_j2);
+
     // energy difference for unpairing
     energy_t e_unp =
 	(sd_small.num_sites()==1)
@@ -273,13 +279,13 @@ HybEnsModel::GrowShrinkMoveFR::first() {
 	HybEnsModel::GrowShrinkMove::first(
 					   o[0].j1,
 					   o[0].j2, 
-					   o[0].i1,
-					   o[0].i2,
+					   o[0].i1+m.minsitesize()-1,
+					   o[0].i2+m.minsitesize()-1,
 					   (o.num_sites()==2)
-					   ? o[1].i1-m.minsitesize()+1
+					   ? o[1].i1-m.minsitedist()-1
 					   : len1,
 					   (o.num_sites()==2)
-					   ? o[1].i2-m.minsitesize()+1
+					   ? o[1].i2-m.minsitedist()-1
 					   : len2
 					   );
 }
@@ -325,8 +331,8 @@ HybEnsModel::GrowShrinkMoveSL::first() {
 	HybEnsModel::GrowShrinkMove::first(
 					   o[1].i1,
 					   o[1].i2, 
-					   o[0].j1+m.minsitedist(),
-					   o[0].j2+m.minsitedist(),
+					   o[0].j1+m.minsitedist()+1,
+					   o[0].j2+m.minsitedist()+1,
 					   o[1].j1-m.minsitesize()+1,
 					   o[1].j2-m.minsitesize()+1
 					   );
@@ -503,10 +509,54 @@ HybEnsModel::NewSiteMove::NewSiteMove(const MoveIterator &mi) : Move(mi) {
 
 HybEnsModel::NewSiteMove::~NewSiteMove() {}
 
+bool
+HybEnsModel::NewSiteMove::first() {
+    const HybEnsModel &model=mi.model();
+    
+    is.i1=mini1;
+    is.i2=mini2;
+    is.j1=is.i1+model.minsitesize()-1;
+    is.j2=is.i2+model.minsitesize()-2;
+    
+    return (is.j1 <= maxj1 && is.j2+1<=maxj2)
+	&&
+	next();
+}
+
+bool
+HybEnsModel::NewSiteMove::next() {
+    const HybEnsModel &model=mi.model();
+    
+    is.j2++;
+    if (is.j2 <= maxj2 && is.j2 <= is.i2+model.maxunpinloop()+1) {
+	return true;
+    }
+    
+    is.j1++;
+    is.j2 = is.i2+model.minsitesize()-1;
+    if ( is.j1 <= maxj1 && is.j1 <= is.i1+model.maxunpinloop()+1
+	 && is.j2 <= maxj2) {
+	return true;
+    }
+    
+    is.i2++;
+    is.j1 = is.i1+model.minsitesize()-1;
+    is.j2 = is.i2+model.minsitesize()-1;
+    if ( is.j1 <= maxj1 && is.j2 <= maxj2 ) {
+	return true;
+    }
+    
+    is.i1++;
+    is.i2 = mini2;
+    is.j1 = is.i1+model.minsitesize()-1;
+    is.j2 = is.i2+model.minsitesize()-1;	
+    return ( is.j1 <= maxj1  && is.j2 <= maxj2 );
+}
+
 
 std::ostream &
 HybEnsModel::NewSiteMove::print(std::ostream &out) const {
-    out << "[New Site Move "<<i1<<" "<<i2<<"]";
+    out << "[New Site Move "<<is.i1<<" "<<is.i2<<" "<<is.j1<<" "<<is.j2<<"]";
     return out;
 }
 
@@ -530,53 +580,32 @@ bool
 HybEnsModel::NewSiteMoveF::first() {
     const HybEnsModel &model=mi.model();
     const StateDescription &o=mi.origin();
-
-    size_t len1 = model.seqA().length();
-    
+       
     if (o.num_sites()!=0) {
 	return false;
     }
     
-    i1=1;
-    i2=0;
+    mini1 = 1;
+    mini2 = 1;
+    maxj1 = model.seqA().length();
+    maxj2 = model.seqB().length();
     
-    return (i1 + model.minsitesize() < len1) 
-	&& 
-	next();
+    return NewSiteMove::first();
 }
 
-bool
-HybEnsModel::NewSiteMoveF::next() {
-    const HybEnsModel &model=mi.model();
-    
-    size_t len1 = model.seqA().length();
-    size_t len2 = model.seqB().length();
-    
-    i2++;
-    if (i2 + model.minsitesize() < len2) {
-	return true;
-    } else {
-	i1++;
-	i2=1;
-	return (i1 + model.minsitesize()  < len1);
-    }
-}
 
 HybEnsModel::energy_t
 HybEnsModel::NewSiteMoveF::transitionEnergy() const {
     const HybEnsModel &model=mi.model();
     const StateDescription &o=mi.origin();
-    
-    const StateDescription::ISite is_new=
-	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
-    
+        
     energy_t E_loop =
-	model.energy_hybrid_loop(is_new.i1,is_new.i2,is_new.j1,is_new.j2);
+	model.energy_hybrid_loop(is.i1,is.i2,is.j1,is.j2);
     
     assert (o.num_sites()==0);
     
     energy_t E_unp =
-	model.energy_unpair(is_new);
+	model.energy_unpair(is);
     
     return E_unp + E_loop;
     
@@ -584,15 +613,10 @@ HybEnsModel::NewSiteMoveF::transitionEnergy() const {
 
 void
 HybEnsModel::NewSiteMoveF::apply(StateDescription &sd) const {
-    const HybEnsModel &model=mi.model();
-    
-    const StateDescription::ISite is_new=
-	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
-    
     assert (sd.num_sites()==0);
     
     sd.resize(1);
-    sd[0]=is_new;
+    sd[0]=is;
     
 }
 
@@ -610,38 +634,31 @@ HybEnsModel::NewSiteMoveL::nextMoveType() const {
     return new NewSiteMoveR(mi);
 }
 
+
 bool
 HybEnsModel::NewSiteMoveL::first() {
     const HybEnsModel &model=mi.model();
     const StateDescription &o=mi.origin();
-    
+       
     if (o.num_sites()!=1) {
 	return false;
     }
     
-    i1=1; 
-    i2=0;
+    mini1 = 1;
+    mini2 = 1;
     
-    return (i1 + model.minsitesize() + model.minsitedist() < o[0].i1) 
-	&&
-	( i2 + 1 + model.minsitesize() + model.minsitedist() < o[0].i2 )
-	&& 
-	next();
-}
-
-bool
-HybEnsModel::NewSiteMoveL::next() {
-    const HybEnsModel &model=mi.model();
-    const StateDescription &o=mi.origin();
-        
-    i2++;
-    if (i2 + model.minsitesize() + model.minsitedist() < o[0].i2) {
-	return true;
-    } else {
-	i1++;
-	i2=1;
-	return (i1 + model.minsitesize() + model.minsitedist() < o[0].i1);
+    // can we insert a site left of the single site
+    if ( mini1 + model.minsitesize() - 1 + model.minsitedist() + 1 > o[0].i1 
+	 ||
+	 mini2 + model.minsitesize() - 1 + model.minsitedist() + 1 > o[0].i2
+	 ) {
+	return false;
     }
+    
+    maxj1 = o[0].i1 - model.minsitedist() - 1;
+    maxj2 = o[0].i2 - model.minsitedist() - 1;
+    
+    return NewSiteMove::first();
 }
 
 HybEnsModel::energy_t
@@ -651,33 +668,24 @@ HybEnsModel::NewSiteMoveL::transitionEnergy() const {
     
     const HybEnsModel &model=mi.model();
     
-    const StateDescription::ISite is_new=
-	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
-    
-    const StateDescription::ISite &is=mi.origin()[0];
+    const StateDescription::ISite &is_old=mi.origin()[0];
     
     energy_t E_loop =
-	model.energy_hybrid_loop(is_new.i1,is_new.i2,is_new.j1,is_new.j2);
+	model.energy_hybrid_loop(is.i1,is.i2,is.j1,is.j2);
     
     energy_t E_unp =
-	model.energy_unpair(is_new,is);
+	model.energy_unpair(is_old);
     
-    energy_t E_hyb = model.energy_hybrid(is);	    
+    energy_t E_hyb = model.energy_hybrid(is_old);	    
     
     return E_unp + E_loop + E_hyb;
 }
 
 void
 HybEnsModel::NewSiteMoveL::apply(StateDescription &sd) const {
-    const HybEnsModel &model=mi.model();
-    
-    const StateDescription::ISite is_new=
-	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
-    
-    const StateDescription::ISite is=sd[0];
     sd.resize(2);
-    sd[0] = is_new;
-    sd[1]=is;       
+    sd[1] = sd[0];
+    sd[0] = is;
 }
 
 // ------------------------------------------------------------
@@ -693,6 +701,7 @@ HybEnsModel::NewSiteMoveR::nextMoveType() const {
     return new MergeMove(mi);
 }
 
+
 bool
 HybEnsModel::NewSiteMoveR::first() {
     const HybEnsModel &model=mi.model();
@@ -700,42 +709,18 @@ HybEnsModel::NewSiteMoveR::first() {
 
     size_t len1 = model.seqA().length();
     size_t len2 = model.seqB().length();
-    
-    const StateDescription::ISite &is=o[0];
-    
+  
     if (o.num_sites()!=1) {
 	return false;
     }
     
-    i1=is.j1+model.minsitedist()+2; 
-    i2=is.j2+model.minsitedist()+1;
+    mini1 = o[0].j1 + model.minsitedist() + 1;
+    mini2 = o[0].j2 + model.minsitedist() + 1;
     
-    return (i1 + model.minsitesize() < len1) 
-	&&
-	( i2 + 1 + model.minsitesize() < len2 )
-	&& 
-	next();
-}
-
-bool
-HybEnsModel::NewSiteMoveR::next() {
-    const HybEnsModel &model=mi.model();
-    const StateDescription &o=mi.origin();
+    maxj1 = len1;
+    maxj2 = len2;
     
-    size_t len1 = model.seqA().length();
-    size_t len2 = model.seqB().length();
-
-    const StateDescription::ISite &is=o[0];
-    
-    i2++;
-    if (i2 + model.minsitesize() < len2) {
-	return true;
-    } else {
-	i1++;
-	i2=is.j2+model.minsitedist()+2;
-	
-	return ( i1 + model.minsitesize() < len1 );
-    }
+    return NewSiteMove::first();
 }
 
 HybEnsModel::energy_t
@@ -745,31 +730,23 @@ HybEnsModel::NewSiteMoveR::transitionEnergy() const {
     
     const HybEnsModel &model=mi.model();
     
-    const StateDescription::ISite is_new=
-	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
-    
-    const StateDescription::ISite &is=mi.origin()[0];
+    const StateDescription::ISite &is_old=mi.origin()[0];
     
     energy_t E_loop =
-	model.energy_hybrid_loop(is_new.i1,is_new.i2,is_new.j1,is_new.j2);
+	model.energy_hybrid_loop(is.i1,is.i2,is.j1,is.j2);
     
     energy_t E_unp =
-	model.energy_unpair(is,is_new);
+	model.energy_unpair(is_old,is);
     
-    energy_t E_hyb = model.energy_hybrid(is);	    
+    energy_t E_hyb = model.energy_hybrid(is_old);	    
     
     return E_unp + E_loop + E_hyb;
 }
 
 void
 HybEnsModel::NewSiteMoveR::apply(StateDescription &sd) const {
-    const HybEnsModel &model=mi.model();
-    
-    const StateDescription::ISite is_new=
-	StateDescription::ISite(i1,i2,i1+model.minsitesize()-1,i2+model.minsitesize()-1);
-    
     sd.resize(2);
-    sd[1]=is_new;
+    sd[1]=is;
 }
 
 

@@ -37,6 +37,13 @@ HybEnsModel::StateDescription::num_sites() const {
     return isites.size();
 }
 
+std::string
+HybEnsModel::StateDescription::toString() const {
+    std::ostringstream out;
+    out << (*this);
+    return out.str();
+}
+
 
 // --------------------
 // encoding and decoding compressed representation
@@ -117,6 +124,40 @@ HybEnsModel::StateDescription::decode(const code_t &code) {
     return *this;
 }
 
+bool
+HybEnsModel::StateDescription::is_valid(const HybEnsModel &model) const {
+    bool valid=true;
+    
+    // at most 2 sites
+    valid = valid && num_sites()<=2;
+	    
+    // check site size and boundaries
+    for (size_t i=0; valid && i<num_sites(); ++i) {
+	valid = valid
+	    && 1 <= isites[i].i1 
+	    && isites[i].i1 <= isites[i].j1
+	    && isites[i].j1 <= model.seqA().length();
+	valid = valid 
+	    && 1 <= isites[i].i2
+	    && isites[i].i2 <= isites[i].j2 
+	    && isites[i].j2 <= model.seqB().length();
+	valid = valid 
+	    && isites[i].j1  >= isites[i].i1 + model.minsitesize() - 1;
+	valid = valid
+	    && isites[i].j2  >= isites[i].i2 + model.minsitesize() - 1;
+    }
+	    
+    // check site distance
+    if (num_sites()==2) {
+	valid = valid
+	    && isites[0].j1 + model.minsitedist() + 1 <= isites[1].i1;
+	valid = valid
+	    && isites[0].j2 + model.minsitedist() + 1 <= isites[1].i2;
+    }
+
+    return valid;
+}
+
 
 // ------------------------------------------------------------
 // Implementation of HybEnsModel
@@ -127,9 +168,9 @@ HybEnsModel::HybEnsModel(std::string seqA, std::string seqB)
       uppfA_(seqA,+1),
       uppfB_(seqB,-1),
       hybridpf_(seqA,seqB),
-      maxunpinloop_(3),
+      maxunpinloop_(4),
       minsitesize_(2),
-      minsitedist_(3)
+      minsitedist_(6)
 {
 }
 
@@ -165,7 +206,7 @@ HybEnsModel::energy_t
 HybEnsModel::energy(const StateDescription &sd) const {
     switch(sd.num_sites()) {
     case 0:
-	return - energy_duplex_init(); // energy penalty for first interaction is added to empty state!!!
+	return - energy_duplex_init()/100.0; // energy penalty for first interaction is added to empty state!!!
     case 1:
 	// std::cout << "E = "<<energy_unpair(sd[0])<<"(unp) + "<<energy_hybrid(sd[0])<<"(hyb)"<<std::endl;
 	return energy_unpair(sd[0])+energy_hybrid(sd[0]);
@@ -186,8 +227,6 @@ operator << (std::ostream &out, const HybEnsModel::StateDescription::ISite &isit
 	<< isite.j2 << ")";
     return out;
 }
-
-
 
 std::ostream &
 operator << (std::ostream &out, const HybEnsModel::StateDescription &sd) {
