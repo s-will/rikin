@@ -212,3 +212,44 @@ HybridPF::partition_function(size_t i1, size_t j1,size_t i2, size_t j2) const {
     assert(i2<=j2);
     return Q(i1,i2)(j1,j2);
 }
+
+HybridPF::pf_t
+HybridPF::partition_function_cond(size_t i1, 
+				  size_t j1,
+				  size_t i2,
+				  size_t j2,
+				  size_t u1,
+				  size_t u2,
+				  bool left
+				  ) const {
+    
+    // std::cout << "HybridPF::partition_function_cond"
+    // 	      << i1 << "-" << j1 << "," << i2 << "-" << j2 << " | "<< u1 <<"/" << u2 << " unpaired at " << (pos==left?"left":"right") " ends"<< std::endl;
+    
+    assert(i1+u1<j1);
+    assert(i2+u2<j2);
+    
+    pf_t q=0; // resulting partition function
+    
+    if (left) {
+       	size_t max_k1 = std::min(j1, i1+MAXLOOP+1);
+	for (size_t k1=i1+u1+1; k1<=max_k1; k1++) {
+	    size_t max_k2 = std::min(j2, i2+MAXLOOP+1-(k1-i1-1));
+	    for (size_t k2=i2+u2+1; k2<=max_k2; k2++) {
+		q += exp_ILoopE(i1,i2,k1,k2) * Q(k1,k2)(j1,j2);
+	    }
+	}
+    } else {
+	size_t min_k1 = std::max(i1+MAXLOOP+1, j1) - MAXLOOP-1;
+	for (size_t k1=min_k1; k1<=j1-u1-1; k1++) {
+	    size_t min_k2 = std::max(j2+(MAXLOOP+1+(k1-i1-1)), i2) - (MAXLOOP+1+(k1-i1-1));
+	    for (size_t k2=min_k2; k2<=j2-u2-1; k2++) {
+		q += Q(i1,i2)(k1,k2) * exp_ILoopE(k1,k2,j1,j2);
+	    }
+	}
+    }
+
+    return q;
+}
+
+

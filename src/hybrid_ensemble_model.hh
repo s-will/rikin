@@ -143,6 +143,28 @@ public:
 		    ;
 	    }
 	    
+	    /**
+	     * \brief provide parametrized view on the site ends (read only)
+	     */
+	    size_t end(size_t seq, bool left) const {
+		if (seq==0) {
+		    return left?i1:j1; 
+		} else {
+		    return left?i2:j2; 
+		}
+	    }
+
+	    /**
+	     * \brief provide parametrized view on the site ends
+	     */
+	    size_t &end(size_t seq, bool left) {
+		if (seq==0) {
+		    return left?i1:j1; 
+		} else {
+		    return left?i2:j2; 
+		}
+	    }
+
 	};
 	
 	//! type of encoded class representation
@@ -440,11 +462,10 @@ public:
     minsitedist() const {
 	return minsitedist_;
     }
-
     
     double RT() const {
 	return hybridpf_.RT();
-    }    
+    }
 
     double
     boltzmann_weight(energy_t energy) const {
@@ -473,7 +494,7 @@ private:
     //! @note in order to make the states represnting disjoint sets of structures,
     //! minsitedist_ should be larger than maxunpinloop_
     const size_t minsitedist_;
-    
+   
 };
 
 std::ostream &

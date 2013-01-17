@@ -110,9 +110,9 @@ class Basin {
     double barrier;    //!< energy of minimal energy transition out of the basin
     size_t connect_to; //!< basin index of deepest basin accessible under barrier
 
+public:
     //! if the basin is merged to a basin, index of the other basin. Otherwise, equal to this.basin_index  
     size_t merged_to;
-public:
 
     /**
      * A transition between two basins
@@ -322,9 +322,22 @@ public:
 	return states; 
     }
 
+    
+    void print_header(std::ostream &out) const {
+	printf("%5s %-30s %4s %6s %5s %6s %6s\n",
+	       "idx",
+	       "description",
+	       "n_s",
+	       "ensE",
+	       "ct",
+	       "minE",
+	       "h"
+	       );
+    }
+
     void
     print(std::ostream &out, const HybEnsModel &model) const {
-	printf("%4lu %-30s %4lu %7.4g %4lu %7.4g %7.4g\n",
+	printf("%5lu %-30s %4lu %6.2f %5lu %6.2f %6.2f\n",
 	       basin_index,
 	       local_minimum.toString().c_str(),
 	       states,
@@ -735,9 +748,12 @@ public:
      */
     void
     print_basins(std::ostream &out) const {
+	basins[0].print_header(out);
 	for(size_t i=0; i<basins.size(); ++i) {
 	    if (basins[i].get_merged_to()==i) {
 		basins[i].print(std::cout,model);
+	    } else {
+		// printf("merged to %4lu",basins[i].merged_to); basins[i].print(std::cout,model);
 	    }
 	}
     }

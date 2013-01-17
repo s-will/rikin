@@ -168,8 +168,8 @@ HybEnsModel::HybEnsModel(std::string seqA, std::string seqB)
       uppfA_(seqA,+1),
       uppfB_(seqB,-1),
       hybridpf_(seqA,seqB),
-      maxunpinloop_(4),
-      minsitesize_(2),
+      maxunpinloop_(6),
+      minsitesize_(3),
       minsitedist_(6)
 {
 }

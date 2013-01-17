@@ -9,6 +9,9 @@
  * @todo check symmetry of move set
  */
 
+//! whether shift moves are allowed
+bool allow_shift_move=true;
+
 // ------------------------------------------------------------
 // Move
 HybEnsModel::Move::~Move() {}
@@ -359,9 +362,11 @@ HybEnsModel::GrowShrinkMoveSR::~GrowShrinkMoveSR() {}
 
 HybEnsModel::Move *
 HybEnsModel::GrowShrinkMoveSR::nextMoveType() const {
-    return new RemoveSiteMove(mi);
+    if (allow_shift_move)
+	return new ShiftMove(mi);
+    else
+	return new RemoveSiteMove(mi);
 }
-
 
 bool
 HybEnsModel::GrowShrinkMoveSR::first() {
@@ -401,6 +406,150 @@ HybEnsModel::GrowShrinkMoveSR::apply(StateDescription &sd) const {
     sd[1].j1=k1;
     sd[1].j2=k2;
 }
+
+// ------------------------------------------------------------
+// Shift Move
+//
+
+HybEnsModel::ShiftMove::ShiftMove(const MoveIterator &mi,size_t seq,size_t site,bool left): Move(mi),seq_(seq),site_(site),left_(left) {}
+
+HybEnsModel::ShiftMove::~ShiftMove() {}
+
+std::ostream &
+HybEnsModel::ShiftMove::print(std::ostream &out) const {
+    out << "[Shift Move "<<k_<<" ("<<seq_<<" "<<site_<<" "<<left_<<")]";
+    return out;
+}
+
+HybEnsModel::Move *
+HybEnsModel::ShiftMove::nextMoveType() const {
+
+    size_t seq=seq_;
+    size_t site=site_;
+    bool left=left_;
+    
+    left=!left;
+    if (left) {
+	site++;
+    }
+    if (site>=mi.origin().num_sites()) {
+	site=0;
+	seq++;
+    }
+    if (seq==2) {
+	return new RemoveSiteMove(mi);
+    }
+
+    return new ShiftMove(mi,seq,site,left);
+}
+
+bool
+HybEnsModel::ShiftMove::first() {
+    // set to first move of this type if there is one
+    
+    const StateDescription &o=mi.origin();
+    const HybEnsModel &m=mi.model();
+
+    const size_t maxshiftmovesize=m.maxunpinloop()/2;
+    
+    // fail if there are not enough sites
+    if (site_ >= o.num_sites()) {
+	return false;
+    }
+    
+    i_ = o[site_].end(seq_,left_);
+    
+    // compute minimum k_
+    
+    //     at least 1
+    k_ = 1;
+    
+    //     subtract at most maxshiftmovesize
+    k_ = std::max(k_+maxshiftmovesize,i_)-maxshiftmovesize; //!avoid wrap
+    
+    //     if right end, respect minimum size of site
+    if (!left_) {
+	k_ = std::max(k_,o[site_].end(seq_,!left_)+m.minsitesize());
+    }
+    
+    //     if left end of second site, don't touch other site
+    if (site_==1 && left_) {
+	k_ = std::max(k_,o[1-site_].end(seq_,!left_) + m.minsitedist());
+    }
+    
+    // compute maximum k_ (i.e. maxk_)
+    
+    //     at most sequence length
+    maxk_ =  (seq_==0)?m.seqA().length():m.seqB().length();
+    
+    //    add at most maxshiftmovesize
+    maxk_ = std::min(maxk_,i_+maxshiftmovesize);
+    
+    //    if left end: min site size
+    if (left_) {
+	maxk_ = std::min(maxk_,o[site_].end(seq_,!left_) - m.minsitesize());
+    }
+
+    //    if right end of first site: min site diff 
+    if (!left_ && site_==0 && o.num_sites()>1) {
+	maxk_ = std::min(maxk_,o[1-site_].end(seq_,!left_) - m.minsitedist());
+    }
+    
+    if (k_==i_) k_++;
+    return k_<=maxk_;
+}
+
+bool
+HybEnsModel::ShiftMove::next() {
+    k_++; // increase k_
+    if (k_==i_) k_++; // skip original position i_
+
+    return (k_<=maxk_); // true while <=maxk_
+}
+
+HybEnsModel::energy_t
+HybEnsModel::ShiftMove::transitionEnergy() const {
+    
+    // simple definition of transition state: 
+    // unpair energy for larger state + hybridization energy of smaller state
+
+    const HybEnsModel &model = mi.model();
+
+    const StateDescription &sd=mi.origin();
+    StateDescription sd2(sd);
+    apply(sd2);
+    
+    // determine smaller and larger of source and target
+    bool grow=( (left_ && k_<i_) || (!left_ && k_>i_) );
+    const StateDescription &sd_small=grow ? sd  : sd2;
+    const StateDescription &sd_large=grow ? sd2 : sd ;
+    
+
+    energy_t e_hyb =
+	model.energy_hybrid(sd_small[site_]);
+    
+    if (sd_small.num_sites()==2) {
+	e_hyb+=
+	    model.energy_hybrid(sd_small[1-site_]);
+    }
+    
+    // energy difference for unpairing
+    energy_t e_unp =
+	(sd.num_sites()==1)
+	?
+	model.energy_unpair(sd_large[0])
+	:
+	model.energy_unpair(sd_large[0],
+			    sd_large[1]);
+    
+    return e_hyb+e_unp;
+}
+
+void
+HybEnsModel::ShiftMove::apply(StateDescription &sd) const {
+    sd[site_].end(seq_,left_)=k_;
+}
+
 
 // ------------------------------------------------------------
 // Move that removes a site
@@ -971,9 +1120,4 @@ HybEnsModel::MoveIterator::nextMove(Move *m) const {
     } while( ! m->first() ); // there is no first move of the next move type 
     
     return m;
-}
-
-void
-HybEnsModel::MoveIterator::disposeMove(Move *move) const {
-    if (move!=NULL) delete move;
 }

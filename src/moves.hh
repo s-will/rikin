@@ -105,7 +105,7 @@ protected:
 	
     size_t i1; //!< original site end position in seq 1
     size_t i2; //!< original site end position in seq 2
-	
+    
     size_t min1; //!< min position for site end in seq 1
     size_t min2; //!< min position for site end in seq 2
     size_t max1; //!< max position for site end in seq 1
@@ -149,7 +149,7 @@ protected:
      */
     bool
     firstLeft();
-	
+    
     /** 
      * @brief generic next grow shrink move to left
      * 
@@ -181,8 +181,8 @@ protected:
      * @param sd_large state description
      * @param loop_i1 left position of loop sequence 1
      * @param loop_i2 left position of loop sequence 2
-     * @param loop_j1 right tposition of loop sequence 1
-     * @param loop_j2 right position of loop sequence 1
+     * @param loop_j1 right position of loop sequence 1
+     * @param loop_j2 right position of loop sequence 2
      * 
      * @return energy of transition state where the loop is attached to
      * the smaller state in order to yield the larger state
@@ -312,6 +312,55 @@ public:
     apply(StateDescription &sd) const;
 };
 
+
+/**
+ * @brief Move that shifts one end in one sequence
+ *
+ */
+class ShiftMove : public Move {
+protected:
+    size_t seq_; //!< number of sequence where a position is shifted
+    size_t site_; //!< site where a position is shifted
+    bool left_; //!< true means left end is shifted; false, right end
+    
+    size_t k_; //!< new position for site end	
+    size_t i_; //!< original site end position
+    
+    size_t maxk_; //!< max position for site end
+    
+public:
+    ShiftMove(const MoveIterator &mi, size_t seq=0, size_t site=0, bool left=true);
+    
+    virtual
+    ~ShiftMove();
+        
+    Move *
+    nextMoveType() const;
+	
+    bool
+    first();
+
+    bool
+    next();
+
+    energy_t
+    transitionEnergy() const;
+
+    void
+    apply(StateDescription &sd) const;
+    
+    /** 
+     * Print move
+     * 
+     * @param out output stream
+     * 
+     * @return output stream
+     */
+    virtual
+    std::ostream &
+    print(std::ostream &out) const;
+
+};
 
 /**
  * @brief Move that removes an interaction site
@@ -640,8 +689,7 @@ public:
      * heap. This object is deleted automatically by a call to
      * nextMove() that returns a null pointer, which happens at
      * the end of a full traversal through the list of
-     * neighbors. Otherwise it should be deleted explicitely by
-     * disposeMove().
+     * neighbors. Otherwise it should be deleted explicitely.
      */
     Move *
     firstMove() const;
@@ -660,16 +708,6 @@ public:
     Move *
     nextMove(Move *m) const;
 
-    /** 
-     * @brief Dispose a move
-     * 
-     * @param move pointer to move
-     *
-     * Deletes the object referenced by move, unless move is the
-     * null pointer.
-     */
-    void
-    disposeMove(Move *move) const;		
 };
 
 

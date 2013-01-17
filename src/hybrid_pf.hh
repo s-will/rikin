@@ -47,6 +47,26 @@ public:
      */
     pf_t
     partition_function(size_t i1, size_t j1,size_t i2, size_t j2) const;
+
+    /**
+     * @brief get partition function of hybridization of subsequences with unpaired condition
+     * @param i1 start position in sequence A
+     * @param j1 end position in sequence A
+     * @param i2 start position in sequence B
+     * @param j2 end position in sequence B
+     * @param u1 size of unpaired region in A
+     * @param u2 size of unpaired region in B
+     * @param left whether left end (true) or right end (false)
+     *
+     * @note: this could be used to compute the energy of a shift move
+     * transition state. Howeverm there is a simpler definition of
+     * this transition state that does not require conditional hybrid pfs.
+     *
+     * @return partition function of hybridization of seqA[i1..j1] and seqB[i2..j2],
+     *          where i1.i2 and j1.j2 interact and u bases are unpaired at given position pos
+     */
+    pf_t
+    partition_function_cond(size_t i1, size_t j1,size_t i2, size_t j2, size_t u1, size_t u2, bool left) const;
     
     /** 
      * Scaling factor for partition functions

@@ -37,10 +37,10 @@ main()
     //                                        UAUCUU...           ...UACA
     //const std::string seqA="CCCCGGGG";
     
-    //                      1234567890123456789012345678901
+    //                      12345678901234567890123456789012
     //const std::string seqA="CGCUACGUACGGAGCUAGCUGAAAC";
     const std::string seqA="ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU";
-    
+    //                                GCUGCGAUGCAUGCCUCGAU
     //                      12345678901234567890123456789012
     // const std::string seqB="GAUGCAUGCCUCGAU";
     const std::string seqB="GCUGCGAUGCAUGCCUCGAU";
@@ -56,9 +56,9 @@ main()
     
     //    HybEnsModel::StateDescription state(8,9,16,17);
     // HybEnsModel::StateDescription state(3,1,5,3);
-     //HybEnsModel::StateDescription state(1,1,3,13);
-    //HybEnsModel::StateDescription state(3,1,14,9);
-    HybEnsModel::StateDescription state(3,3,4,9,12,17,50,19);
+    //HybEnsModel::StateDescription state(1,1,3,13);
+    HybEnsModel::StateDescription state(11,1,32,18);
+    //HybEnsModel::StateDescription state(3,3,4,9,12,17,50,19);
     
     //check state energy
     std::cout << "Energy of state "<<state<<" = "<< model.energy(state) << std::endl;
@@ -79,15 +79,18 @@ main()
 	    
 	    HybEnsModel::energy_t tE=move->transitionEnergy();
 	    if (tE < 1e6) {
-		count_neighbors++;
-		std::cout <<count_neighbors << " ("<<count_moves<<") ";
-		std::cout << state<<" >>> ";
-		move->print(std::cout);
-		std::cout << " " << tE << " >>> ";
 		HybEnsModel::StateDescription state2=state;
 		move->apply(state2);
-		std::cout << state2 << "( E="<<model.energy(state2)<<" )"<< std::endl;
-		assert(state2.is_valid(model));
+		HybEnsModel::energy_t state2_energy = model.energy(state2);
+		if (state2_energy < 1e6) {
+		    count_neighbors++;
+		    std::cout <<count_neighbors << " ("<<count_moves<<") ";
+		    std::cout << state<<" >>> ";
+		    move->print(std::cout);
+		    std::cout << " " << tE << " >>> ";
+		    std::cout << state2 << "( E="<<state2_energy<<" )"<< std::endl;
+		    assert(state2.is_valid(model));
+		}
 	    }
 	} while ( (move = mi.nextMove(move))!=NULL );
 	std::cout << std::endl;

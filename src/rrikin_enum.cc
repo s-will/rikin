@@ -86,7 +86,7 @@ main(int argc, char **argv)
     HybEnsModel::StateDescription empty_state;
     
     check_state_validity(empty_state,model);
-    printf("%f\n",model.energy(empty_state));
+    printf("%6.2f\n",model.energy(empty_state));
     
     // Indexing for single hybridization 
     // ----\        /-----
@@ -125,8 +125,8 @@ main(int argc, char **argv)
 		    double total_energy=model.energy(state);
 
 		    
-		    // using cout<< instead of printf causes has extrem overhead
-		    printf("%f %lu %lu %lu %lu\n",total_energy,i1,i2,j1,j2);
+		    // using cout<< instead of printf causes extrem overhead
+		    printf("%6.2f %3lu %3lu %3lu %3lu\n",total_energy,i1,i2,j1,j2);
 		}
 	    }
 	}
@@ -188,7 +188,7 @@ main(int argc, char **argv)
 				    double total_energy=model.energy(state);
 				    
 				    // using cout<< instead of printf causes has extrem overhead
-				    printf("%f %lu %lu %lu %lu %lu %lu %lu %lu\n",total_energy,i1,i2,j1,j2,k1,k2,l1,l2);
+				    printf("%6.2f %3lu %3lu %3lu %3lu %3lu %3lu %3lu %3lu\n",total_energy,i1,i2,j1,j2,k1,k2,l1,l2);
 				    
 				}
 			    }
