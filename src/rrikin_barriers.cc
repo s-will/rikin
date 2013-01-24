@@ -11,7 +11,7 @@
  * becomes necessary to rethink the definition of local minima and and
  * basins in the energy landscape!  Usually these are defined in terms
  * of (non-transition) state energies, comparing the energies of
- * origin and target state in each move/transition.  In general, these
+ * source and target state in each move/transition.  In general, these
  * notions should be defined in terms of transition state energies,
  * since these energies govern the speed of transitions.  We define a
  * neighborship relation x ->_t y with the semantics that there is a
@@ -22,9 +22,7 @@
  * common definition puts E_y in place of E_t. Analogously, the
  * criterion for adaptive walks and steepest descent walk (i.e. basin
  * assignment) is modified to compare to the transition state energy
- * in place of the target state energy. In praxis, we relax these
- * definitions with the introduction of a maximal tolerated energy
- * delta for "adaptive" walks.
+ * in place of the target state energy.
  *
  * IS THIS TRUE?: Note that both (i.e., old and new) local minimum
  * definitions are equivalent for Kawasaki and Metropolis rates. The
@@ -36,7 +34,7 @@
  *
  * @note In our setting, for all x->_t y the property holds that E_t
  * >= min(E_x,E_y). [Note that this is a consequence of either the
- * origin or the target being a relaxation of the transition state and
+ * source or the target being a relaxation of the transition state and
  * Prop.: For energies of ensembles x and y, there holds that x
  * subset y implies E_x >= E_y.] This important property allows us to
  * use a barrier-like algorithm, where states are processed in the
@@ -51,13 +49,14 @@
  * k(a->b) = sum_x in a,y in b Pr[x|a]k(x->y) = Z^trans_ab / Z_a,
  * where Z^trans_ab = sum_x in a,y in b: Z^trans_xy.
  *
- * @note Although the model is degeneratel, steepest descent walks are 
+ * @note Although the model is degenerate, steepest descent walks are 
  * uniquely defined, since the order on moves is fixed
  *
  * @note Barriers/transition states between basins: the energy of the
- * barrier has to be the maximum of origin state energy, transition
- * state energy, and target state energy. Otherwise, the barrier can
- * be lower than one of the explicit states. In this case the barrier
+ * barrier has to be the maximum of source state energy, transition
+ * state energy, and target state energy
+ * (cf. transition_t::barrier_energy()). Otherwise, the barrier can be
+ * lower than one of the explicit states. In this case the barrier
  * would not reflect that the energy has to be raised to this explicit
  * state for the transition between the basins.
  *
@@ -94,6 +93,77 @@ const bool debug_out=false;
 
 class BarrierGraph;
 
+
+/**
+ * @brief A transition between two basins
+ * 
+ */
+class BasinTransition {
+    double barrier; //! minimal energy of a transition state
+    double Z;       //! partition function of macro transition state
+public:
+    BasinTransition(): barrier(std::numeric_limits<double>::max()),Z(0) {} 
+    
+    /** 
+     * Construct with transition energy and model
+     * 
+     * @param transition_energy 
+     * @param model 
+     */
+    BasinTransition(double transition_energy,const HybEnsModel &model)
+	:barrier(transition_energy),Z(model.boltzmann_weight(transition_energy))
+    {}
+    
+    /** 
+     * Update transition with energy and model
+     * 
+     * @param transition_energy transition/barrier energy
+     * @param model hybrid ensemble model
+     */
+    void
+    update(double transition_energy,const HybEnsModel &model) {
+	barrier = std::min(barrier,transition_energy);
+	Z+=model.boltzmann_weight(transition_energy);
+    }
+    
+    /** 
+     * Update transition by energy and partition function of additional transition
+     *
+     * @param transition_energy transition/barrier energy
+     * @param Z_ partition functions
+     */
+    void
+    update(double transition_energy,double Z_) {
+	barrier = std::min(barrier,transition_energy);
+	Z+=Z_;
+    }
+    
+    /** 
+     * Update transition adding new BasinTransition
+     * 
+     * @param transition addition trransition 
+     */
+    void update(const BasinTransition &t) {
+	update(t.barrier,t.Z);
+    }
+    
+    /** 
+     * Get barrier
+     *  
+     * @return barrier of transition
+     */
+    double
+    get_barrier() const {return barrier;}
+    
+    /** 
+     * Get partition function
+     * 
+     * @return partition function of transition
+     */	
+    double
+    get_Z() const {return Z;}
+};
+
 /**
  * @brief A basin in the energy landscape
  * 
@@ -114,63 +184,6 @@ public:
     //! if the basin is merged to a basin, index of the other basin. Otherwise, equal to this.basin_index  
     size_t merged_to;
 
-    /**
-     * A transition between two basins
-     * 
-     */
-    class BasinTransition {
-	double barrier; //! minimal energy of a transition state
-	double Z;       //! partition function of macro transition state
-    public:
-	BasinTransition(): barrier(std::numeric_limits<double>::max()),Z(0) {} 
-	
-	/** 
-	 * Construct with transition energy and model
-	 * 
-	 * @param transition_energy 
-	 * @param model 
-	 */
-	BasinTransition(double transition_energy,const HybEnsModel &model)
-	    :barrier(transition_energy),Z(model.boltzmann_weight(transition_energy))
-	{}
-	    
-	/** 
-	 * Update transition with energy and model
-	 * 
-	 * @param transition_energy transition/barrier energy
-	 * @param model hybrid ensemble model
-	 */
-	void
-	update(double transition_energy,const HybEnsModel &model) {
-	    barrier = std::min(barrier,transition_energy);
-	    Z+=model.boltzmann_weight(transition_energy);
-	}
-
-	/** 
-	 * Update transition with energy and partition function
-	 * 
-	 * @param transition_energy transition/barrier energy
-	 * @param Z_ partition functions
-	 */
-	void
-	update(double transition_energy,double Z_) {
-	    barrier = std::min(barrier,transition_energy);
-	    Z+=Z_;
-	}
-
-	/** 
-	 * Get barrier
-	 *  
-	 * @return barrier of transition
-	 */
-	double get_barrier() const {return barrier;}
-
-	/** 
-	 * Get partition function
-	 * 
-	 * @return partition function of transition
-	 */	double get_Z() const {return Z;}
-    };
 private:
     //! map from basin index to basin transition 
     typedef std::tr1::unordered_map<size_t,BasinTransition> transitions_map_t;
@@ -183,34 +196,34 @@ public:
      * 
      */
     struct transition_t {
-	double orig_state_energy; //!< energy of origin state
+	double source_state_energy; //!< energy of source state
 	size_t target_basin_index;  //!< index of target basin
 	double target_state_energy; //!< energy of target state
 	double transition_energy;   //!< energy of transition
 	    
-	transition_t(double orig_state_energy_,
+	transition_t(double source_state_energy_,
 		     size_t target_basin_index_,
 		     double target_state_energy_,
 		     double transition_energy_)
-	    :orig_state_energy(orig_state_energy_),
+	    :source_state_energy(source_state_energy_),
 	     target_basin_index(target_basin_index_),
 	     target_state_energy(target_state_energy_),
 	     transition_energy(transition_energy_)
 	{}
 	    
 	transition_t
-	reverse(size_t orig_basin_index) const {
-	    return transition_t(target_state_energy,orig_basin_index,orig_state_energy,transition_energy);
+	reverse(size_t source_basin_index) const {
+	    return transition_t(target_state_energy,source_basin_index,source_state_energy,transition_energy);
 	}
 	
 	double
 	barrier_energy() const {
-	    return std::max(orig_state_energy,std::max(target_state_energy,transition_energy));
-	    //return std::max(orig_state_energy,target_state_energy);
+	    return std::max(source_state_energy,std::max(target_state_energy,transition_energy));
+	    //return std::max(source_state_energy,target_state_energy);
 	}
-	
     };
-	
+    
+    
     /** 
      * Construct a new basin with given index and local minimum
      * 
@@ -230,7 +243,7 @@ public:
     {
 	add_state(energy_of_minimum, model);
     }
-	
+    
     void
     add_state(double energy, const HybEnsModel &model) {
 	states++;
@@ -238,7 +251,7 @@ public:
     }
 
     /** 
-     * @brief Register a new transition to a target basin in the origin basin 
+     * @brief Register a new transition to a target basin in the source basin 
      *
      * 1) Determines the barrier energy and neighbor basin where the
      * basin connects to with lowest barrier.
@@ -247,16 +260,17 @@ public:
      *
      * @param tr transition
      */
-    void add_transition( const transition_t &tr, const HybEnsModel &model) {
+    void
+    add_transition( const transition_t &tr, const HybEnsModel &model) {
 	// keep track of minimal energy transition from this basin to some smaller basin
 	if ( (basin_index > tr.target_basin_index) && tr.barrier_energy() < barrier ) {
-	    if (debug_out) std::cerr << "  New barrier for basin "<<basin_index<<" to basin "<< tr.target_basin_index  <<": "<< (tr.barrier_energy()-minimum_energy)<<std::endl;
+	    if (debug_out) std::cerr << "  New barrier for basin "<<basin_index<<" to basin "<< tr.target_basin_index  <<": "<< tr.barrier_energy()<<std::endl;
 	    barrier = tr.barrier_energy();
 	    connect_to = tr.target_basin_index;
 	}
     
 	// add transition to partition function for the transition
-	// between the origin and target basin
+	// between the source and target basin
 	if (transitions.find(tr.target_basin_index) == transitions.end()) {
 	    transitions[tr.target_basin_index]=
 		BasinTransition(tr.barrier_energy(),model);
@@ -265,13 +279,14 @@ public:
 	}
     }
 
+
     HybEnsModel::StateDescription
     get_local_minimum() const {
 	return local_minimum;
     }
 
     double
-    get_pf() const {
+    get_Z() const {
 	return Z;
     }
 	
@@ -288,13 +303,16 @@ public:
      * @brief Merge in a second basin
      *
      * Transfer all states and transitions from the given basin to this basin.
+     * Don't transfer transition from from_basin to this basin!
+     *
+     * @todo Update transitions in all other basins!
      *
      * @param from_basin basin that should be merged in
      */
     void
     merge_in_basin(Basin &from_basin, const BarrierGraph &bg) {
 	assert(minimum_energy <= from_basin.minimum_energy);
-	
+		
 	// mark from basin as merged
 	from_basin.merged_to = basin_index;
 	
@@ -302,19 +320,26 @@ public:
 	states += from_basin.states;
 	Z += from_basin.Z;
 	
+	/*
 	// transfer transitions
 	for(transitions_map_t::const_iterator it=from_basin.transitions.begin();
-	    it != transitions.end();
+	    it != from_basin.transitions.end();
 	    ++it) {
+	    
 	    size_t target_basin_index=it->first;
+	    
+	    // delete transitions from from_basin to this basin
+	    if (target_basin_index==this->basin_index) continue;
+	    
 	    const BasinTransition &transition=it->second;
-
+	    
 	    if ( transitions.find(target_basin_index) == transitions.end() ) {
 		transitions[target_basin_index]=transition;
 	    } else {
 		transitions[target_basin_index].update(transition.get_barrier(),transition.get_Z());
 	    }
 	}
+	*/
     }
     
     size_t
@@ -347,31 +372,38 @@ public:
 	       barrier-minimum_energy
 	       );
     }
+
+    void
+    print_edges(std::ostream &out) const {
+	out << basin_index << "  -> ";
+	
+	for(transitions_map_t::const_iterator it=transitions.begin();
+	    it != transitions.end();
+	    ++it) {
+	    out << " " << it->first << " " << (it->second.get_Z() / get_Z());
+	}
+	out << std::endl;
+    }
 };
+
+
+std::ostream & operator <<(std::ostream &out,const Basin::transition_t &t) {
+    out << "Transition to "<<t.target_basin_index
+	<< " (sourceE="<<t.source_state_energy
+	<< " tgtE="<<t.target_state_energy
+	<< " transE="<<t.transition_energy
+	<< " transE-sourceE="<<(t.transition_energy-t.source_state_energy)<<")";
+    return out;
+}
 
 
 /**
  * Implements generation of barrier graph and maintains the graph
  * 
- * @note: The following does not seem to be critical, but is
- * nevertheless an interesting observation. The two heuristics due to
- * min_barrier_height and max_adaptive_walk_delta interfer.
- * max_adaptive_walk_delta>0 will not guarantee that barrier energies
- * are sorted, since this allows barrier energies to be the energy of
- * the transition state. The 'standard'-definition of adaptive walk
- * with max_adaptive_walk_delta=0 guarantees that in a
- * gradient/adaptive transition between two basins the barrier energy
- * is the energy of the origin state.  BUT: we don't care, since
- * barriers can only become smaller! Therefore, it is ok to merge due
- * to a potentially non-minimal barrier. The only remaining issue is
- * that we cannot guarantee that basins are always merged via their
- * minimal barrier.
- * 
- * @note An adaptive walk is defined as a walk, where the energy
- * of each target state is smaller or equal to the energy of its
- * origin state and the corresponding transition state energy is
- * at most max_adaptive_walk_delta larger than the origin state
- * energy.
+ * @note An adaptive walk is defined as a walk, where the energy of
+ * each target state is smaller or equal to the energy of its source
+ * state and the corresponding transition state energy is not larger
+ * than the source state energy.
  */
 class BarrierGraph
 {
@@ -386,10 +418,6 @@ class BarrierGraph
      */
     double min_barrier_height; 
 
-    /** maxmimal delta of transition state over origin state for
-     *  adaptive walk (0 for standard definition of adaptive walk).
-     */
-    double max_adaptive_walk_delta;
     
     std::vector<Basin> basins;
     
@@ -423,39 +451,39 @@ class BarrierGraph
 	case 0:
 	    state = HybEnsModel::StateDescription();
 	    break;
-	case 4:
-	    state = HybEnsModel::StateDescription(state_vec[0],
-						  state_vec[1],
-						  state_vec[2],
-						  state_vec[3]);
-	    break;
-	case 8:
-	    state = HybEnsModel::StateDescription(state_vec[0],
-						  state_vec[1],
-						  state_vec[2],
-						  state_vec[3],
-						  state_vec[4],
-						  state_vec[5],
-						  state_vec[6],
-						  state_vec[7]);
-	    break;
-	default:
-	    std::cerr << "ERROR: ignored invalid input line" << std::endl;
-	    return false;
-	}
-	
-	if (not state.is_valid(model)) {
-	    std::cerr << "Input error: read state "<<state<<" is not valid in model."<<std::endl;
-	    return false;
-	}
-	
-	return true;
+
+        case 4:
+            state = HybEnsModel::StateDescription(state_vec[0],
+                                                  state_vec[1],
+                                                  state_vec[2],
+                                                  state_vec[3]);
+            break;
+        case 8:
+            state = HybEnsModel::StateDescription(state_vec[0],
+                                                  state_vec[1],
+                                                  state_vec[2],
+                                                  state_vec[3],
+                                                  state_vec[4],
+                                                  state_vec[5],
+                                                  state_vec[6],
+                                                  state_vec[7]);
+            break;
+        default:
+            std::cerr << "ERROR: ignored invalid input line" << std::endl;
+            return false;
+        }
+        
+        if (not state.is_valid(model)) {
+            std::cerr << "Input error: read state "<<state<<" is not valid in model."<<std::endl;
+            return false;
+        }
+        
+        return true;
     }
 
 public:
 
-    
-    
+
     /** 
      * @brief Generate barrier graph
      * 
@@ -476,30 +504,31 @@ public:
      *
      */
     BarrierGraph(const std::string &seqA, const std::string &seqB,
-	     double min_barrier_height_, 
-	     double max_adaptive_walk_delta_)
-	: model(seqA,seqB),
-	  min_barrier_height(min_barrier_height_),
-	  max_adaptive_walk_delta(max_adaptive_walk_delta_)
+		 double min_barrier_height_
+             )
+        : model(seqA,seqB),
+          min_barrier_height(min_barrier_height_)
     {
-	
-	HybEnsModel::StateDescription orig_state;
-	double energy;
-	
-	// counter for states that are read for construction of graph
-	size_t state_counter;
+        
+        HybEnsModel::StateDescription orig_state;
+        double energy;
+        
+        // counter for states that are read for construction of graph
+        size_t state_counter;
 
-	state_counter=0;
-	
-	while (read_state(std::cin,orig_state,energy)) {
-	    
-	    if (debug_out) std::cerr << "read " << state_counter << " " << energy << " " << " "  << orig_state << std::endl;
-	    
-	    process_state(orig_state,energy);
-	    
-	    state_counter++;
-	}
+        state_counter=0;
+        
+        while (read_state(std::cin,orig_state,energy)) {
+            
+            if (debug_out) std::cerr << "read " << state_counter << " " << energy << " " << " "  << orig_state << std::endl;
+            
+            process_state(orig_state,energy);
+            
+            state_counter++;
+        }
     }
+
+
 
     /** 
      * @brief Generate newick representation of barrier tree
@@ -523,7 +552,9 @@ public:
      * 
      * @param index basin index 
      * 
-     * @return true basin index, resolving potential merge
+     * @return true basin index, resolving potential merge(s)
+     *
+     * @todo this could short-circuit to save time in previous resolvings 
      */
     size_t resolve_basin_index(size_t index) const {
 	while (basins[index].get_merged_to() != index) {
@@ -533,34 +564,36 @@ public:
     }
 
     
-    
     /** 
      * @brief Process a single state in the construction of the barrier graph
      * 
      * Assumes that states are processed in ascending order of their energy.
-     * Generates the neighbors of orig_state and in this way determines,
+     * Generates the neighbors of source_state and in this way determines,
      * whether the state is a local minimum or belongs to a known basin.
      *
-     * @param orig_state State that is processed
-     * @param energy     Energy of orig_state
+     * @param source_state State that is processed
+     * @param energy     Energy of source_state
      */
     void
-    process_state(const HybEnsModel::StateDescription &orig_state, double orig_energy) {
+    process_state(const HybEnsModel::StateDescription &source_state, double source_energy) {
 	
+	// minimum transition state energy from source state source_state to a neighbor
 	double min_transition_energy = std::numeric_limits<double>::infinity();
-	size_t orig_basin_index = std::numeric_limits<size_t>::max();
+	
+	// index of the basin of the neighbor state with minimum transition energy
+	size_t min_tE_target_basin_index = std::numeric_limits<size_t>::max();
 
 	std::vector<Basin::transition_t> transitions;
 
 	size_t moves_counter=0;
 
 	// ----------------------------------------
-	// Enumerate neighbors of orig_state
+	// Enumerate neighbors of source_state
 	//
-	// Register all transitions from orig_state to previously read neighbor states.
+	// Register all transitions from source_state to previously read neighbor states.
 	// Keep track of neighbor state with smallest transition energy 
 	//
-	HybEnsModel::MoveIterator mi(orig_state,model);
+	HybEnsModel::MoveIterator mi(source_state,model);
 	for (HybEnsModel::Move *move = mi.firstMove(); move != NULL; move = mi.nextMove(move)) {
 	    
 	    //std::cout << " move "; move->print(std::cout); std::cout<<std::endl;
@@ -569,7 +602,7 @@ public:
 	    
 	    HybEnsModel::energy_t tE=move->transitionEnergy();
 	    
-	    HybEnsModel::StateDescription neigh_state=orig_state;
+	    HybEnsModel::StateDescription neigh_state=source_state;
 	    move->apply(neigh_state);
 	    
 // #ifndef NDEBUG
@@ -578,7 +611,7 @@ public:
 		
 // 		std::cerr
 // 		    << "ERROR: Move produces invalid state" << std::endl 
-// 		    << orig_state << " == ";
+// 		    << source_state << " == ";
 // 		move->print(std::cerr); 
 // 		std::cerr << " ==> " << neigh_state << std::endl;
 // 		abort();
@@ -594,11 +627,11 @@ public:
 	    if (state_hash.end() != it) {
 		//found => belongs to basin of already seen local minimum
 		
-		// NOTE: in the transition from orig_state to
+		// NOTE: in the transition from source_state to
 		// neigh_state, neigh_state has lower or equal energy
-		// than the orig_state! The transition state has higher
-		// energy than neigh_state (and possibly orig_state)
-			
+		// than the source_state! The transition state has higher
+		// or equal energy than neigh_state (and possibly source_state)
+		
 		// NOTE: the following differs from the standard
 		// barriers algorithm, since there transition energies
 		// are sorted in the same order as target state
@@ -606,11 +639,11 @@ public:
 		
 		size_t target_basin_index=resolve_basin_index(it->second);
 		
-		// if transition energy to neigh_state is smaller than the minimal one
+		// if transition energy to neigh_state is smaller than the former minimum
 		if ( tE < min_transition_energy ) {
 		    // record new minimal energy transition
 		    min_transition_energy = tE;
-		    orig_basin_index = target_basin_index;
+		    min_tE_target_basin_index = target_basin_index;
 		}
 		
 		// compute energy of neighbor state
@@ -618,123 +651,159 @@ public:
 		
 		// record new transition.
 		// In this way, we collect all transitions from
-		// the orign_state to energetically lower target_states states
-		transitions.push_back(Basin::transition_t(orig_energy,        // energy of origin state
+		// the source state to energetically lower target states
+		transitions.push_back(Basin::transition_t(source_energy,      // energy of source state
 							  target_basin_index, // index of target basin
 							  neigh_energy,       // energy of target state
 							  tE)                 // energy of the transition state
 				      );
+
+		if (debug_out) {
+		    std::cerr <<"\t"<< transitions[transitions.size()-1]
+			      << " by ";
+		    move->print(std::cerr);
+		    std::cerr << std::endl;
+		}
 	    }
 	}
 
 	if (debug_out) std::cerr << "  " << transitions.size() << " transitions, "<< moves_counter << " moves" <<std::endl;
 	
+
+
 	if (moves_counter==0) {
 	    if (debug_out) std::cerr << "Ignore frozen state"<<std::endl;
 	    return;
 	}
+
+	// index of the basin of the processed source state
+	size_t source_basin_index;
 	
 	// ------------------------------------------------------------
-	// Perform basin assignment of orig_state.
+	// Perform basin assignment of source_state.
 	//
-	// Either construct a new basin with local minimum orig_state
-	// or assign orig_state to an existing basin
+	// Either construct a new basin with local minimum source_state
+	// or assign source_state to an existing basin
 	//
-	if ( min_transition_energy > orig_energy + max_adaptive_walk_delta  ) {
-	    // no transition state to an
-	    // energetically lower target state is energetically lower than
-	    // the origin state + the tolerated threshold max_adaptive_walk_delta.
+	if ( min_transition_energy > source_energy ) {
+	    // no transition state to an energetically lower target
+	    // state is energetically lower than the source state
 	    //
-	    // Consequently, orig_state is a new local minimum
+	    // Consequently, source_state is a new local minimum
 	    
-	    orig_basin_index = basins.size();
+	    source_basin_index = basins.size();
 	    
-	    if (debug_out) std::cerr << "  New basin "<<orig_basin_index<<std::endl;
+	    if (debug_out) std::cerr << "  New basin "<<source_basin_index<<std::endl;
 
 	    // put state into hash
-	    state_hash[orig_state.encode()] = orig_basin_index;
+	    state_hash[source_state.encode()] = source_basin_index;
 	    
 	    // generate new basin and put into object's basin list
-	    Basin new_basin(orig_basin_index,orig_state,orig_energy,model);
+	    Basin new_basin(source_basin_index,source_state,source_energy,model);
 	    basins.push_back(new_basin);
 	    
 	} else {
-	    // orig_state is not a local minimum but belongs to basin
-	    // orig_basin_index, which is the basin that is reached
+	    // source_state is not a local minimum but belongs to basin
+	    // min_tE_target_basin_index, which is the basin that is reached
 	    // with the lowest transition energy.
 	    
-	    // handle case where basin with index orig_basin_index
+	    // handle case where basin with index source_basin_index
 	    // was merged before
-	    orig_basin_index = resolve_basin_index(orig_basin_index);
+	    source_basin_index = resolve_basin_index(min_tE_target_basin_index);
 
-	    if (debug_out) std::cerr << "  Assign to basin "<<orig_basin_index<<std::endl;
+	    if (debug_out) std::cerr << "  Assign to basin "<<source_basin_index<<std::endl;
 	    
-	    // assign basin index orig_basin_index to orig_state and register
-	    // orig_state as new member of the basin
-	    state_hash[orig_state.encode()] = orig_basin_index;
-	    basins[orig_basin_index].add_state(orig_energy,model);
+	    // assign basin index source_basin_index to source_state and register
+	    // source_state as new member of the basin
+	    state_hash[source_state.encode()] = source_basin_index;
+	    basins[source_basin_index].add_state(source_energy,model);
 	}
 	
 	// ----------------------------------------
-	// Register all transitions from orig_basin_index to other basins.
-	// Register reverse transitions from target to origin
+	// Register all transitions from source_basin_index to other basins.
+	// DON'T Register reverse transitions from target to source
 	//
-	for(std::vector<Basin::transition_t>::const_iterator it=transitions.begin(); transitions.end()!=it; ++it) {
-	    if (it->target_basin_index != orig_basin_index) {
+	for(std::vector<Basin::transition_t>::const_iterator it=transitions.begin(); 
+	    transitions.end()!=it; ++it) {
+	    if (it->target_basin_index != source_basin_index) {
 		
-		basins[orig_basin_index].add_transition(*it,model);
+		if (debug_out)
+		std::cerr << "add transition "<<source_basin_index<<" -> "
+			  << it->target_basin_index << " "
+			  << it->transition_energy << " "
+			  << it->barrier_energy() << " "
+			  << std::endl;
 		
-		basins[it->target_basin_index].add_transition(it->reverse( orig_basin_index ),model);
+		basins[source_basin_index].add_transition(*it,model);
+		
+		//basins[it->target_basin_index].add_transition(it->reverse( source_basin_index ),model);
 		
 	    }
 	}
 
-	Basin &orig_basin = basins[orig_basin_index];
+	Basin &source_basin = basins[source_basin_index];
 
 	// ------------------------------------------------------------
 	// Merge basins.  First, merge neighbor basins with barrier
-	// height smaller than min_barrier_height to the origin basin.
-	// Second, merge the origin basin to the neighbor basin where
+	// height smaller than min_barrier_height to the source basin.
+	// Second, merge the source basin to the neighbor basin where
 	// transition has the smallest barrier height below the
 	// threshold.
 	//
-	for(std::vector<Basin::transition_t>::const_iterator it=transitions.begin(); transitions.end()!=it; ++it) {
+	for(std::vector<Basin::transition_t>::const_iterator it=transitions.begin(); 
+	    transitions.end()!=it; ++it) {
 	    Basin &target_basin=basins[it->target_basin_index];
 	    
-	    if ((it->target_basin_index > orig_basin_index)
-		&& ((it->barrier_energy() - target_basin.get_minimum_energy()) <  min_barrier_height)
-		&& (target_basin.get_merged_to()!=orig_basin_index)
+	    if ((it->target_basin_index > source_basin_index)
+		&& ((it->barrier_energy() 
+		     - target_basin.get_minimum_energy()) <  min_barrier_height)
+		&& (target_basin.get_merged_to()!=source_basin_index)
 		) {
-		// merge target basin to origin basin
+		// merge target basin to source basin
 		
-		if (debug_out) std::cerr << "  Merge basin target "<<it->target_basin_index<<" to orig "<< orig_basin_index
-			  << " via barrier height "<< (it->barrier_energy() - target_basin.get_minimum_energy())
-			  <<std::endl;
-		basins[orig_basin_index].merge_in_basin(basins[it->target_basin_index],*this);
+		if (debug_out) 
+		    std::cerr << "  Merge target basin "
+			      <<it->target_basin_index
+			      <<" to source "<< source_basin_index
+			      << " via barrier height "
+			      << (it->barrier_energy() 
+				  - target_basin.get_minimum_energy())
+			      <<std::endl;
+		basins[source_basin_index].
+		    merge_in_basin(basins[it->target_basin_index],*this);
 	    }
 	}
 	
-	// determine the lowest transition barrier from the orig basin
+	// determine the lowest transition barrier from the source basin
 	// to some other basin and record basin
-	size_t orig_merge_to=orig_basin_index;
-	double orig_min_barrier=std::numeric_limits<double>::max();
-	for(std::vector<Basin::transition_t>::const_iterator it=transitions.begin(); transitions.end()!=it; ++it) {
+	size_t source_merge_to=source_basin_index;
+	double source_min_barrier=std::numeric_limits<double>::max();
+	
+	for(std::vector<Basin::transition_t>::const_iterator
+		it=transitions.begin(); transitions.end()!=it; ++it) {
 	    Basin &target_basin=basins[it->target_basin_index];
-	    if ((it->target_basin_index != orig_basin_index) 
-		&& (target_basin.get_merged_to()!=orig_basin_index)) {
+	    if ((it->target_basin_index != source_basin_index) 
+		&& (target_basin.get_merged_to()!=source_basin_index)) {
 		double barrier = it->barrier_energy();
-		if (barrier < orig_min_barrier) {
-		    orig_min_barrier = barrier;
-		    orig_merge_to = it->target_basin_index;
+		if (barrier < source_min_barrier) {
+		    source_min_barrier = barrier;
+		    source_merge_to = it->target_basin_index;
 		}
 	    }
 	}
 	
-	if (orig_min_barrier - orig_basin.get_minimum_energy() < min_barrier_height) {
-	    if (debug_out) std::cerr << "  Merge basin orig "<< orig_basin_index<<" to target "<<orig_merge_to
-		      << " via barrier height "<< (orig_min_barrier - orig_basin.get_minimum_energy())
-		      << std::endl;
-	    basins[orig_merge_to].merge_in_basin(basins[orig_basin_index],*this);
+	if (source_min_barrier - source_basin.get_minimum_energy() 
+	    < min_barrier_height) {
+	    
+	    if (debug_out) 
+		std::cerr << "  Merge source basin "
+			  << source_basin_index
+			  <<" to target "<<source_merge_to
+			  << " via barrier height "
+			  << (source_min_barrier - source_basin.get_minimum_energy())
+			  << std::endl;
+	    basins[source_merge_to].
+		merge_in_basin(basins[source_basin_index],*this);
 	}
 	
     }
@@ -751,16 +820,27 @@ public:
 	basins[0].print_header(out);
 	for(size_t i=0; i<basins.size(); ++i) {
 	    if (basins[i].get_merged_to()==i) {
-		basins[i].print(std::cout,model);
+		basins[i].print(out,model);
 	    } else {
 		// printf("merged to %4lu",basins[i].merged_to); basins[i].print(std::cout,model);
 	    }
 	}
     }
+
+    /**
+       @brief print represenation of barrier graph with weights of basins and transitions
+    */
+    void print_barrier_graph(std::ostream &out) const {
+	for(size_t i=0; i<basins.size(); ++i) {
+	    if (basins[i].get_merged_to()==i) {
+		basins[i].print_edges(out);
+	    }
+	}	
+    }
     
     ~BarrierGraph() {
     }
-
+    
 };
 
 int
@@ -783,7 +863,6 @@ main(int argc, char **argv)
     std::string seqB=args_info.inputs[1];
 
     double min_barrier_height=args_info.minh_arg;
-    double max_adaptive_walk_delta=args_info.maxd_arg;
 
     cmdline_parser_free(&args_info);
     
@@ -791,10 +870,14 @@ main(int argc, char **argv)
     dangles=2;
     
     // construct barrier graph
-    BarrierGraph barriers(seqA,seqB,min_barrier_height,max_adaptive_walk_delta);
+    BarrierGraph barriers(seqA,seqB,min_barrier_height);
     
     // print basins of barrier graph
     barriers.print_basins(std::cout);
+    
+    std::cout << std::endl
+	      << std::endl;
+    barriers.print_barrier_graph(std::cout);
     
     exit(0);
 }
