@@ -4,8 +4,6 @@
 
 #include "hybrid_ensemble_model.hh"
 
-#include "aux.hh"
-
 // ----------------------------------------
 // HybEnsModel::StateDescription
 //
