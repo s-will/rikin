@@ -5,8 +5,12 @@ ACGGCACUGGCGCAGCUGCG
      UGACCGCGUC
      1234567890
 
-time src/rrikin_enum ACGGCACUGGCGCAGCUGCG UGACCGCGUC | sort -g -k1 > t
-time src/rrikin_barriers ACGGCACUGGCGCAGCUGCG UGACCGCGUC < t
+time src/rrikin_enum ACGGCACUGGCGCAGCUGCG UGACCGCGUC | sort -g -k1 > t1
+time src/rrikin_barriers ACGGCACUGGCGCAGCUGCG UGACCGCGUC < t1
+
+1a)
+
+s1=ACGGCACUGGCGCAGCUGCGCGCCACGUGC; s2=UGACCGCGUCCGCCACUG; src/rrikin_enum $s1 $s2 | sort -g -k1 > t1 ; time src/rrikin_barriers $s1 $s2 < t1 > t2
 
 2)
 0        1         2         3         4

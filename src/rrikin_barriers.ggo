@@ -8,7 +8,7 @@ States are modelled as equilibrated partitions of the whole interaction ensemble
 
 args "-F rrikin_barriers_cmdline -u"
 
-option "minh" - "Minimal barrier height for seperating basins" double default="0" optional
+# option "minh" - "Minimal barrier height for seperating basins" double default="0" optional
 
 text "\nInput sequences:\n"
 text "  seq1 first sequence in forward orientation\n"

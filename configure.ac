@@ -140,7 +140,12 @@ fi
 
 
 # configure for use of LocARNA library
-# PKG_CHECK_MODULES([DEPS], [LocARNA-1.0 >= 1.6.1])
+PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.1 >= 1.7.5])
+
+CPPFLAGS="$LOCARNA_CFLAGS $CPPFLAGS"
+LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
+LIBS="-lLocARNA-1.1 $LIBS"
+
 
 ## ========================================
 ## Vienna RNA
