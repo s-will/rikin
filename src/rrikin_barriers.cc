@@ -85,26 +85,28 @@ extern "C" {
 /* Methods of basin */
 
 void Basin::print_header(std::ostream &out) const {
-    printf("%5s %-30s %4s %6s %5s %6s %6s\n",
+    printf("%5s %-30s %4s %6s %5s %6s %6s %6s",
 	   "idx",
 	   "description",
 	   "n_s",
 	   "ensE",
 	   "ct",
 	   "minE",
+	   "h_to",
 	   "h"
 	   );
 }
 
 void
 Basin::print(std::ostream &out, const HybEnsModel &model) const {
-    printf("%5lu %-30s %6.2f %6.2f %5lu %6.2f %6.2f\n",
+    printf("%5lu %-30s %6.2f %6.2f %5lu %6.2f %6.2f %6.2f",
 	   basin_index,
 	   local_minimum.toString().c_str(),
 	   states,
 	   - model.RT() * log(Z),
 	   connect_to,
 	   minimum_energy,
+	   barrier_to-minimum_energy,
 	   barrier-minimum_energy
 	   );
 }
@@ -180,10 +182,21 @@ BarrierGraph::add_transition( const transition_t &tr, const HybEnsModel &model) 
     Basin &src_basin = basins[tr.source_basin_index];
 	
     // keep track of minimal energy transition from this basin to some smaller basin
-    if ( (tr.source_basin_index > tr.target_basin_index) && tr.barrier_energy() < src_basin.barrier ) {
-	if (debug_out) std::cerr << "  New barrier for basin "<<tr.source_basin_index<<" to basin "<< tr.target_basin_index  <<": "<< tr.barrier_energy()<<std::endl;
+    if ( tr.barrier_energy() < src_basin.barrier ) {
 	src_basin.barrier = tr.barrier_energy();
-	src_basin.connect_to = tr.target_basin_index;
+    }
+    
+    if ( tr.barrier_energy() < src_basin.barrier_to ) {
+	
+	if (src_basin.minimum_energy > basins[tr.target_basin_index].minimum_energy) {
+	    src_basin.barrier_to = tr.barrier_energy();
+	
+	    if (debug_out) {
+		std::cerr << "  New barrier for basin "<<tr.source_basin_index<<" to basin "<< tr.target_basin_index  <<": "<< tr.barrier_energy()<<std::endl;
+	    }
+	    
+	    src_basin.connect_to = tr.target_basin_index;
+	}
     }
 	
     // add transition to partition function for the transition
@@ -192,7 +205,7 @@ BarrierGraph::add_transition( const transition_t &tr, const HybEnsModel &model) 
 	== transitions[tr.source_basin_index].end()) {
 	transitions[tr.source_basin_index][tr.target_basin_index] = BasinTransition(tr.barrier_energy(),model);
     } else {
-	transitions[tr.target_basin_index][tr.target_basin_index].update(tr.barrier_energy(),model);
+	transitions[tr.source_basin_index][tr.target_basin_index].update(tr.barrier_energy(),model);
     }
 }
     
@@ -214,7 +227,10 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state, d
     // Enumerate neighbors of source_state
     //
     // Register all transitions from source_state to previously read neighbor states.
-    // Keep track of neighbor state with smallest transition energy 
+    // THIS IMPLIES that each transition between x and y is registered only once.
+    // 
+    // Keep track of neighbor state with smallest transition energy. 
+    //
     //
     HybEnsModel::MoveIterator mi(source_state,model);
     for (HybEnsModel::Move *move = mi.firstMove(); move != NULL; move = mi.nextMove(move)) {
@@ -291,7 +307,7 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state, d
 		std::cerr << std::endl;
 	    }
 	}
-    }
+    } // end iterate moves/neighbors
 
     if (debug_out) std::cerr << "  " << trans.size() << " transitions, "
 			     << moves_counter << " moves" <<std::endl;
@@ -345,7 +361,9 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state, d
 	state_hash[source_state.encode()] = source_basin_index;
 	basins[source_basin_index].add_state(source_energy,model);
     }
-	
+    // end assign to basin
+
+
     // ----------------------------------------
     // Register all transitions from source_basin_index to other basins.
     //
@@ -356,17 +374,22 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state, d
 	    it->source_basin_index = source_basin_index;
 		
 	    if (debug_out)
-		std::cerr << "add transition "<<source_basin_index<<" -> "
+		std::cerr << "add transition "<<source_basin_index<<" <-> "
 			  << it->target_basin_index << " "
-			  << it->transition_energy << " "
+		    //<< it->transition_energy << " "
 			  << it->barrier_energy() << " "
 			  << std::endl;
-		
+	
+
+	    // note: each transition between source and target is
+	    // registered only once, namely when the source index is
+	    // larger, therefore we add transitions in both directions
+	    // (finally, this produces a symmetric matrix <transitions>
 	    add_transition(*it,model);
 	    add_transition(it->reverse(),model);
-		
+	    
 	}
-    }	
+    } // end iterate trans	
 }
 
 size_t
@@ -412,15 +435,15 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
 	assert(!x0.merged());
 	
 	
-	transitions_map_row_t &trs_x0=transitions[x0.basin_index];
+	transitions_map_row_t &trs_x0=transitions[x0.idx()];
 	
 	// remove transitions from state x0 to itself
-	if (trs_x0.end()!=trs_x0.find(x0.basin_index)) {
-	    trs_x0.erase(x0.basin_index);
+	if (trs_x0.end()!=trs_x0.find(x0.idx())) {
+	    trs_x0.erase(x0.idx());
 	}
 
 	// remove transitions wiht rates lower than min_rate
-	for (transitions_map_row_t::const_iterator it=trs_x0.begin();
+	for (transitions_map_row_t::iterator it=trs_x0.begin();
 	     trs_x0.end()!=it; ) {
 	    
 	    //if (basins[it->first].merged()) continue;
@@ -430,33 +453,19 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
 		< min_rate) {
 		
 		//remove transition
-		//std::cerr << "Remove transition between "<<x0.basin_index<<" and "<<it->first<<std::endl; 
-		transitions[it->first].erase(x0.basin_index);
+		//std::cerr << "Remove transition between "<<x0.idx()<<" and "<<it->first<<std::endl; 
+		transitions[it->first].erase(x0.idx());
 		it=trs_x0.erase(it);
 		
 	    } else {
 		++it;
 	    }
         }
-	//std::cerr << "DONE"<<std::endl; 
-		
+	//std::cerr << "DONE"<<std::endl;
 	
         // compute total outflow
-        double total_out = 0.0;
-        for (transitions_map_row_t::const_iterator it=trs_x0.begin();
-	     trs_x0.end()!=it; ++it) {
-	    
-	    if (basins[it->first].merged()) continue;
-	    if (it->first==x0.basin_index) continue;
-	    
-	    total_out += it->second.get_Z();
-        }
-
-	// first filter outgoing rates
-
-
-
-	    
+        double total_out = outflow_pf(x0);
+	
 	if (debug_out) {
 	    std::cerr << i << " " << sorted_basin_idxs[i] << " " << x0.get_Z() << " " << total_out << " r=" << (total_out/x0.get_Z());
 	    
@@ -479,7 +488,7 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
         if (total_out/x0.get_Z() > max_outflow) {
 
 	    if (debug_out) {
-		std::cerr << "Dissolve basin "<< x0.basin_index << std::endl;
+		std::cerr << "Dissolve basin "<< x0.idx() << std::endl;
 	    }
 
 	    for (transitions_map_row_t::iterator it=trs_x0.begin();
@@ -488,7 +497,7 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
 		Basin &y = basins[it->first];
 		if (y.merged()) continue;
 		
-		if (x0.basin_index==y.basin_index) continue;
+		if (x0.idx()==y.basin_index) continue;
 		
 		// 1) distribute the basin's partition function to its neighbors
 		double Z_yx0 =  it->second.get_Z();
@@ -497,7 +506,7 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
 		y.merge_in(x0,fraction);
 		
 		if (debug_out) {
-		    std::cerr << "Transfer a fraction of " << fraction << " of " << x0.basin_index
+		    std::cerr << "Transfer a fraction of " << fraction << " of " << x0.idx()
 			      << "'s partfunc to " << y.basin_index<<std::endl;
 		}
 		
@@ -510,15 +519,15 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
 		    if (x.merged()) continue;
 				    
 		    if (x.basin_index==y.basin_index) continue;
-		    if (x0.basin_index==x.basin_index) continue;
+		    if (x0.idx()==x.basin_index) continue;
 		    
 		    // update the transition from x to y (via x0)
 		    
-		    double Z_xx0 = transitions[x.basin_index][x0.basin_index].get_Z();
+		    double Z_xx0 = transitions[x.basin_index][x0.idx()].get_Z();
 		    
 		    if (debug_out) {
 			std::cerr << "Transfer a fraction of " << fraction << " of transition "
-				  << x.basin_index <<"->"<< x0.basin_index << " to " << x.basin_index 
+				  << x.basin_index <<"->"<< x0.idx() << " to " << x.basin_index 
 				  << "->"<< y.basin_index<<std::endl;
 		    }
 		    
@@ -529,16 +538,16 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
 	    
 	    // finally, mark as merged
 	    if (debug_out) {
-		std::cerr << "Mark "<<x0.basin_index<<" as merged."<<std::endl;
+		std::cerr << "Mark "<<x0.idx()<<" as merged."<<std::endl;
 	    }
 	    x0.merged_ = true;
 	    
 	    // and release all transitions from and to the merged basin
 	    for (transitions_map_row_t::iterator it=trs_x0.begin();
 		 trs_x0.end()!=it; ++it) {
-		transitions[it->first].erase(x0.basin_index);
+		transitions[it->first].erase(x0.idx());
 	    }
-	    transitions.erase(x0.basin_index);
+	    transitions.erase(x0.idx());
 	    
         }
 	
@@ -600,7 +609,7 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB)
     state_counter=0;
     
     // use to check input
-    double last_energy=-std::numeric_limits<double>::max();
+    double last_energy=-std::numeric_limits<double>::infinity();
     int line=1;
 
     while (read_state(std::cin,orig_state,energy,line)) {
@@ -623,7 +632,7 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB)
 void
 BarrierGraph::print_edges(std::ostream &out,const Basin &b) const {
     out << b.basin_index
-	//<< " (" << b.get_Z() << ") "
+	// << " (" << b.get_Z() << ") "
 	<< "  -> ";
 	
     transitions_map_t::const_iterator
@@ -637,7 +646,7 @@ BarrierGraph::print_edges(std::ostream &out,const Basin &b) const {
 	    
 	if ((it->first!=b.basin_index) && (!basins[it->first].merged())) {
 	    out << " " << it->first
-		//<< " (" << it->second.get_Z() << ")"
+		// << " (" << it->second.get_Z() << ")"
 		<< " " << (it->second.get_Z() / b.get_Z());
 	}
     }
@@ -657,15 +666,26 @@ BarrierGraph::print_barrier_graph(std::ostream &out) const {
 void
 BarrierGraph::print_basins(std::ostream &out) const {
     basins[0].print_header(out);
+    out<< "   h_out   max_out  total_out";
+    out<<std::endl;
     for(size_t i=0; i<basins.size(); ++i) {
 	if (!basins[i].merged()) {
 	    basins[i].print(out,model);
+
+	    double max_out=max_outflow(basins[i]);
+	    
+	    double height = basins[i].barrier - basins[i].minimum_energy;
+	    double h_out = exp(-height/model.RT()); // the out rate that corresponds to the barrier height 
+	    
+	    out << "   " << h_out;
+	    out << "   " << max_out<<"   "<<outflow(basins[i]);
+	    
+	    out<<std::endl;
 	} else {
 	    // printf("merged to %4lu",basins[i].merged_to); basins[i].print(std::cout,model);
 	}
     }
 }
-
 
 int
 main(int argc, char **argv)
@@ -706,42 +726,45 @@ main(int argc, char **argv)
     stopwatch.stop("construct");
     
     size_t num_total_basins = barriers.num_basins();
-    
 
-    double max_outflow=0.7;
-    double min_rate=1e-5;    
-    
     if (verbose) {
-	std::cerr << "Generated "<<num_total_basins<<" basins." << std::endl;
-	stopwatch.print_info(std::cerr);
-	std::cerr << "Merge basins with outflow larger " << max_outflow << std::endl;
-	std::cerr << "Remove rates smaller than " << min_rate << std::endl;
+	    std::cerr << "Generated "<<num_total_basins<<" basins." << std::endl;
+	    barriers.print_stats(std::cerr);
+	    stopwatch.print_info(std::cerr);
+    }
+
+    if (simplify_graph) {
+	double max_outflow=0.8;
+	double min_rate=1e-4;
+
+	if (verbose) {
+	    std::cerr << "Merge basins with outflow larger " << max_outflow << std::endl;
+	    std::cerr << "Remove rates smaller than " << min_rate << std::endl;	    
+	}
 	
-	barriers.print_stats(std::cerr);
+	stopwatch.start("merge");
+	
+	barriers.merge_basins(max_outflow,min_rate);
+	
+	stopwatch.stop("merge");
+	
+	if (verbose) {
+	    std::cerr << "Merged "<<num_total_basins-barriers.num_basins()
+		      <<" basins resulting in "<<barriers.num_basins()<<" states." << std::endl;
+	    barriers.print_stats(std::cerr);
+	}
+	
+	if (verbose) {
+	    std::cerr << "Remove rates smaller than " << min_rate << " (again)."<< std::endl;
+	}
+	
+	barriers.filter_rates(min_rate);
+	
+	if (verbose) {
+	    barriers.print_stats(std::cerr);
+	}
     }
 
-    stopwatch.start("merge");
-    
-    barriers.merge_basins(max_outflow,min_rate);
-    
-    stopwatch.stop("merge");
-
-    if (verbose) {
-	std::cerr << "Merged "<<num_total_basins-barriers.num_basins()
-		  <<" basins resulting in "<<barriers.num_basins()<<" states." << std::endl;
-	barriers.print_stats(std::cerr);
-    }
-
-    if (verbose) {
-	std::cerr << "Remove rates smaller than " << min_rate << " (again)."<< std::endl;
-    }
-    
-    barriers.filter_rates(min_rate);
-
-    if (verbose) {
-	barriers.print_stats(std::cerr);
-    }
-    
     // print basins of barrier graph
     barriers.print_basins(std::cout);    
 
