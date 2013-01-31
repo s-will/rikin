@@ -734,7 +734,7 @@ main(int argc, char **argv)
     }
 
     if (simplify_graph) {
-	double max_outflow=0.8;
+	double max_outflow=0.5;
 	double min_rate=1e-4;
 
 	if (verbose) {
