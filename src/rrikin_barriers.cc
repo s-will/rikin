@@ -85,29 +85,23 @@ extern "C" {
 /* Methods of basin */
 
 void Basin::print_header(std::ostream &out) const {
-    printf("%5s %-30s %4s %6s %5s %6s %6s %6s",
+    printf("%5s %-30s %4s %6s %6s",
 	   "idx",
 	   "description",
 	   "n_s",
 	   "ensE",
-	   "ct",
-	   "minE",
-	   "h_to",
-	   "h"
+	   "minE"
 	   );
 }
 
 void
 Basin::print(std::ostream &out, const HybEnsModel &model) const {
-    printf("%5lu %-30s %6.2f %6.2f %5lu %6.2f %6.2f %6.2f",
+    printf("%5lu %-30s %6.2f %6.2f %6.2f",
 	   basin_index,
 	   local_minimum.toString().c_str(),
 	   states,
 	   - model.RT() * log(Z),
-	   connect_to,
-	   minimum_energy,
-	   barrier_to-minimum_energy,
-	   barrier-minimum_energy
+	   minimum_energy
 	   );
 }
 
@@ -179,26 +173,6 @@ BarrierGraph::read_state(std::istream &in,
 
 void
 BarrierGraph::add_transition( const transition_t &tr, const HybEnsModel &model) {
-    Basin &src_basin = basins[tr.source_basin_index];
-	
-    // keep track of minimal energy transition from this basin to some smaller basin
-    if ( tr.barrier_energy() < src_basin.barrier ) {
-	src_basin.barrier = tr.barrier_energy();
-    }
-    
-    if ( tr.barrier_energy() < src_basin.barrier_to ) {
-	
-	if (src_basin.minimum_energy > basins[tr.target_basin_index].minimum_energy) {
-	    src_basin.barrier_to = tr.barrier_energy();
-	
-	    if (debug_out) {
-		std::cerr << "  New barrier for basin "<<tr.source_basin_index<<" to basin "<< tr.target_basin_index  <<": "<< tr.barrier_energy()<<std::endl;
-	    }
-	    
-	    src_basin.connect_to = tr.target_basin_index;
-	}
-    }
-	
     // add transition to partition function for the transition
     // between the source and target basin
     if (transitions[tr.source_basin_index].find(tr.target_basin_index)
@@ -666,7 +640,7 @@ BarrierGraph::print_barrier_graph(std::ostream &out) const {
 void
 BarrierGraph::print_basins(std::ostream &out) const {
     basins[0].print_header(out);
-    out<< "   h_out   max_out  total_out";
+    out<< "   max_out  total_out";
     out<<std::endl;
     for(size_t i=0; i<basins.size(); ++i) {
 	if (!basins[i].merged()) {
@@ -674,10 +648,6 @@ BarrierGraph::print_basins(std::ostream &out) const {
 
 	    double max_out=max_outflow(basins[i]);
 	    
-	    double height = basins[i].barrier - basins[i].minimum_energy;
-	    double h_out = exp(-height/model.RT()); // the out rate that corresponds to the barrier height 
-	    
-	    out << "   " << h_out;
 	    out << "   " << max_out<<"   "<<outflow(basins[i]);
 	    
 	    out<<std::endl;

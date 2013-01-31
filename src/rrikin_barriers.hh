@@ -123,11 +123,8 @@ class Basin {
     HybEnsModel::StateDescription local_minimum; //!< local minimum
     double minimum_energy; //!< energy of the local minimum
     double Z;      //!< partition function
+
     double states; //!< size in number of states   
-	
-    double barrier;    //!< energy of minimal energy transition to any basin
-    double barrier_to;    //!< energy of minimal energy transition to a deeper basin (with lower minimum)
-    size_t connect_to; //!< basin index of deepest basin accessible under barrier
     
     bool merged_;
     
@@ -146,9 +143,6 @@ public:
 	  minimum_energy(energy_of_minimum),
 	  Z(0.0),
 	  states(0),
-	  barrier(std::numeric_limits<double>::infinity()),
-	  barrier_to(std::numeric_limits<double>::infinity()),
-	  connect_to(index),
 	  merged_(false)
     {
 	add_state(energy_of_minimum, model);
@@ -404,24 +398,6 @@ public:
         }
 	
 	return max_outflow/x.get_Z();
-    }
-
-
-    /** 
-     * @brief Generate newick representation of barrier tree
-     *
-     * Generates the barrier tree in newick format from already
-     * computed information in array basins
-     *
-     * @return barrier tree in newick format
-     * @todo implement
-     */
-    std::string barrier_tree() {
-	std::string tree="";
-	std::cerr << "Generating newick representation of barrier tree no implemented yet."
-		  << "Thus, return empty string." << std::endl;
-	
-	return tree;
     }
     
     /** 
