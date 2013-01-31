@@ -96,7 +96,7 @@ void Basin::print_header(std::ostream &out) const {
 
 void
 Basin::print(std::ostream &out, const HybEnsModel &model) const {
-    printf("%5lu %-30s %6.2f %6.2f %6.2f",
+    printf("%5lu %-32s %10.2f %6.2f %6.2f",
 	   basin_index,
 	   local_minimum.toString().c_str(),
 	   states,
@@ -393,12 +393,31 @@ BarrierGraph::num_transitions() const {
 void
 BarrierGraph::merge_basins(double max_outflow, double min_rate) {
 	
-    // sort basins increasing by their partition function
+    // // sort basins increasing by their partition function
     std::vector<size_t> sorted_basin_idxs;
 
     for (size_t i=0; i<basins.size(); ++i) sorted_basin_idxs.push_back(i);
     sort(sorted_basin_idxs.begin(),sorted_basin_idxs.end(),compBasinIdxs(*this));
     
+    // decide on merge non-recursively
+    
+    // first determine for each basin, whether it should be merged
+    std::vector<bool> to_be_merged(basins.size());
+    for (size_t i=0; i<basins.size(); ++i) {
+	Basin &x0 = basins[i];
+	// compute total outflow
+        double total_out = outflow_pf(x0);
+
+       	to_be_merged[i] = total_out/x0.get_Z() > max_outflow;
+        
+
+	if (debug_out) {
+	    std::cerr << i << " " << sorted_basin_idxs[i] << " " << x0.get_Z() << " " << total_out << " r=" << (total_out/x0.get_Z());
+	    
+	    std::cerr <<"  \t";
+	}
+
+    }
     
     // run through sorted basins and merge
     for (size_t i=0; i<basins.size(); ++i) {
@@ -437,14 +456,7 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
         }
 	//std::cerr << "DONE"<<std::endl;
 	
-        // compute total outflow
-        double total_out = outflow_pf(x0);
 	
-	if (debug_out) {
-	    std::cerr << i << " " << sorted_basin_idxs[i] << " " << x0.get_Z() << " " << total_out << " r=" << (total_out/x0.get_Z());
-	    
-	    std::cerr <<"  \t";
-	}
         for (transitions_map_row_t::const_iterator it=trs_x0.begin();
 	     trs_x0.end()!=it; ++it) {
 
@@ -459,8 +471,11 @@ BarrierGraph::merge_basins(double max_outflow, double min_rate) {
 	    std::cerr << std::endl;
 	}
 
-        if (total_out/x0.get_Z() > max_outflow) {
+        if (to_be_merged[x0.idx()]) {
 
+	    // compute total outflow
+	    double total_out = outflow_pf(x0);
+	    
 	    if (debug_out) {
 		std::cerr << "Dissolve basin "<< x0.idx() << std::endl;
 	    }
@@ -717,7 +732,7 @@ main(int argc, char **argv)
     }
 
     if (simplify_graph) {
-	double max_outflow=0.9;
+	double max_outflow=0.5;
 	double min_rate=1e-4;
 
 	if (verbose) {
