@@ -640,15 +640,28 @@ BarrierGraph::print_barrier_graph(std::ostream &out) const {
 void
 BarrierGraph::print_basins(std::ostream &out) const {
     basins[0].print_header(out);
-    out<< "   max_out  total_out";
+    out<< " \tmax_out \tensE_out \ttotal_out \tp_equ";
     out<<std::endl;
+
+    double total_Z=0.0;
+    for(size_t i=0; i<basins.size(); ++i) {
+	if (!basins[i].merged()) {
+	    total_Z += basins[i].get_Z();
+	}
+    }
+    
     for(size_t i=0; i<basins.size(); ++i) {
 	if (!basins[i].merged()) {
 	    basins[i].print(out,model);
-
+	    
 	    double max_out=max_outflow(basins[i]);
 	    
-	    out << "   " << max_out<<"   "<<outflow(basins[i]);
+	    double ensE_max_out = - model.RT() * log(max_out);
+	    
+	    double p_equ = basins[i].get_Z() / total_Z;
+	    
+	    out << " \t" << max_out<< " \t" << ensE_max_out<<" \t"<<outflow(basins[i])
+		<<" \t" << p_equ;
 	    
 	    out<<std::endl;
 	} else {
@@ -704,7 +717,7 @@ main(int argc, char **argv)
     }
 
     if (simplify_graph) {
-	double max_outflow=0.5;
+	double max_outflow=0.9;
 	double min_rate=1e-4;
 
 	if (verbose) {

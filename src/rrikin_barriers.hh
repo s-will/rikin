@@ -400,7 +400,7 @@ public:
 	return max_outflow/x.get_Z();
     }
     
-    /** 
+    /**
      * @brief Process a single state in the construction of the barrier graph
      * 
      * Assumes that states are processed in ascending order of their energy.
@@ -506,7 +506,7 @@ public:
 		total_outflow += outflow(basins[i]);
 	    }
 	}
-	out << "mean outflow:     "<<total_outflow/num_basins()<<std::endl;
+	out << "mean outflow:      "<<total_outflow/num_basins()<<std::endl;
     }
     
 };
