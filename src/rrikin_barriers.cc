@@ -85,7 +85,7 @@ extern "C" {
 /* Methods of basin */
 
 void Basin::print_header(std::ostream &out) const {
-    printf("%5s %-30s %4s %6s %6s",
+    printf("%5s %-32s %10s %6s %6s",
 	   "idx",
 	   "description",
 	   "n_s",

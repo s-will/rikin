@@ -166,8 +166,15 @@ public:
     merge_in(const Basin &x, double fraction) {
 	Z+=x.Z*fraction;
 	states+=x.states*fraction;
-	if (x.minimum_energy < minimum_energy) local_minimum=x.local_minimum;
-	minimum_energy=std::min(minimum_energy,x.minimum_energy);
+	// note: if we merge in a basin with lower minimum it still
+	// does not always make sense to set its local minimum as new
+	// minimum, if the fraction is too small.  To handle this
+	// correctly, we could compare the ensemble energy to fraction
+	// times the ens.energy of the merged in basin.
+	// TOO SIMPLISTIC is therefore:
+	// if (x.minimum_energy < minimum_energy)
+	//    local_minimum=x.local_minimum;
+	// minimum_energy=std::min(minimum_energy,x.minimum_energy);
     }
 
     HybEnsModel::StateDescription
