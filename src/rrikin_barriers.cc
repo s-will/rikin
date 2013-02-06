@@ -940,7 +940,7 @@ BarrierGraph::connected_components(std::vector<size_t> &components) const
     typedef std::pair<size_t,transitions_map_row_t::const_iterator> stack_entry;
     std::stack<stack_entry> stack;
     
-    for (size_t i=0; i<=basins.size(); i++) {
+    for (size_t i=0; i<basins.size(); i++) {
 	
 	if (components[i] > 0) continue;
 	c++;
