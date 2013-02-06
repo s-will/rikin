@@ -830,10 +830,7 @@ BarrierGraph::reindex(const std::vector<bool> &keep) {
     for (std::vector<Basin>::iterator it=basins.begin();
 	 basins.end()!=it; ++it) {
 	if (!keep[it->idx()]) {
-	    if(transitions.erase(it->idx())) {
-		if (verbose) std::cerr << "Erased transitions from "
-				       <<it->idx()<<std::endl;
-	    }
+	    transitions.erase(it->idx());
 	}
     }
 
@@ -842,10 +839,7 @@ BarrierGraph::reindex(const std::vector<bool> &keep) {
 	for (std::vector<Basin>::iterator it2=basins.begin();
 	     basins.end()!=it2; ++it2) {
 	    if (!keep[it2->idx()]) {
-		if(it->second.erase(it2->idx())) {
-		    if (verbose) std::cerr << "Erased transition from "<<it->first
-					   <<" to "<<it2->idx()<<std::endl;
-		}
+		it->second.erase(it2->idx());
 	    }
 	}
     }
