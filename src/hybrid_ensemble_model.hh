@@ -306,7 +306,9 @@ public:
 	 *
 	 */
 	std::vector<ISite> isites;
-    };
+	
+    }; // end class StateDescription
+	    
     
 #   include "moves.hh"
     
@@ -474,8 +476,8 @@ public:
 
     
 private:
-    const std::string &seqA_; //!< sequence A
-    const std::string &seqB_; //!< sequence B
+    const std::string seqA_; //!< sequence A
+    const std::string seqB_; //!< sequence B
 
     const UnpairedPF uppfA_; //!< unpaired pf sequence A
     const UnpairedPF uppfB_; //!< unpaired pf sequence A

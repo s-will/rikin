@@ -8,7 +8,17 @@ States are modelled as equilibrated partitions of the whole interaction ensemble
 
 args "-F rrikin_barriers_cmdline -u"
 
-# option "minh" - "Minimal barrier height for seperating basins" double default="0" optional
+option "max-outflow" - "Maximal outflow of a basin; otherwise merge" double default="1e6" optional
+option "min-rate" - "Minimum transition rate; otherwise ignore" double default="0" optional
+option "min-p-equ" - "Minimum equilibrium probability of a basin; otherwise merge" double default="0" optional
+
+option "barfile" - "Write treekin compatible barrier file" string optional
+option "ratesfile" - "Write rates matrix to a treekin compatible file" string optional
+
+option "dont-simplify-graph" - "Turn of all barrier graph simplifications" optional
+option "verbose" - "Turn on verbose output" optional
+option "debug" - "Turn on debugging output" optional
+
 
 text "\nInput sequences:\n"
 text "  seq1 first sequence in forward orientation\n"

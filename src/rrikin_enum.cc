@@ -65,8 +65,8 @@ main(int argc, char **argv)
 	exit(1);
     }
     
-    std::string seqA(args_info.inputs[0]);
-    std::string seqB(args_info.inputs[1]);
+    std::string seqA = args_info.inputs[0];
+    std::string seqB = args_info.inputs[1];
         
     // set some global variables for Vienna libRNA
     dangles=2;

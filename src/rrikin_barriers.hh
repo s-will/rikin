@@ -12,12 +12,6 @@
 
 #include "hybrid_ensemble_model.hh"
 
-/* control output */
-const bool debug_out=false;
-const bool verbose=true;
-
-/* control behavior */
-bool simplify_graph=true;
 
 
 class BarrierGraph;
@@ -31,8 +25,7 @@ class BarrierGraph;
  * between (micro)states.
  */
 class BasinTransition {
-    friend class BarrierGraph;
-
+    
     //double barrier; //! minimal energy of a transition state
     double Z;       //! partition function of macro transition state
 public:
@@ -117,7 +110,7 @@ public:
  */
 class Basin {
     
-    friend class BarrierGraph;
+    //friend class BarrierGraph;
     
     size_t basin_index; //<! index of basin 
     HybEnsModel::StateDescription local_minimum; //!< local minimum
@@ -147,16 +140,32 @@ public:
     {
 	add_state(energy_of_minimum, model);
     }
+    
+    
+    /** 
+     * Construct undefined xbasin
+     */
+    Basin() : merged_(true)
+    {
+	
+    }
 
     //! @brief Get index of basin
     //! @return index of basin
     size_t idx() const {
 	return basin_index;
     }
+
+    //! @brief Set index of basin
+    //! @param idx index of basin
+    void
+    set_index(size_t idx) {
+	basin_index=idx;
+    }
     
     void
     add_state(double energy, const HybEnsModel &model) {
-	assert(energy>=minimum_energy);
+	//assert(energy>=minimum_energy);
 	
 	states++;
 	Z += model.boltzmann_weight(energy);
@@ -169,8 +178,8 @@ public:
 	// note: if we merge in a basin with lower minimum it still
 	// does not always make sense to set its local minimum as new
 	// minimum, if the fraction is too small.  To handle this
-	// correctly, we could compare the ensemble energy to fraction
-	// times the ens.energy of the merged in basin.
+	// correctly, we could compare the ensemble energy to -RTln of the fraction
+	// times Z of the merged in basin.
 	// TOO SIMPLISTIC is therefore:
 	// if (x.minimum_energy < minimum_energy)
 	//    local_minimum=x.local_minimum;
@@ -195,6 +204,13 @@ public:
     bool
     merged() const {
 	return merged_;
+    }
+
+    /** @brief mark as merged
+     */
+    void
+    mark_merged() {
+	merged_=true;
     }
     
     size_t
@@ -223,7 +239,7 @@ class BarrierGraph
 {
 
 private:
-    
+
     typedef std::tr1::unordered_map<size_t,BasinTransition>
     transitions_map_row_t;
     
@@ -406,6 +422,14 @@ public:
 	
 	return max_outflow/x.get_Z();
     }
+
+    /** 
+     * @brief compute partition function of all basins 
+     * 
+     * @return partition function 
+     */
+    double
+    compute_Z() const;
     
     /**
      * @brief Process a single state in the construction of the barrier graph
@@ -438,6 +462,9 @@ public:
      * @param max_outflow maximal outflow (sum of rates) where basin
      * is retained; otherwise it is distributed to its neighbors
      *
+     * @param min_p_equ minimum equilibrium probability; basins with
+     * lower probability are distributed to their neighbors
+
      * @param min_rate minimum rate; transition with lower rate (in
      * both directions!) are removed during the merging
      *
@@ -452,7 +479,7 @@ public:
      *
      */
     void
-    merge_basins(double max_outflow, double min_rate);
+    merge_basins(double max_outflow, double min_p_equ, double min_rate);
 
     /**
      * @brief filter rates by minimum rate, also remove self-transitions
@@ -515,6 +542,86 @@ public:
 	}
 	out << "mean outflow:      "<<total_outflow/num_basins()<<std::endl;
     }
+
+    /** 
+     * @brief print treekin-compatible barriers list to stream 
+     * 
+     * @param out output stream 
+     */
+    void
+    print_barriers(std::ostream &out) const;    
+
+    
+    /** 
+     * @brief check validity of rates
+     * @note assume there are no merged basins, e.g. after reindex()
+     */ 
+    void
+    check_rates() const;
+    
+    /** 
+     * @brief determine connected components
+     * @param[out] components mapping of each basin index to a (1-based) component index
+     * @return number of connected components
+     */
+    size_t
+    connected_components(std::vector<size_t> &components) const;
+    
+    /** 
+     * @brief keep only a single component
+     * @param c index of component to keep 
+     * @param components mapping of each basin index to its component index
+     *
+     * Removes all basins i where components[i]!=c
+     */
+    void
+    keep_single_component(size_t c,const std::vector<size_t> &components);
+
+    /** 
+     * @brief print treekin-compatible rates matrix to stream 
+     * 
+     * @param out output stream 
+     */
+    void
+    print_treekin_ratesmatrix(std::ostream &out) const;    
+
+    /**
+     * @brief convert state description to dot bracket notation
+     * @param sd state description
+     */
+    std::string
+    to_dotbracket(const HybEnsModel::StateDescription &sd) const;
+
+    /** @brief reindex basins, remove merged basins
+     */
+    void
+    reindex();
+
+    /** @brief reindex basins according to vector keep
+     */
+    void
+    reindex(const std::vector<bool> &keep);
+
+
+private:
+    /** @brief print a double suited as rate in the ratematrix file for treekin
+     */
+    static 
+    std::string
+    format_rate_for_treekin(double x);
+
+    
+    /** @brief dump barrier graph to stream
+	
+	such that it can be read in again by read_graph()
+    */
+    void dump_graph(std::ostream &out) const;
+    
+    /** @brief read barrier graph from stream
+	
+	in the format written by dump_graph()
+    */
+    void read_graph(std::istream &in) const;
     
 };
 
