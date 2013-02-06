@@ -930,7 +930,7 @@ BarrierGraph::check_rates() const
     
 }
 
-void
+size_t
 BarrierGraph::connected_components(std::vector<size_t> &components) const
 {
     // components[i] is the number of the component of basin i
@@ -975,10 +975,14 @@ BarrierGraph::connected_components(std::vector<size_t> &components) const
 	}
     }
     
-    std::cerr << "Components: #="<<c<<" sizes: ";
-    for (size_t i=0; i<c; i++)
-	std::cerr << component_size[i]<<" ";
-    std::cerr <<std::endl;
+    if (verbose) {
+	std::cerr << "Components: #="<<c<<" sizes: ";
+	for (size_t i=0; i<c; i++)
+	    std::cerr << component_size[i]<<" ";
+	std::cerr <<std::endl;
+    }
+
+    return c;
 }
 
 

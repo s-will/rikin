@@ -3,7 +3,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([RRIKin], [0.3], [])
+AC_INIT([RRIKin], [0.5], [])
 
 # special dir for aux config files 
 AC_CONFIG_AUX_DIR(config)
