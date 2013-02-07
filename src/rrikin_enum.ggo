@@ -9,7 +9,11 @@ States are modelled as equilibrated partitions of the whole interaction ensemble
 args "-F rrikin_enum_cmdline -u"
 
 
-option "hyb-energy-threshold" - "Threshold for single hybridization site energy" double default="1e12" optional
+option "max-hyb-energy" - "Threshold for single hybridization site energy" double default="1e12" optional
+
+option "max-total-energy" - "Threshold for single hybridization site energy" double default="1e12" optional
+
+option "verbose" - "Turn on verbose output" optional
 
 text "\nInput sequences:\n"
 text "  seq1 first sequence in forward orientation\n"

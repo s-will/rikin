@@ -23,6 +23,11 @@ extern "C" {
 #include "ViennaRNA/fold_vars.h" // defines global variables
 }
 
+#include <LocARNA/stopwatch.hh>
+
+
+/* control output */
+bool verbose;
 
 using std::cout;
 using std::endl;
@@ -52,6 +57,9 @@ check_state_validity(const HybEnsModel::StateDescription &state,
 int
 main(int argc, char **argv)
 {
+    LocARNA::StopWatch stopwatch;
+    stopwatch.start("total");
+
     gengetopt_args_info args_info;
     
     // get options (call gengetopt command line parser)
@@ -71,12 +79,25 @@ main(int argc, char **argv)
     // set some global variables for Vienna libRNA
     dangles=2;
     
-    const double th_hyb_energy = args_info.hyb_energy_threshold_arg;
-
+    const double th_hyb_energy = args_info.max_hyb_energy_arg;
+    const double th_total_energy = args_info.max_total_energy_arg;
+    verbose        = args_info.verbose_given;
+    
     // ------------------------------------------------------------
     // enumerate states
-    
+    stopwatch.start("generate_model");
+
+    if (verbose) std::cerr << "Generate Model (precomputing energies for sequences of length "
+			   <<seqA.size()<<" and "<<seqB.size()<<")" << std::endl;
     HybEnsModel model(seqA,seqB);
+
+    stopwatch.stop("generate_model");
+    
+    if (verbose) stopwatch.print_info(std::cerr);
+
+    stopwatch.start("enumerate");
+
+    if (verbose) std::cerr << "Enumerate states (maximal single site hybridization energy " <<th_hyb_energy <<  ", max total energy << " << th_total_energy << " )" << std::endl;
     
     const size_t minsitesize=model.minsitesize();
     const size_t minsitedist=model.minsitedist();
@@ -85,14 +106,24 @@ main(int argc, char **argv)
     
     HybEnsModel::StateDescription empty_state;
     
-    check_state_validity(empty_state,model);
-    printf("%6.2f\n",model.energy(empty_state));
-    
+    if (model.energy(empty_state) <= th_total_energy) {
+	check_state_validity(empty_state,model);
+	printf("%6.2f\n",model.energy(empty_state));
+    }
+
     // Indexing for single hybridization 
     // ----\        /-----
     //     i1------j1     
     //     i2------j2     
     //  ---/        \--------
+
+    
+    if (verbose) {
+	std::cerr << "Enumerate single hybridization site states"
+		  << std::endl;
+    }
+    stopwatch.start("enum_single");
+    size_t count_single_states=0;
     
     //cout << "Single Hybridisations:" << endl;
     for (size_t i1=1; i1<=seqA.length(); i1++) {
@@ -123,14 +154,25 @@ main(int argc, char **argv)
 		    // 	+ energy_unpair;
 		    
 		    double total_energy=model.energy(state);
-
 		    
 		    // using cout<< instead of printf causes extrem overhead
-		    printf("%6.2f %3lu %3lu %3lu %3lu\n",total_energy,i1,i2,j1,j2);
+		    if (total_energy <= th_total_energy) {
+			printf("%6.2f %3lu %3lu %3lu %3lu\n",total_energy,i1,i2,j1,j2);
+			count_single_states++;
+		    }
 		}
 	    }
 	}
     }
+    stopwatch.stop("enum_single");
+
+    if (verbose) {
+	std::cerr << "Enumerated "<<count_single_states<<" single site states"<<std::endl;
+	stopwatch.print_info(std::cerr);
+    }
+
+    size_t count_double_states=0;
+    stopwatch.start("enum_double");
 
     // Indexing for double hybridization 
     // ----\        /--------\       /---------
@@ -138,6 +180,11 @@ main(int argc, char **argv)
     //     i2------j2        k2-----l2
     //  ---/        \-------/         \------------
 
+
+    if (verbose) {
+	std::cerr << "Enumerate double hybridization site states"
+		  << std::endl;    
+    }
     
     //cout << "Double Hybridisations:" << endl;
     for (size_t i1=1; i1<=seqA.length(); i1++) {
@@ -146,6 +193,9 @@ main(int argc, char **argv)
 		continue;
 	    }
 	    
+	    double progress = (i1/(double)seqA.size()* i2/(double)seqB.size());
+	    if (verbose) std::cerr << "\r" << (int(progress*10000)/100.0) << " %   ";
+
 	    for (size_t j1=i1+minsitesize-1; j1<=seqA.length(); j1++) {
 		for (size_t j2=i2+minsitesize-1; j2<=seqB.length(); j2++) {
 		    
@@ -188,8 +238,10 @@ main(int argc, char **argv)
 				    double total_energy=model.energy(state);
 				    
 				    // using cout<< instead of printf causes has extrem overhead
-				    printf("%6.2f %3lu %3lu %3lu %3lu %3lu %3lu %3lu %3lu\n",total_energy,i1,i2,j1,j2,k1,k2,l1,l2);
-				    
+				    if (total_energy <= th_total_energy) {
+					printf("%6.2f %3lu %3lu %3lu %3lu %3lu %3lu %3lu %3lu\n",total_energy,i1,i2,j1,j2,k1,k2,l1,l2);
+					count_double_states++;
+				    }
 				}
 			    }
 			}
@@ -199,6 +251,19 @@ main(int argc, char **argv)
 	}
     }
 
+    if (verbose) std::cerr << "\r";
+    
+    stopwatch.stop("enum_double");
+    stopwatch.stop("enumerate");
+
     cmdline_parser_free(&args_info);
+
+    stopwatch.stop("total");
+
+    if (verbose) {
+	std::cerr <<"Enumerated "<<count_double_states<<" double site states"<<std::endl;
+	stopwatch.print_info(std::cerr);
+    }    
+
     exit(0);
 }
