@@ -97,7 +97,7 @@ main(int argc, char **argv)
 
     stopwatch.start("enumerate");
 
-    if (verbose) std::cerr << "Enumerate states (maximal single site hybridization energy " <<th_hyb_energy <<  ", max total energy << " << th_total_energy << " )" << std::endl;
+    if (verbose) std::cerr << "Enumerate states (maximal single site hybridization energy " <<th_hyb_energy <<  ", max total energy " << th_total_energy << " )" << std::endl;
     
     const size_t minsitesize=model.minsitesize();
     const size_t minsitedist=model.minsitedist();
@@ -188,14 +188,15 @@ main(int argc, char **argv)
     
     //cout << "Double Hybridisations:" << endl;
     for (size_t i1=1; i1<=seqA.length(); i1++) {
+	
+	double progress = (i1/(double)seqA.size());
+	if (verbose) std::cerr << "\r" << (int(progress*10000)/100.0) << " %   ";
+
 	for (size_t i2=1; i2<=seqB.length(); i2++) {
 	    if ( (model.pair_type(i1,i2)==0) ) {
 		continue;
 	    }
-	    
-	    double progress = (i1/(double)seqA.size()* i2/(double)seqB.size());
-	    if (verbose) std::cerr << "\r" << (int(progress*10000)/100.0) << " %   ";
-
+	    	    
 	    for (size_t j1=i1+minsitesize-1; j1<=seqA.length(); j1++) {
 		for (size_t j2=i2+minsitesize-1; j2<=seqB.length(); j2++) {
 		    

@@ -623,13 +623,15 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB)
     int line=1;
 
     while (read_state(std::cin,orig_state,energy,line)) {
+	if (verbose && (state_counter%1000==0)) std::cerr << "\r" << state_counter;
+
 	if (energy < last_energy) {
 	    std::cerr << "ERROR: input states have to be sorted by increasing energy (at line "<<line<<": "<<energy<<"<"<<last_energy << " ).\n";
 	    exit(-1);
 	}
 
 	if (debug_out) std::cerr << "read " << state_counter << " " << energy << " " << " "  << orig_state << std::endl;
-            
+	
 	process_state(orig_state,energy);
             
 	state_counter++;
@@ -637,6 +639,7 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB)
 	last_energy=energy;
 	line++;
     }
+    std::cerr << "\r";
 }
 
 void
