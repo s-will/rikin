@@ -48,7 +48,8 @@ HybEnsModel::StateDescription::toString() const {
 //
 // use very simple code:
 // always use 1 byte per position and 8 bytes in total (two sites),
-// encode empty sites by 4 0-entries.
+// encode empty sites by invalid entry where i1 > j1
+// avoid 0 in encoding as long as positions are >0 (allows to write encoding to file and still use gnu's sort!)
 // fail if positions are too large.
 //
 
@@ -64,40 +65,41 @@ fail_on_toolarge(size_t x) {
     return x;
 }
 
-// idea for more flexible code:
-// the encoding is a sequence of the positions in the vector isites in
-// the order specified by vector and ISite
-// the first unsigned character encodes the number of sites and
-// the number of bits per sequence position
-//
-//
 HybEnsModel::StateDescription::code_t &
-HybEnsModel::StateDescription::encode(code_t &code) const {
-
-    code.resize(num_sites()*4);
+HybEnsModel::StateDescription::encode(code_t &the_code) const {
+    
+    assert(sizeof(char)==1);
+    
+    unsigned char *code=reinterpret_cast<unsigned char *>(&the_code);
     
     for (size_t i=0; i<num_sites(); i++) {
-	code[i*4+0]=fail_on_toolarge(isites[i].i1);
-	code[i*4+1]=fail_on_toolarge(isites[i].i2);
-	code[i*4+2]=fail_on_toolarge(isites[i].j1);
-	code[i*4+3]=fail_on_toolarge(isites[i].j2);
+	*(code++)=fail_on_toolarge(isites[i].i1);
+	*(code++)=fail_on_toolarge(isites[i].i2);
+	*(code++)=fail_on_toolarge(isites[i].j1);
+	*(code++)=fail_on_toolarge(isites[i].j2);
     }
     
-    // sketch for more flexible encoding/decoding
-    // code.bitresize(0);
-    // code.push_back(num_sites(),2); // number of sites
-    // // determine maximal position in the vector
-    // size_t maxpos=...;
-    // size_t bitsperpos=(int)ceiling(log(maxpos)/log(2));
-    // code.push_back(bitsperpos,6); // bits per element
+    for (size_t i=0; i<(2-num_sites());i++) {
+	*(code++)=2;
+	*(code++)=2;
+	*(code++)=1;
+	*(code++)=1;
+    }
     
-    return code;
+    // code-=8;
+    // std::cerr << "encode ";
+    // for (size_t i=0; i<8; i++) {
+    // 	std::cerr << (int)(code[i]) << " " ;
+    // }
+    // std::cerr << std::endl;
+    
+    return the_code;
 }
 
 HybEnsModel::StateDescription::code_t
 HybEnsModel::StateDescription::encode() const {
 
-    std::string code;
+    code_t code;
     
     encode(code);
     
@@ -107,17 +109,19 @@ HybEnsModel::StateDescription::encode() const {
 
 
 HybEnsModel::StateDescription &
-HybEnsModel::StateDescription::decode(const code_t &code) {
-    assert(code.size()%4==0);
+HybEnsModel::StateDescription::decode(const code_t &the_code) {
+    const unsigned char *code=reinterpret_cast<const unsigned char *>(&the_code);
+        
+    size_t num_sites=0;
+    if (code[0]<=code[2]) num_sites++;
+    if (code[4]<=code[6]) num_sites++;
     
-    isites.reserve(code.size()/4);
+    isites.reserve(num_sites);
     isites.resize(0);
-
-    for (size_t i=0; i<code.size()/4; i++) {
-	isites.push_back(ISite((unsigned char)code[i*4+0],
-			       (unsigned char)code[i*4+1],
-			       (unsigned char)code[i*4+2],
-			       (unsigned char)code[i*4+3]));
+    
+    for (size_t i=0; i<num_sites; i++) {
+	isites.push_back(ISite(*(code),*(code+1),*(code+2),*(code+3)));
+	code+=4;
     }
     return *this;
 }

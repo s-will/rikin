@@ -258,7 +258,8 @@ private:
     transitions_map_t transitions;
     
     //! type of state hash, key=encoded state, value=index of assigned basin
-    typedef std::tr1::unordered_map< std::string, size_t > state_hash_t;
+    typedef std::tr1::unordered_map< HybEnsModel::StateDescription::code_t,
+				     size_t > state_hash_t;
     
     //! hybrid ensemble model
     HybEnsModel model;
@@ -379,8 +380,13 @@ public:
      */
     double
     outflow_pf(const Basin &x) const {
-	const transitions_map_row_t &trs_x=transitions.find(x.idx())->second;
 	double total_out=0;
+	
+	transitions_map_t::const_iterator trs_x_it=transitions.find(x.idx());
+	
+	if (transitions.end() == trs_x_it) return total_out;
+	
+	const transitions_map_row_t &trs_x = trs_x_it->second;
 	
 	for (transitions_map_row_t::const_iterator it=trs_x.begin();
 	     trs_x.end()!=it; ++it) {
@@ -408,8 +414,14 @@ public:
     */
     double
     max_outflow(const Basin &x) const {
-	const transitions_map_row_t &trs_x=transitions.find(x.idx())->second;
 	double max_outflow = - std::numeric_limits<double>::infinity();
+
+	transitions_map_t::const_iterator trs_x_it=transitions.find(x.idx());
+	
+	if (transitions.end() == trs_x_it) return 0.0;
+	
+	const transitions_map_row_t &trs_x = trs_x_it->second;
+
 	
 	for (transitions_map_row_t::const_iterator it=trs_x.begin();
 	     trs_x.end()!=it; ++it) {
@@ -563,6 +575,8 @@ public:
      * @brief determine connected components
      * @param[out] components mapping of each basin index to a (1-based) component index
      * @return number of connected components
+     *
+     * @note the current code requires that every state has an entry in the hash transitions
      */
     size_t
     connected_components(std::vector<size_t> &components) const;

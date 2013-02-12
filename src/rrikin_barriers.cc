@@ -1,4 +1,18 @@
 /**
+ * @todo Try the use of a lru cache
+ * (e.g. http://code.google.com/p/lru-cache-cpp/). Check first if the
+ * hash causes our space problems with large instances.
+ *
+ * @todo what happens if the input list is incomplete? I.e. there are
+ * lower energy neighbors which are not in the hash? Check how exactly
+ * the tests are performed.
+ *
+ * @todo change the transitions data structure to array of hashs
+ *
+ * @todo do we have a problem with detailed balance?
+ */
+
+/**
  * @file rrikin_barriers.cc
  *
  * Defines main() of the program rrikin_barriers
@@ -62,6 +76,8 @@
  *
  * @todo CHECK: is the process irreducibel?
  */
+
+#define USE_ENCODED_STATES_IN_ENUM 1
 
 #include "rrikin_barriers.hh"
 
@@ -137,6 +153,36 @@ BarrierGraph::read_state(std::istream &in,
 			 HybEnsModel::StateDescription &state,
 			 double &energy, 
 			 size_t lineno) const {
+    
+#ifdef USE_ENCODED_STATES_IN_ENUM
+    in >> energy;
+    if (in.eof()) return false;
+
+    if(in.get()!=' ') {
+	std::cerr << "expected blank after energy at line "<< lineno <<std::endl;
+	return false; 
+    }
+    
+    HybEnsModel::StateDescription::code_t code;
+    
+    char *codebuf = reinterpret_cast<char *>(&code);
+
+    in.read(codebuf,8);
+    
+    // std::cerr << lineno << " " << energy << std::endl;
+    // for (size_t i=0; i<8; i++) {
+    // 	std::cerr << (int)codebuf[i] << " " ;
+    // }
+    // std::cerr << std::endl;
+    
+    if(in.get()!=0) {
+	std::cerr << "expected zero delimiter after state code at line "<< lineno <<std::endl;
+	return false; 
+    }
+    
+    state.decode(code);
+    
+#else
     std::string line;
 	
     if (!getline(in,line)) return false;
@@ -148,7 +194,7 @@ BarrierGraph::read_state(std::istream &in,
     for (size_t i; linein >> i;) {
 	state_vec.push_back(i);
     }
-	
+    
     switch ( state_vec.size() ) {
     case 0:
 	state = HybEnsModel::StateDescription();
@@ -174,7 +220,9 @@ BarrierGraph::read_state(std::istream &in,
 	std::cerr << "ERROR: invalid input line "<< lineno<<"." << std::endl;
 	exit(-1);
     }
-        
+
+#endif
+
     if (not state.is_valid(model)) {
 	std::cerr << "ERROR: read state "<<state<<" at line "<<lineno<<" is not valid in model."<<std::endl;
 	exit(-1);
@@ -246,7 +294,7 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state, d
 	    
 	// encode neighbor and search neighbor code in hash
 	    
-	std::string neigh_code; // string for holding code
+	HybEnsModel::StateDescription::code_t neigh_code; // string for holding code
 	neigh_state.encode(neigh_code);
 	    
 	state_hash_t::const_iterator it = state_hash.find(neigh_code);
@@ -397,8 +445,9 @@ BarrierGraph::num_transitions() const {
     for(size_t i=0; i<basins.size(); ++i) {
 	if (!basins[i].merged()) {
 	    const transitions_map_t::const_iterator &it = transitions.find(i);
-	    assert(it != transitions.end());
-	    n += it->second.size();
+	    if(it != transitions.end()) {
+		n += it->second.size();
+	    }
 	}
     }
     return n;
@@ -623,7 +672,7 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB)
     int line=1;
 
     while (read_state(std::cin,orig_state,energy,line)) {
-	if (verbose && (state_counter%1000==0)) std::cerr << "\r" << state_counter;
+	if (verbose && (state_counter%5000==0)) std::cerr << "\r" << state_counter;
 
 	if (energy < last_energy) {
 	    std::cerr << "ERROR: input states have to be sorted by increasing energy (at line "<<line<<": "<<energy<<"<"<<last_energy << " ).\n";
@@ -881,11 +930,10 @@ BarrierGraph::reindex(const std::vector<bool> &keep) {
 
     for (size_t i=0; i<basins.size(); i++) {
 	if (transitions.find(i) == transitions.end()) {
-	    if (verbose) std::cerr << "WARNING: no transitions for state "<<i<<std::endl;
+	    //if (verbose) std::cerr << "WARNING: no transitions for state "<<i<<std::endl;
 	    transitions[i] = transitions_map_row_t();
 	}
     }
-
 }
 
 void
@@ -900,14 +948,13 @@ BarrierGraph::check_rates() const
 	
 	const transitions_map_t::const_iterator &ts = transitions.find(i);
 	if (ts != transitions.end()) {
-	    // "bucket sort"  
 	    for(transitions_map_row_t::const_iterator it=ts->second.begin();
 		it != ts->second.end(); ++it) {
 		double rate = (it->second.get_Z() / basins[i].get_Z());
 		row[it->first] = rate;
 		total += rate;
 	    }
-	    }
+	}
 	
 	row[i] = 1.0-total;
 	
@@ -918,13 +965,11 @@ BarrierGraph::check_rates() const
     for(size_t i=0; i<basins.size(); ++i) {
 	for(size_t j=0; j<basins.size(); ++j) {
 	    double diff = fabs(basins[i].get_Z()*mat[i][j] - basins[j].get_Z()*mat[j][i]);
-
+	    
 	    max_diff = std::max(max_diff,diff);
-	
 	}
     }
     std::cerr << "Maximal deviation from detailed balance: "<<max_diff<<std::endl;
-    
 }
 
 size_t
@@ -1048,6 +1093,7 @@ main(int argc, char **argv)
 	    stopwatch.print_info(std::cerr);
     }
 
+    
     if (simplify_graph) {
 
 	if (verbose) {

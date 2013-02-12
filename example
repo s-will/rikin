@@ -25,6 +25,29 @@ time src/rrikin_enum ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU GCUGCGAU
 
 wc -l t
  
-time sort -g -k1 t > t.s
+time sort -g -k1 -z t > t.s
 
-time src/rrikin_barriers ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU GCUGCGAUGCAUGCCUCGAU <t.s > t2
+time src/rrikin_barriers ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU GCUGCGAUGCAUGCCUCGAU <t.s > t2 --bar bar --rates rates --max-out 0.5 --min-rate 1e-3 --min-p-equ 1e-22
+
+
+treekin -mI -f rates --p0 188=1  < bar > kintetics 
+
+R --vanilla < maxprobs.R
+R --vanilla < script.R
+
+
+#     ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU&GCUGCGAUGCAUGCCUCGAU
+#   1 ..........(..................)....................&(..................) -29.83
+#   5 (.........).......................................&.......(.........).. -18.08
+#  91 ............................................(....)&.(....).............  -7.57
+
+5
+                 ...(((((((.(((......)))..))))))).......
+      .((((((.(((...))).))))))...((.((((.....)))))).....
+ACGUACGGAGC
+UGCAUGCCUCG
+
+91
+
+GACGUU
+CUGCGA

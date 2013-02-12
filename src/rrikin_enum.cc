@@ -10,11 +10,13 @@
    partition functions and joint probabilities for two unpaired sites.
  */
 
-
+#define USE_ENCODED_STATES_IN_ENUM 1
 
 #include  <iostream>
 
 #include  <stdlib.h>
+#include  <stdio.h>
+
 #include  <string.h>
 #include  <math.h>
 #include <assert.h>
@@ -51,6 +53,34 @@ check_state_validity(const HybEnsModel::StateDescription &state,
 	std::cerr << "ERROR: generated state "<<state<<" is not valid in model."<<std::endl;
 	abort();
     }
+#endif
+}
+
+
+void
+write_state(double energy, const HybEnsModel::StateDescription &state) {
+#ifdef USE_ENCODED_STATES_IN_ENUM
+	printf("%.2f ",energy);
+	
+	HybEnsModel::StateDescription::code_t code;
+	state.encode(code);
+	fwrite(reinterpret_cast<char *>(&code),sizeof(char),8,stdout);
+	fputc(0,stdout);
+#else
+	if (state.num_sites()==0) {
+	    printf("%6.2f\n",energy);	
+	} else if (state.num_sites()==1) {
+	    printf("%6.2f %3lu %3lu %3lu %3lu\n",
+		   energy,
+		   state[0].i1,state[0].i2,state[0].j1,state[0].j2
+		   );
+	} else {
+	    printf("%6.2f %3lu %3lu %3lu %3lu %3lu %3lu %3lu %3lu\n",
+		   energy,
+		   state[0].i1,state[0].i2,state[0].j1,state[0].j2,
+		   state[1].i1,state[1].i2,state[1].j1,state[1].j2
+		   );
+	}
 #endif
 }
 
@@ -108,7 +138,7 @@ main(int argc, char **argv)
     
     if (model.energy(empty_state) <= th_total_energy) {
 	check_state_validity(empty_state,model);
-	printf("%6.2f\n",model.energy(empty_state));
+	write_state(model.energy(empty_state),empty_state);
     }
 
     // Indexing for single hybridization 
@@ -157,7 +187,7 @@ main(int argc, char **argv)
 		    
 		    // using cout<< instead of printf causes extrem overhead
 		    if (total_energy <= th_total_energy) {
-			printf("%6.2f %3lu %3lu %3lu %3lu\n",total_energy,i1,i2,j1,j2);
+			write_state(total_energy,state);
 			count_single_states++;
 		    }
 		}
@@ -240,7 +270,7 @@ main(int argc, char **argv)
 				    
 				    // using cout<< instead of printf causes has extrem overhead
 				    if (total_energy <= th_total_energy) {
-					printf("%6.2f %3lu %3lu %3lu %3lu %3lu %3lu %3lu %3lu\n",total_energy,i1,i2,j1,j2,k1,k2,l1,l2);
+					write_state(total_energy,state);
 					count_double_states++;
 				    }
 				}

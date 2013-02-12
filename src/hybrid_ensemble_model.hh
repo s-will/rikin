@@ -7,6 +7,7 @@
 #include "hybrid_pf.hh"
 
 #include <math.h>
+#include <inttypes.h>
 
 /**
  * \file hybrid_ensemble_model.hh
@@ -168,7 +169,7 @@ public:
 	};
 	
 	//! type of encoded class representation
-	typedef std::string code_t;   
+	typedef uint64_t code_t;   
 	
 	/** 
 	 * @brief Construct without interaction
