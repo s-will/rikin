@@ -10,7 +10,6 @@
    partition functions and joint probabilities for two unpaired sites.
  */
 
-#define USE_ENCODED_STATES_IN_ENUM 1
 
 #include  <iostream>
 
@@ -58,15 +57,15 @@ check_state_validity(const HybEnsModel::StateDescription &state,
 
 
 void
-write_state(double energy, const HybEnsModel::StateDescription &state) {
-#ifdef USE_ENCODED_STATES_IN_ENUM
+write_state(double energy, const HybEnsModel::StateDescription &state, bool binary) {
+    if (binary) {
 	printf("%.2f ",energy);
 	
 	HybEnsModel::StateDescription::code_t code;
 	state.encode(code);
 	fwrite(reinterpret_cast<char *>(&code),sizeof(char),8,stdout);
 	fputc(0,stdout);
-#else
+    } else {
 	if (state.num_sites()==0) {
 	    printf("%6.2f\n",energy);	
 	} else if (state.num_sites()==1) {
@@ -81,141 +80,29 @@ write_state(double energy, const HybEnsModel::StateDescription &state) {
 		   state[1].i1,state[1].i2,state[1].j1,state[1].j2
 		   );
 	}
-#endif
+    }
 }
 
-int
-main(int argc, char **argv)
-{
-    LocARNA::StopWatch stopwatch;
-    stopwatch.start("total");
-
-    gengetopt_args_info args_info;
+size_t
+enumerate_double_sites(const HybEnsModel &model,
+			    double th_hyb_energy,
+		       double th_total_energy,
+		       bool binary) {
     
-    // get options (call gengetopt command line parser)
-    if (cmdline_parser (argc, argv, &args_info) != 0)
-	exit(1) ;
-    
-    if ( args_info.inputs_num != 2 ) {
-	std::cerr << "Expect two sequences as input on command line"<<std::endl;
-	cmdline_parser_print_help();
-	cmdline_parser_free(&args_info);
-	exit(1);
-    }
-    
-    std::string seqA = args_info.inputs[0];
-    std::string seqB = args_info.inputs[1];
-        
-    // set some global variables for Vienna libRNA
-    dangles=2;
-    
-    const double th_hyb_energy = args_info.max_hyb_energy_arg;
-    const double th_total_energy = args_info.max_total_energy_arg;
-    verbose        = args_info.verbose_given;
-    
-    // ------------------------------------------------------------
-    // enumerate states
-    stopwatch.start("generate_model");
-
-    if (verbose) std::cerr << "Generate Model (precomputing energies for sequences of length "
-			   <<seqA.size()<<" and "<<seqB.size()<<")" << std::endl;
-    HybEnsModel model(seqA,seqB);
-
-    stopwatch.stop("generate_model");
-    
-    if (verbose) stopwatch.print_info(std::cerr);
-
-    stopwatch.start("enumerate");
-
-    if (verbose) std::cerr << "Enumerate states (maximal single site hybridization energy " <<th_hyb_energy <<  ", max total energy " << th_total_energy << " )" << std::endl;
-    
-    const size_t minsitesize=model.minsitesize();
-    const size_t minsitedist=model.minsitedist();
-
-    // 0 interaction sites
-    
-    HybEnsModel::StateDescription empty_state;
-    
-    if (model.energy(empty_state) <= th_total_energy) {
-	check_state_validity(empty_state,model);
-	write_state(model.energy(empty_state),empty_state);
-    }
-
-    // Indexing for single hybridization 
-    // ----\        /-----
-    //     i1------j1     
-    //     i2------j2     
-    //  ---/        \--------
-
-    
-    if (verbose) {
-	std::cerr << "Enumerate single hybridization site states"
-		  << std::endl;
-    }
-    stopwatch.start("enum_single");
-    size_t count_single_states=0;
-    
-    //cout << "Single Hybridisations:" << endl;
-    for (size_t i1=1; i1<=seqA.length(); i1++) {
-	for (size_t i2=1; i2<=seqB.length(); i2++) {
-	    if ( (model.pair_type(i1,i2)==0) ) {
-		continue;
-	    }
-	    for (size_t j1=i1+minsitesize-1; j1<=seqA.length(); j1++) {
-		for (size_t j2=i2+minsitesize-1; j2<=seqB.length(); j2++) {
-		    if ( (model.pair_type(j1,j2))==0 ) {
-			continue;
-		    }
-		    
-		    HybEnsModel::StateDescription state(i1,i2,j1,j2);
-		    		    
-		    check_state_validity(state,model);
-
-		    double energy_hyb = 
-			model.energy_hybrid(state[0]);
-		    
-		    if ( energy_hyb > th_hyb_energy ) continue;
-		    
-		    // double energy_unpair =
-		    // 	model.energy_unpair(state[0]);
-		    
-		    // double total_energy = 
-		    // 	energy_hyb
-		    // 	+ energy_unpair;
-		    
-		    double total_energy=model.energy(state);
-		    
-		    // using cout<< instead of printf causes extrem overhead
-		    if (total_energy <= th_total_energy) {
-			write_state(total_energy,state);
-			count_single_states++;
-		    }
-		}
-	    }
-	}
-    }
-    stopwatch.stop("enum_single");
-
-    if (verbose) {
-	std::cerr << "Enumerated "<<count_single_states<<" single site states"<<std::endl;
-	stopwatch.print_info(std::cerr);
-    }
-
-    size_t count_double_states=0;
-    stopwatch.start("enum_double");
-
     // Indexing for double hybridization 
     // ----\        /--------\       /---------
     //     i1------j1        k1-----l1
     //     i2------j2        k2-----l2
     //  ---/        \-------/         \------------
-
-
-    if (verbose) {
-	std::cerr << "Enumerate double hybridization site states"
-		  << std::endl;    
-    }
     
+    size_t count_double_states=0;
+
+    const std::string &seqA = model.seqA();
+    const std::string &seqB = model.seqB();
+    const size_t minsitesize=model.minsitesize();
+    const size_t minsitedist=model.minsitedist();
+
+	
     //cout << "Double Hybridisations:" << endl;
     for (size_t i1=1; i1<=seqA.length(); i1++) {
 	
@@ -270,7 +157,7 @@ main(int argc, char **argv)
 				    
 				    // using cout<< instead of printf causes has extrem overhead
 				    if (total_energy <= th_total_energy) {
-					write_state(total_energy,state);
+					write_state(total_energy,state,binary);
 					count_double_states++;
 				    }
 				}
@@ -282,9 +169,148 @@ main(int argc, char **argv)
 	}
     }
 
-    if (verbose) std::cerr << "\r";
+    return count_double_states;
+}
+
+int
+main(int argc, char **argv)
+{
+    LocARNA::StopWatch stopwatch;
+    stopwatch.start("total");
+
+    gengetopt_args_info args_info;
     
-    stopwatch.stop("enum_double");
+    // get options (call gengetopt command line parser)
+    if (cmdline_parser (argc, argv, &args_info) != 0)
+	exit(1) ;
+    
+    if ( args_info.inputs_num != 2 ) {
+	std::cerr << "Expect two sequences as input on command line"<<std::endl;
+	cmdline_parser_print_help();
+	cmdline_parser_free(&args_info);
+	exit(1);
+    }
+    
+    std::string seqA = args_info.inputs[0];
+    std::string seqB = args_info.inputs[1];
+        
+    // set some global variables for Vienna libRNA
+    dangles=2;
+    
+    const double th_hyb_energy = args_info.max_hyb_energy_arg;
+    const double th_total_energy = args_info.max_total_energy_arg;
+    verbose        = args_info.verbose_given;
+    bool enum_double_sites        = ! args_info.no_double_sites_given;
+    bool binary        = args_info.binary_given;
+    
+    // ------------------------------------------------------------
+    // enumerate states
+    stopwatch.start("generate_model");
+
+    if (verbose) std::cerr << "Generate Model (precomputing energies for sequences of length "
+			   <<seqA.size()<<" and "<<seqB.size()<<")" << std::endl;
+    HybEnsModel model(seqA,seqB);
+
+    stopwatch.stop("generate_model");
+    
+    if (verbose) stopwatch.print_info(std::cerr);
+
+    stopwatch.start("enumerate");
+
+    if (verbose) std::cerr << "Enumerate states (maximal single site hybridization energy " <<th_hyb_energy <<  ", max total energy " << th_total_energy << " )" << std::endl;
+    
+    const size_t minsitesize=model.minsitesize();
+
+    // 0 interaction sites
+    
+    HybEnsModel::StateDescription empty_state;
+    
+    if (model.energy(empty_state) <= th_total_energy) {
+	check_state_validity(empty_state,model);
+	write_state(model.energy(empty_state),empty_state,binary);
+    }
+
+    // Indexing for single hybridization 
+    // ----\        /-----
+    //     i1------j1     
+    //     i2------j2     
+    //  ---/        \--------
+
+    
+    if (verbose) {
+	std::cerr << "Enumerate single hybridization site states"
+		  << std::endl;
+    }
+    stopwatch.start("enum_single");
+    size_t count_single_states=0;
+    
+    //cout << "Single Hybridisations:" << endl;
+    for (size_t i1=1; i1<=seqA.length(); i1++) {
+	for (size_t i2=1; i2<=seqB.length(); i2++) {
+	    if ( (model.pair_type(i1,i2)==0) ) {
+		continue;
+	    }
+	    for (size_t j1=i1+minsitesize-1; j1<=seqA.length(); j1++) {
+		for (size_t j2=i2+minsitesize-1; j2<=seqB.length(); j2++) {
+		    if ( (model.pair_type(j1,j2))==0 ) {
+			continue;
+		    }
+		    
+		    HybEnsModel::StateDescription state(i1,i2,j1,j2);
+		    		    
+		    check_state_validity(state,model);
+
+		    double energy_hyb = 
+			model.energy_hybrid(state[0]);
+		    
+		    if ( energy_hyb > th_hyb_energy ) continue;
+		    
+		    // double energy_unpair =
+		    // 	model.energy_unpair(state[0]);
+		    
+		    // double total_energy = 
+		    // 	energy_hyb
+		    // 	+ energy_unpair;
+		    
+		    double total_energy=model.energy(state);
+		    
+		    // using cout<< instead of printf causes extrem overhead
+		    if (total_energy <= th_total_energy) {
+			write_state(total_energy,state,binary);
+			count_single_states++;
+		    }
+		}
+	    }
+	}
+    }
+    stopwatch.stop("enum_single");
+
+    if (verbose) {
+	std::cerr << "Enumerated "<<count_single_states<<" single site states"<<std::endl;
+	stopwatch.print_info(std::cerr);
+    }
+
+
+    if (enum_double_sites) {
+	stopwatch.start("enum_double");
+		
+	size_t count_double_states=0;
+	if (verbose) {
+	    std::cerr << "Enumerate double hybridization site states"
+		      << std::endl;    
+	}
+	
+	count_double_states=enumerate_double_sites(model,th_hyb_energy,th_total_energy,binary);
+    
+
+	if (verbose) {
+	    if (verbose) std::cerr << "\r";
+	    std::cerr <<"Enumerated "<<count_double_states<<" double site states"<<std::endl;
+	}
+    
+	stopwatch.stop("enum_double");
+    }
+    
     stopwatch.stop("enumerate");
 
     cmdline_parser_free(&args_info);
@@ -292,7 +318,6 @@ main(int argc, char **argv)
     stopwatch.stop("total");
 
     if (verbose) {
-	std::cerr <<"Enumerated "<<count_double_states<<" double site states"<<std::endl;
 	stopwatch.print_info(std::cerr);
     }    
 

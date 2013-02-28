@@ -30,7 +30,7 @@ time sort -g -k1 -z t > t.s
 time src/rrikin_barriers ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU GCUGCGAUGCAUGCCUCGAU <t.s > t2 --bar bar --rates rates --max-out 0.5 --min-rate 1e-3 --min-p-equ 1e-22
 
 
-treekin -mI -f rates --p0 188=1  < bar > kintetics 
+treekin -mI -f rates --p0 188=1  < bar > kinetics 
 
 R --vanilla < maxprobs.R
 R --vanilla < script.R
@@ -49,5 +49,5 @@ UGCAUGCCUCG
 
 91
 
-GACGUU
-CUGCGA
+.((((((.(((...))).))))))..((((.........)))).GACGUU
+                                           .CUGCGA.............

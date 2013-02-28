@@ -4,14 +4,18 @@ purpose "Calculate kinetics of RNA-RNA-interaction"
 usage "_enum [options] seq1 seq2"
 
 description "Enumerates states of RNA-RNA-interaction in the RRI hybrid ensemble model. \
-States are modelled as equilibrated partitions of the whole interaction ensemble."
+States are modelled as equilibrated partitions of the whole interaction ensemble. \
+Supports states with single and double hybridization sites."
 
 args "-F rrikin_enum_cmdline -u"
-
 
 option "max-hyb-energy" - "Threshold for single hybridization site energy" double default="1e12" optional
 
 option "max-total-energy" - "Threshold for single hybridization site energy" double default="1e12" optional
+
+option "no-double-sites" - "Don't enumerate double hybridization site configurations" optional
+
+option "binary" - "Binary encoding of states in output" optional
 
 option "verbose" - "Turn on verbose output" optional
 

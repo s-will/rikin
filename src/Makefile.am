@@ -9,7 +9,8 @@ unpaired_pf.cc unpaired_pf.hh LocARNA/matrices.hh LPfold.h LPfold.c	\
 hybrid_ensemble_model.hh hybrid_ensemble_model.cc moves.hh moves.cc	\
 rrikin_enum_cmdline.c rrikin_enum_cmdline.h
 
-rrikin_barriers_SOURCES = rrikin_barriers.cc hybrid_pf.cc hybrid_pf.hh	\
+rrikin_barriers_SOURCES = rrikin_barriers.cc barrier_graph.hh		\
+barrier_graph.cc basin_transition.hh hybrid_pf.cc hybrid_pf.hh		\
 unpaired_pf.cc unpaired_pf.hh LocARNA/matrices.hh LPfold.h LPfold.c	\
 hybrid_ensemble_model.hh hybrid_ensemble_model.cc moves.cc		\
 rrikin_barriers_cmdline.c rrikin_barriers_cmdline.h
