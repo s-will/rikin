@@ -105,7 +105,7 @@ class Basin {
     
     //friend class BarrierGraph;
     
-    size_t basin_index; //<! index of basin 
+    size_t index_; //<! index of basin 
     HybEnsModel::StateDescription local_minimum; //!< local minimum
     double minimum_energy; //!< energy of the local minimum
     double Z;      //!< partition function
@@ -124,7 +124,7 @@ public:
      * @param energy_of_minimum The energy of the local minimum
      */
     Basin(size_t index, const HybEnsModel::StateDescription &local_minimum_,double energy_of_minimum, const HybEnsModel &model)
-	: basin_index(index),
+	: index_(index),
 	  local_minimum(local_minimum_),
 	  minimum_energy(energy_of_minimum),
 	  Z(0.0),
@@ -146,14 +146,14 @@ public:
     //! @brief Get index of basin
     //! @return index of basin
     size_t idx() const {
-	return basin_index;
+	return index_;
     }
 
     //! @brief Set index of basin
     //! @param idx index of basin
     void
-    set_index(size_t idx) {
-	basin_index=idx;
+    set_idx(size_t idx) {
+	index_=idx;
     }
     
     void

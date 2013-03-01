@@ -202,6 +202,7 @@ main(int argc, char **argv)
     verbose        = args_info.verbose_given;
     bool enum_double_sites        = ! args_info.no_double_sites_given;
     bool binary        = args_info.binary_given;
+    bool add_open_state        = args_info.add_open_state_given;
     
     // ------------------------------------------------------------
     // enumerate states
@@ -223,13 +224,17 @@ main(int argc, char **argv)
 
     // 0 interaction sites
     
-    HybEnsModel::StateDescription empty_state;
-    
-    if (model.energy(empty_state) <= th_total_energy) {
-	check_state_validity(empty_state,model);
-	write_state(model.energy(empty_state),empty_state,binary);
+    if (add_open_state) {	
+	HybEnsModel::StateDescription empty_state;
+	if (verbose) {
+	    std::cerr <<"Write open state"<<std::endl;
+	}
+	if (model.energy(empty_state) <= th_total_energy) {
+	    check_state_validity(empty_state,model);
+	    write_state(model.energy(empty_state),empty_state,binary);
+	}
     }
-
+    
     // Indexing for single hybridization 
     // ----\        /-----
     //     i1------j1     

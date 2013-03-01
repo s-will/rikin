@@ -127,14 +127,13 @@ void Basin::print_header(std::ostream &out) const {
 void
 Basin::print(std::ostream &out, const HybEnsModel &model) const {
     printf("%5lu %-32s %10.2f %6.2f %6.2f",
-	   basin_index,
+	   index_,
 	   local_minimum.toString().c_str(),
 	   states,
 	   - model.RT() * log(Z),
 	   minimum_energy
 	   );
 }
-
 
 
 int
@@ -159,11 +158,12 @@ main(int argc, char **argv)
     std::string seqA = args_info.inputs[0];
     std::string seqB = args_info.inputs[1];
 
-    double max_outflow=args_info.max_outflow_arg;
-    double min_rate=args_info.min_rate_arg;
-    double min_p_equ=args_info.min_p_equ_arg;
-    bool binary        = args_info.binary_given;
-
+    double max_outflow  = args_info.max_outflow_arg;
+    double min_rate     = args_info.min_rate_arg;
+    double min_p_equ    = args_info.min_p_equ_arg;
+    bool binary         = args_info.binary_given;
+    bool special_open_state = ! args_info.no_special_open_state_given;
+    
     consider_double_sites = ! args_info.no_double_sites_given;
 
     simplify_graph = ! args_info.dont_simplify_graph_given;
@@ -192,18 +192,19 @@ main(int argc, char **argv)
     stopwatch.start("construct");
 
     // construct barrier graph
-    BarrierGraph barriers(seqA,seqB,binary,consider_double_sites);
-
-    barriers.verbose   = verbose;
-    barriers.debug_out = debug_out;
+    BarrierGraph bg(seqA,seqB,binary,
+			  special_open_state,
+			  consider_double_sites,
+			  verbose,
+			  debug_out);
     
     stopwatch.stop("construct");
     
-    size_t num_total_basins = barriers.num_basins();
+    size_t num_total_basins = bg.num_basins();
 
     if (verbose) {
 	    std::cerr << "Generated "<<num_total_basins<<" basins." << std::endl;
-	    barriers.print_stats(std::cerr);
+	    bg.print_stats(std::cerr);
 	    stopwatch.print_info(std::cerr);
     }
 
@@ -217,44 +218,47 @@ main(int argc, char **argv)
 	
 	stopwatch.start("merge");
 	
-	barriers.merge_basins(max_outflow,min_p_equ,min_rate);
+	bg.merge_basins(max_outflow,min_p_equ,min_rate);
 	
 	stopwatch.stop("merge");
 	
 	if (verbose) {
-	    std::cerr << "Merged "<<num_total_basins-barriers.num_basins()
-		      <<" basins resulting in "<<barriers.num_basins()<<" states." << std::endl;
-	    barriers.print_stats(std::cerr);
+	    std::cerr << "Merged "<<num_total_basins-bg.num_basins()
+		      <<" basins resulting in "<<bg.num_basins()<<" states." << std::endl;
+	    bg.print_stats(std::cerr);
 	}
 	
-	// if (verbose) {
-	//     std::cerr << "Remove rates smaller than " << min_rate << " (again)."<< std::endl;
-	// }
-	
-	// barriers.filter_rates(min_rate);
-	
-	// if (verbose) {
-	//     barriers.print_stats(std::cerr);
-	// }
     }
 
     if (verbose) {
 	std::cerr << "Reindex" << std::endl;
     }
-    barriers.reindex();
-    if (verbose) {
-	barriers.print_stats(std::cerr);
+    bg.reindex();
+
+    if (special_open_state) {
+	// Exchange basin indices 1 and 2 such that the global minimum is state 1
+	// and the open state is state 2
+    
+	if (verbose) {
+	    std::cerr << "Move global minimum to smallest index; open state to second index." << std::endl;
+	}
+	bg.swap_indices(0,1);
     }
+    
+    if (verbose) {
+	bg.print_stats(std::cerr);
+    }
+    
 
     // print basins of barrier graph
-    barriers.print_basins(std::cout);    
+    bg.print_basins(std::cout);    
 
     std::cout << std::endl
 	      << std::endl;
-    barriers.print_barrier_graph(std::cout);
+    bg.print_barrier_graph(std::cout);
     
     std::vector<size_t> components;
-    std::vector<size_t> component_sizes=barriers.connected_components(components);
+    std::vector<size_t> component_sizes=bg.connected_components(components);
     if (component_sizes.size()>1) {
     	if (verbose) {
 	    std::cerr << "Components: #="<<component_sizes.size()<<" sizes: ";
@@ -266,10 +270,10 @@ main(int argc, char **argv)
 		      << std::endl;
 	}
 	
-	barriers.keep_single_component(1,components);
+	bg.keep_single_component(1,components);
 	
 	if (verbose) {
-	    barriers.print_stats(std::cerr);
+	    bg.print_stats(std::cerr);
 	}
     }
     
@@ -280,8 +284,14 @@ main(int argc, char **argv)
 	
 	std::ofstream fout(barfile.c_str());
 	if (fout.good()) {
-	    barriers.print_barriers(fout);
-	    barriers.check_rates();
+	    bg.print_barriers(fout);
+	    
+	    if (verbose) {
+		double max_diff = bg.check_rates();
+		if (max_diff > 1e-5) {
+		    std::cerr << "WARNING: maximal deviation from detailed balance:"<<max_diff<<std::endl;
+		}
+	    }
 	    fout.close();
 	} else {
 	    std::cerr << "Cannot write barriers file."<<std::endl;
@@ -296,7 +306,7 @@ main(int argc, char **argv)
 	
 	std::ofstream fout(ratesfile.c_str());
 	if (fout.good()) {
-	    barriers.print_treekin_ratesmatrix(fout);
+	    bg.print_treekin_ratesmatrix(fout);
 	} else {
 	    std::cerr << "Cannot write rates file."<<std::endl;
 	}

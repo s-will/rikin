@@ -21,19 +21,19 @@ ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU
           12345678901234567890
           0        1        
 
-time src/rrikin_enum ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU GCUGCGAUGCAUGCCUCGAU >t
+time src/rrikin_enum ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU GCUGCGAUGCAUGCCUCGAU >t --no-double  --verbose
 
 wc -l t
  
-time sort -g -k1 -z t > t.s
+time sort -g -k1 t > t.s
 
-time src/rrikin_barriers ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU GCUGCGAUGCAUGCCUCGAU <t.s > t2 --bar bar --rates rates --max-out 0.5 --min-rate 1e-3 --min-p-equ 1e-22
+time src/rrikin_barriers ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU GCUGCGAUGCAUGCCUCGAU <t.s > t2 --bar bar --rates rates --max-out 0.5 --min-rate 1e-6 --min-p-equ 1e-22  --no-double --verbose
 
+treekin --t8 1e12 -mI -f rates --p0 2=1  < bar > kinetics 
 
-treekin -mI -f rates --p0 188=1  < bar > kinetics 
-
-R --vanilla < maxprobs.R
-R --vanilla < script.R
+# R --vanilla < maxprobs.R
+# R --vanilla < script.R
+R --vanilla < kinetics.R
 
 
 #     ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU&GCUGCGAUGCAUGCCUCGAU

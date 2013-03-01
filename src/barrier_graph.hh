@@ -11,11 +11,6 @@
  */
 class BarrierGraph
 {
-public:
-    /* control output */
-    bool debug_out;
-    bool verbose;
-
 private:
 
 
@@ -34,23 +29,30 @@ private:
     //! keys=basin indices of source and target @note this matrix is
     //! symmetric, we maintain the equivalence of symmetric pairs
     //! transitions[i][j] and transitions[j][i].
-    transitions_map_t transitions;
+    transitions_map_t transitions_;
     
     //! type of state hash, key=encoded state, value=index of assigned basin
     typedef std::tr1::unordered_map< HybEnsModel::StateDescription::code_t,
 				     size_t > state_hash_t;
     
     //! hybrid ensemble model
-    HybEnsModel model;
+    HybEnsModel model_;
+    
+    //! whether open state is special or treated like all other input states
+    bool special_open_state_;
     
     //! whether double sites are supported
-    bool consider_double_sites;
+    bool consider_double_sites_;
+    /* control output */
+    bool verbose_;
+    bool debug_out_;
+
 
     //! vector storing basins of all local minima
-    std::vector<Basin> basins;
+    std::vector<Basin> basins_;
     
     //! hash of the state basin assignment indexed by encoded states
-    state_hash_t state_hash;
+    state_hash_t state_hash_;
     
     /** 
      * Read a state description line from input stream
@@ -157,7 +159,11 @@ public:
      */
     BarrierGraph(const std::string &seqA, const std::string &seqB,
 		 bool binary,
-		 bool consider_double_sites);
+		 bool special_open_state,
+		 bool consider_double_sites,
+		 bool verbose,
+		 bool debug_out
+		 );
 
     /** @brief total outflow of basin as partition function
 	@param x basin
@@ -167,16 +173,16 @@ public:
     outflow_pf(const Basin &x) const {
 	double total_out=0;
 	
-	transitions_map_t::const_iterator trs_x_it=transitions.find(x.idx());
+	transitions_map_t::const_iterator trs_x_it=transitions_.find(x.idx());
 	
-	if (transitions.end() == trs_x_it) return total_out;
+	if (transitions_.end() == trs_x_it) return total_out;
 	
 	const transitions_map_row_t &trs_x = trs_x_it->second;
 	
 	for (transitions_map_row_t::const_iterator it=trs_x.begin();
 	     trs_x.end()!=it; ++it) {
 	    
-	    if (basins[it->first].merged()) continue;
+	    if (basins_[it->first].merged()) continue;
 	    if (it->first==x.idx()) continue;
 	    
 	    total_out += it->second.get_Z();
@@ -201,9 +207,9 @@ public:
     max_outflow(const Basin &x) const {
 	double max_outflow = - std::numeric_limits<double>::infinity();
 
-	transitions_map_t::const_iterator trs_x_it=transitions.find(x.idx());
+	transitions_map_t::const_iterator trs_x_it=transitions_.find(x.idx());
 	
-	if (transitions.end() == trs_x_it) return 0.0;
+	if (transitions_.end() == trs_x_it) return 0.0;
 	
 	const transitions_map_row_t &trs_x = trs_x_it->second;
 
@@ -211,7 +217,7 @@ public:
 	for (transitions_map_row_t::const_iterator it=trs_x.begin();
 	     trs_x.end()!=it; ++it) {
 	    
-	    if (basins[it->first].merged()) continue;
+	    if (basins_[it->first].merged()) continue;
 	    if (it->first==x.idx()) continue;
 	    
 	    max_outflow = std::max(max_outflow, it->second.get_Z());
@@ -235,11 +241,13 @@ public:
      * Generates the neighbors of source_state and in this way determines,
      * whether the state is a local minimum or belongs to a known basin.
      *
-     * @param source_state State that is processed
-     * @param energy     Energy of source_state
+     * @param source_state     state to be processed
+     * @param energy           energy of source_state
+     * @param force_new_basin  force creation of new basin, if true
      */
     void
-    process_state(const HybEnsModel::StateDescription &source_state, double source_energy);
+    process_state(const HybEnsModel::StateDescription &source_state, 
+		  double source_energy);
 
 private:
     class compBasinIdxs {
@@ -249,7 +257,7 @@ private:
 	
 	bool
 	operator() (size_t a,size_t b) const {
-	    return bg_.basins[a].get_Z() < bg_.basins[b].get_Z();
+	    return bg_.basins_[a].get_Z() < bg_.basins_[b].get_Z();
 	}
     };
 public:
@@ -332,9 +340,9 @@ public:
 	out << "mean transitions:  "<<num_transitions()/num_basins()<<std::endl;
 	
 	double total_outflow=0.0;
-	for(size_t i=0; i<basins.size(); ++i) {
-	    if (!basins[i].merged()) {
-		total_outflow += outflow(basins[i]);
+	for(size_t i=0; i<basins_.size(); ++i) {
+	    if (!basins_[i].merged()) {
+		total_outflow += outflow(basins_[i]);
 	    }
 	}
 	out << "mean outflow:      "<<total_outflow/num_basins()<<std::endl;
@@ -352,8 +360,9 @@ public:
     /** 
      * @brief check validity of rates
      * @note assume there are no merged basins, e.g. after reindex()
+     * @returns maximum difference between Zs of transitions_[i][j] and transitions_[j][i] 
      */ 
-    void
+    double
     check_rates() const;
     
     /** 
@@ -401,6 +410,14 @@ public:
     void
     reindex(const std::vector<bool> &keep);
 
+
+    /** 
+     * Swap two basin indices
+     * 
+     * @param x first index
+     * @param y second index
+     */
+    void swap_indices(size_t x, size_t y);
 
 private:
     /** @brief print a double suited as rate in the ratematrix file for treekin

@@ -17,6 +17,8 @@ option "ratesfile" - "Write rates matrix to a treekin compatible file" string op
 
 option "no-double-sites" - "Don't consider double hybridization sites" optional
 
+option "no-special-open-state" - "Treat open state like other states" optional
+
 option "dont-simplify-graph" - "Turn of all barrier graph simplifications" optional
 
 option "binary" - "Assume binary encoding of states in input" optional
