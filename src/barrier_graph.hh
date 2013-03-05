@@ -43,6 +43,10 @@ private:
     
     //! whether double sites are supported
     bool consider_double_sites_;
+
+    //! whether gradient walks are used to combine states into basins
+    bool gradient_;
+
     /* control output */
     bool verbose_;
     bool debug_out_;
@@ -153,14 +157,19 @@ public:
      * @param seqA sequence A
      * @param seqB sequence B
      * @param binary assume binary encoding of states in input
-     *
-     * @param min_barrier_height_ initializes BarrierGraph::min_barrier_height 
+     * @param special_open_state whether open state is treated as special state (that is never merged with other states)
+     * @param consider_double_sites whether double interaction sites are allowed
+     * @param gradient whether to combine states into basins due to gradient walks
+     * @param verbose turns on verbose output 
+     * @param debug_out turns on debugging output 
      *
      */
-    BarrierGraph(const std::string &seqA, const std::string &seqB,
+    BarrierGraph(const std::string &seqA, 
+		 const std::string &seqB,
 		 bool binary,
 		 bool special_open_state,
 		 bool consider_double_sites,
+		 bool gradient,
 		 bool verbose,
 		 bool debug_out
 		 );

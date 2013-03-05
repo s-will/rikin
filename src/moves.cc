@@ -210,7 +210,7 @@ HybEnsModel::GrowShrinkMoveFL::GrowShrinkMoveFL(const MoveIterator &mi):GrowShri
 HybEnsModel::GrowShrinkMoveFL::~GrowShrinkMoveFL() {}
 
 HybEnsModel::Move *
-HybEnsModel::GrowShrinkMoveFL::nextMoveType() const {
+HybEnsModel::GrowShrinkMoveFL::nextMoveType(bool with_double) const {
     return new GrowShrinkMoveFR(mi);
 }
 
@@ -259,7 +259,7 @@ HybEnsModel::GrowShrinkMoveFR::GrowShrinkMoveFR(const MoveIterator &mi):GrowShri
 HybEnsModel::GrowShrinkMoveFR::~GrowShrinkMoveFR() {}
 
 HybEnsModel::Move *
-HybEnsModel::GrowShrinkMoveFR::nextMoveType() const {
+HybEnsModel::GrowShrinkMoveFR::nextMoveType(bool with_double) const {
     return new GrowShrinkMoveSL(mi);
 }
 
@@ -313,7 +313,7 @@ HybEnsModel::GrowShrinkMoveSL::GrowShrinkMoveSL(const MoveIterator &mi):GrowShri
 HybEnsModel::GrowShrinkMoveSL::~GrowShrinkMoveSL() {}
 
 HybEnsModel::Move *
-HybEnsModel::GrowShrinkMoveSL::nextMoveType() const {
+HybEnsModel::GrowShrinkMoveSL::nextMoveType(bool with_double) const {
     return new GrowShrinkMoveSR(mi);
 }
 
@@ -361,7 +361,7 @@ HybEnsModel::GrowShrinkMoveSR::GrowShrinkMoveSR(const MoveIterator &mi):GrowShri
 HybEnsModel::GrowShrinkMoveSR::~GrowShrinkMoveSR() {}
 
 HybEnsModel::Move *
-HybEnsModel::GrowShrinkMoveSR::nextMoveType() const {
+HybEnsModel::GrowShrinkMoveSR::nextMoveType(bool with_double) const {
     if (allow_shift_move)
 	return new ShiftMove(mi);
     else
@@ -422,7 +422,7 @@ HybEnsModel::ShiftMove::print(std::ostream &out) const {
 }
 
 HybEnsModel::Move *
-HybEnsModel::ShiftMove::nextMoveType() const {
+HybEnsModel::ShiftMove::nextMoveType(bool with_double) const {
 
     size_t seq=seq_;
     size_t site=site_;
@@ -567,7 +567,7 @@ HybEnsModel::RemoveSiteMove::print(std::ostream &out) const {
 
 
 HybEnsModel::Move *
-HybEnsModel::RemoveSiteMove::nextMoveType() const {
+HybEnsModel::RemoveSiteMove::nextMoveType(bool with_double) const {
     return new NewSiteMoveF(mi);
 }
 
@@ -721,8 +721,13 @@ HybEnsModel::NewSiteMoveF::~NewSiteMoveF() {}
 
 
 HybEnsModel::Move *
-HybEnsModel::NewSiteMoveF::nextMoveType() const {
-    return new NewSiteMoveL(mi);
+HybEnsModel::NewSiteMoveF::nextMoveType(bool with_double) const {
+    Move *m = NULL;
+    
+    if (with_double) { 
+	m = new NewSiteMoveL(mi);
+    }
+    return m;
 }
 
 bool
@@ -779,7 +784,7 @@ HybEnsModel::NewSiteMoveL::NewSiteMoveL(const MoveIterator &mi) : NewSiteMove(mi
 HybEnsModel::NewSiteMoveL::~NewSiteMoveL() {}
 
 HybEnsModel::Move *
-HybEnsModel::NewSiteMoveL::nextMoveType() const {
+HybEnsModel::NewSiteMoveL::nextMoveType(bool with_double) const {
     return new NewSiteMoveR(mi);
 }
 
@@ -846,7 +851,7 @@ HybEnsModel::NewSiteMoveR::NewSiteMoveR(const MoveIterator &mi) : NewSiteMove(mi
 HybEnsModel::NewSiteMoveR::~NewSiteMoveR() {}
 
 HybEnsModel::Move *
-HybEnsModel::NewSiteMoveR::nextMoveType() const {
+HybEnsModel::NewSiteMoveR::nextMoveType(bool with_double) const {
     return new MergeMove(mi);
 }
 
@@ -909,7 +914,7 @@ HybEnsModel::MergeMove::MergeMove(const MoveIterator &mi) : Move(mi) {}
 HybEnsModel::MergeMove::~MergeMove() {}
 
 HybEnsModel::Move *
-HybEnsModel::MergeMove::nextMoveType() const {
+HybEnsModel::MergeMove::nextMoveType(bool with_double) const {
     return new SplitMove(mi);
 }
 
@@ -987,7 +992,7 @@ HybEnsModel::SplitMove::print(std::ostream &out) const {
 
 
 HybEnsModel::Move *
-HybEnsModel::SplitMove::nextMoveType() const {
+HybEnsModel::SplitMove::nextMoveType(bool with_double) const {
     return NULL;
 }
 
@@ -1092,11 +1097,11 @@ MoveIterator(const StateDescription &origin,
 
 
 HybEnsModel::Move *
-HybEnsModel::MoveIterator::firstMove() const {
+HybEnsModel::MoveIterator::firstMove(bool with_double) const {
     Move *m = new GrowShrinkMoveFL(*this);
     
     while( (m!=NULL) && (! m->first()) ) {
-	Move *m2 = m->nextMoveType();
+	Move *m2 = m->nextMoveType(with_double);
 	delete m;
 	m=m2;
     }
@@ -1105,7 +1110,7 @@ HybEnsModel::MoveIterator::firstMove() const {
 
 
 HybEnsModel::Move *
-HybEnsModel::MoveIterator::nextMove(Move *m) const {
+HybEnsModel::MoveIterator::nextMove(Move *m, bool with_double) const {
     assert( m != NULL );
 
     if ( m->next() ) {
@@ -1113,7 +1118,7 @@ HybEnsModel::MoveIterator::nextMove(Move *m) const {
     };
 
     do {
-	Move *m2 = m->nextMoveType(); // get new move object of next move type
+	Move *m2 = m->nextMoveType(with_double); // get new move object of next move type
 	delete m; // and delete old object
 	if (m2==NULL) {return NULL;} // return NULL, if there is no next move type
 	m=m2;

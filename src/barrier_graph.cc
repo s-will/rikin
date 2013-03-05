@@ -142,7 +142,7 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state,
     //
     //
     HybEnsModel::MoveIterator mi(source_state,model_);
-    for (HybEnsModel::Move *move = mi.firstMove(); move != NULL; move = mi.nextMove(move)) {
+    for (HybEnsModel::Move *move = mi.firstMove(consider_double_sites_); move != NULL; move = mi.nextMove(move,consider_double_sites_)) {
 	    
 	//std::cout << " move "; move->print(std::cout); std::cout<<std::endl;
 	    
@@ -229,7 +229,7 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state,
     // Either construct a new basin with local minimum source_state
     // or assign source_state to an existing basin
     //
-    if ( min_transition_energy > source_energy ) {
+    if ( !gradient_ || min_transition_energy > source_energy ) {
 	// no transition state to an energetically lower target
 	// state is energetically lower than the source state
 	//
@@ -530,12 +530,14 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB,
 			   bool binary,
 			   bool special_open_state,
 			   bool consider_double_sites,
+			   bool gradient,
 			   bool verbose,
 			   bool debug_out)
     :
     model_(seqA,seqB),
     special_open_state_(special_open_state),
     consider_double_sites_(consider_double_sites),
+    gradient_(gradient),
     verbose_(verbose),
     debug_out_(debug_out)
 {

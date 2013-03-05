@@ -94,10 +94,8 @@ public:
     
 private:
     
-    std::string seq; //!< the RNA sequence
+    std::string seq_; //!< the RNA sequence
 
-    int orientation; //!< orientation of sequence (+1=forward,-1=reverse)
-    
     /**
      * @brief scaling factor for partition functions/boltzmann weights
      * @note has to be compatible to Vienna lib
@@ -112,6 +110,31 @@ private:
      * Pcond(i,j)(k,l) is the probability of range k..l unpaired under condition range i..j unpaired  
      */
     LocARNA::Matrix<LocARNA::Matrix<prob_t> > Pcond;
+
+
+    /** 
+     * \brief revert an upper triangular matrix
+     * 
+     * @param size matrix size
+     * @param m matrix with element access (i,j)
+     */
+    template<class M>
+    void
+    revert_upper_triangle_matrix(size_t size,M &m);
+    
+    /** 
+     * \brief revert the single probabilities matrix Psingle
+     * 
+     */
+    void
+    revert_single_probs();
+
+    /** 
+     * \brief revert the conditional probabilities matrix Pcond
+     * 
+     */
+    void
+    revert_cond_probs();
     
     /**
      * \brief Calculates single range unpaired probabilities.

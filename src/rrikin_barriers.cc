@@ -148,21 +148,29 @@ main(int argc, char **argv)
     if (cmdline_parser (argc, argv, &args_info) != 0)
 	exit(1) ;
     
-    if ( args_info.inputs_num != 2 ) {
-	std::cerr << "Expect two sequences as input on command line"<<std::endl;
+    if ( !args_info.homodimer_given && args_info.inputs_num != 2 ) {
+	std::cerr << "Expect two sequences on command line."<<std::endl;
 	cmdline_parser_print_help();
 	cmdline_parser_free(&args_info);
 	exit(1);
     }
     
-    std::string seqA = args_info.inputs[0];
-    std::string seqB = args_info.inputs[1];
-
+    if ( args_info.homodimer_given && args_info.inputs_num != 1 ) {
+	std::cerr << "Expect one sequence on command line."<<std::endl;
+	cmdline_parser_print_help();
+	cmdline_parser_free(&args_info);
+	exit(1);
+    }
+    
+    
     double max_outflow  = args_info.max_outflow_arg;
     double min_rate     = args_info.min_rate_arg;
     double min_p_equ    = args_info.min_p_equ_arg;
     bool binary         = args_info.binary_given;
     bool special_open_state = ! args_info.no_special_open_state_given;
+    bool gradient       = ! args_info.no_gradient_given;
+    
+    bool homodimer      =  args_info.homodimer_given;  
     
     consider_double_sites = ! args_info.no_double_sites_given;
 
@@ -180,6 +188,17 @@ main(int argc, char **argv)
 	barfile = args_info.barfile_arg;
     }
 
+    std::string seqA = args_info.inputs[0];
+    std::string seqB = "";
+    
+    if (homodimer) {
+	seqB = args_info.inputs[0];
+	std::reverse(seqB.begin(),seqB.end());
+	// complement
+    } else {
+	seqB = args_info.inputs[1];
+    }
+
     cmdline_parser_free(&args_info);
     
     // global settings for Vienna libRNA
@@ -193,10 +212,11 @@ main(int argc, char **argv)
 
     // construct barrier graph
     BarrierGraph bg(seqA,seqB,binary,
-			  special_open_state,
-			  consider_double_sites,
-			  verbose,
-			  debug_out);
+		    special_open_state,
+		    consider_double_sites,
+		    gradient,
+		    verbose,
+		    debug_out);
     
     stopwatch.stop("construct");
     

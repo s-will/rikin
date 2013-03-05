@@ -68,7 +68,7 @@ main()
     size_t count_moves=0;
     size_t count_neighbors=0;
 
-    HybEnsModel::Move *move = mi.firstMove();
+    HybEnsModel::Move *move = mi.firstMove(true);
     if (move==NULL) {
 	std::cout << "No moves!" << std::endl;
     } else {
@@ -92,7 +92,7 @@ main()
 		    assert(state2.is_valid(model));
 		}
 	    }
-	} while ( (move = mi.nextMove(move))!=NULL );
+	} while ( (move = mi.nextMove(move,true))!=NULL );
 	std::cout << std::endl;
     }
     
