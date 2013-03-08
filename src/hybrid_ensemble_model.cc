@@ -31,7 +31,7 @@ HybEnsModel::StateDescription::StateDescription(size_t i1, size_t i2, size_t j1,
 
 
 size_t
-HybEnsModel::StateDescription::num_sites() const {
+HybEnsModel::StateDescription::size() const {
     return isites.size();
 }
 
@@ -72,14 +72,14 @@ HybEnsModel::StateDescription::encode(code_t &the_code) const {
     
     unsigned char *code=reinterpret_cast<unsigned char *>(&the_code);
     
-    for (size_t i=0; i<num_sites(); i++) {
+    for (size_t i=0; i<size(); i++) {
 	*(code++)=fail_on_toolarge(isites[i].i1);
 	*(code++)=fail_on_toolarge(isites[i].i2);
 	*(code++)=fail_on_toolarge(isites[i].j1);
 	*(code++)=fail_on_toolarge(isites[i].j2);
     }
     
-    for (size_t i=0; i<(2-num_sites());i++) {
+    for (size_t i=0; i<(2-size());i++) {
 	*(code++)=2;
 	*(code++)=2;
 	*(code++)=1;
@@ -131,10 +131,10 @@ HybEnsModel::StateDescription::is_valid(const HybEnsModel &model) const {
     bool valid=true;
     
     // at most 2 sites
-    valid = valid && num_sites()<=2;
+    valid = valid && size()<=2;
 	    
     // check site size and boundaries
-    for (size_t i=0; valid && i<num_sites(); ++i) {
+    for (size_t i=0; valid && i<size(); ++i) {
 	valid = valid
 	    && 1 <= isites[i].i1 
 	    && isites[i].i1 <= isites[i].j1
@@ -150,7 +150,7 @@ HybEnsModel::StateDescription::is_valid(const HybEnsModel &model) const {
     }
 	    
     // check site distance
-    if (num_sites()==2) {
+    if (size()==2) {
 	valid = valid
 	    && isites[0].j1 + model.minsitedist() + 1 <= isites[1].i1;
 	valid = valid
@@ -172,8 +172,14 @@ HybEnsModel::HybEnsModel(std::string seqA, std::string seqB)
       hybridpf_(seqA,seqB),
       maxunpinloop_(6),
       minsitesize_(3),
-      minsitedist_(6)
+      minsitedist_(6),
+      homodimer_(false)
 {
+    std::string seqA1=seqA;
+    reverse(seqA1);
+    if (seqA1==seqB) {
+	const_cast<bool&>(homodimer_)=true;
+    }
 }
 
 HybEnsModel::energy_t
@@ -206,7 +212,7 @@ HybEnsModel::energy_unpair(const StateDescription::ISite &is1,const StateDescrip
 
 HybEnsModel::energy_t
 HybEnsModel::energy(const StateDescription &sd) const {
-    switch(sd.num_sites()) {
+    switch(sd.size()) {
     case 0:
 	return - energy_duplex_init()/100.0; // energy penalty for first interaction is added to empty state!!!
     case 1:
@@ -233,9 +239,9 @@ operator << (std::ostream &out, const HybEnsModel::StateDescription::ISite &isit
 std::ostream &
 operator << (std::ostream &out, const HybEnsModel::StateDescription &sd) {
     out << "{";
-    for (size_t i=0; i<sd.num_sites(); i++) {
+    for (size_t i=0; i<sd.size(); i++) {
 	out << sd[i];
-	if (i<sd.num_sites()-1) {out << ",";}
+	if (i<sd.size()-1) {out << ",";}
     }
     out << "}";
     return out;

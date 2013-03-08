@@ -19,6 +19,9 @@ option "add-open-state" - "Add the open state (without interaction)" optional
 
 option "binary" - "Binary encoding of states in output" optional
 
+option "homodimer" - "Enumerate conformations of homodimer (only one sequence accepted)" optional
+option "antisense" - "Enumerate conformations of sense/antisense pair (only one sequence accepted)" optional
+
 option "verbose" - "Turn on verbose output" optional
 
 text "\nInput sequences:\n"

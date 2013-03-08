@@ -6,6 +6,8 @@
 #include "unpaired_pf.hh"
 #include "hybrid_pf.hh"
 
+#include <algorithm>
+
 #include <math.h>
 #include <inttypes.h>
 
@@ -206,7 +208,7 @@ public:
 	 * @return number of hybridization sites
 	 */
 	size_t
-	num_sites() const;
+	size() const;
 	
 	/** 
 	 * @brief Encode to compressed representation
@@ -276,8 +278,8 @@ public:
 	 */
 	bool
 	operator == (const StateDescription &sd) {
-	    bool equal = this->num_sites() == sd.num_sites();
-	    for (size_t i=0; i<this->num_sites() && equal; i++) {
+	    bool equal = this->size() == sd.size();
+	    for (size_t i=0; i<this->size() && equal; i++) {
 		equal = equal && (*this)[i] == sd[i];
 	    }
 	    return equal;
@@ -300,6 +302,28 @@ public:
 	 */
 	bool
 	is_valid(const HybEnsModel &model) const;
+
+	/** 
+	 * @brief symmetric state for homodimers
+	 * @return symmetric state
+	 * @note no checks are performed, works only for homodimers
+	 */
+	StateDescription
+	symmetric_state(size_t n) const {
+	    StateDescription sd;
+	    
+	    sd.resize(this->size());
+	    
+	    for (size_t i=0; i<this->size(); i++) {
+		const ISite &os = (*this)[i];
+		ISite &ns = sd[this->size()-i-1];
+		ns.i1 = n-os.j2+1;
+		ns.i2 = n-os.j1+1;
+		ns.j1 = n-os.i2+1;
+		ns.j2 = n-os.i1+1;
+	    }
+	    return sd;
+	}
 	
     private:
 	/**
@@ -428,7 +452,6 @@ public:
     }
 
 
-public:
     // give access to some constants of the model
     
     /** 
@@ -475,6 +498,50 @@ public:
 	return exp(-energy/RT());
     }
 
+    // static sequence manipulation
+    
+    //! \brief in place complement of sequences over bases ACGTU
+    static
+    void 
+    complement(std::string &s) {
+	static char tab[]={'A','C','G','T','U'};
+	static char ctab[]={'U','G','C','A','A'};
+    
+	for (size_t i=0; i<s.length(); ++i) {
+	    for (size_t j=0; j<5; ++j) {
+		if (s[i]==tab[j]) {
+		    s[i]=ctab[j];
+		    break;
+		}
+	    }
+	}
+    }
+
+    //! \brief in place reverse of strings
+    static
+    void
+    reverse(std::string &s) {
+	std::reverse(s.begin(),s.end());
+    }
+
+    //! \brief in place reverse complement of strings
+    static
+    void
+    reverse_complement(std::string &s) {
+	reverse(s);
+	complement(s);
+    }
+
+    //! \brief in place normalization of RNA sequence (upcase, T->U)
+    static
+    void
+    norm_RNA_seq(std::string &s) {
+	std::transform(s.begin(),s.end(),s.begin(),toupper);
+	std::replace(s.begin(),s.end(),'T','U');
+    }
+
+    bool
+    is_homodimer() const {return homodimer_;}
     
 private:
     const std::string seqA_; //!< sequence A
@@ -498,6 +565,12 @@ private:
     //! minsitedist_ should be larger than maxunpinloop_
     const size_t minsitedist_;
    
+    
+    //! @brief whether seqA and seqB form homodimers
+    //!
+    //! true iff seqB is reverse complement of seqA
+    const bool homodimer_;
+
 };
 
 std::ostream &

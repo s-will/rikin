@@ -59,17 +59,17 @@ UGCAUGCCUCG
 
 ## ------------------------------------------------------------
 ## AA Dimer
-time src/rrikin_enum ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU AACGUCUGCUACGUUUCAGCUAGCUCCGUACGUAGCGUCGCUCCGUACGU  >t --no-double  --verbose
+time src/rrikin_enum ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU UUGCAGACGAUGCAAAGUCGAUCGAGGCAUGCAUCGCAGCGAGGCAUGCA  >t --no-double  --verbose
 time sort -g -k1 t > t.s
-time src/rrikin_barriers ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU AACGUCUGCUACGUUUCAGCUAGCUCCGUACGUAGCGUCGCUCCGUACGU <t.s > t2 --bar bar --rates rates --max-out 0.3 --min-rate 1e-6 --min-p-equ 1e-22  --no-double --verbose
+time src/rrikin_barriers ACGUACGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGACGUU UUGCAGACGAUGCAAAGUCGAUCGAGGCAUGCAUCGCAGCGAGGCAUGCA <t.s > t2 --bar bar --rates rates --max-out 0.3 --min-rate 1e-6 --min-p-equ 1e-22  --no-double --verbose
 treekin --t8 1e8 -mI -f rates --p0 2=1  < bar > kinetics 
 R --vanilla < kinetics.R
 
 
 ## ------------------------------------------------------------
 ## BB Dimer
-time src/rrikin_enum GCUGCGAUGCAUGCCUCGAU AUCGAGGCAUGCAUCGCAGC  >t --no-double  --verbose
+time src/rrikin_enum GCUGCGAUGCAUGCCUCGAU UAGCUCCGUACGUAGCGUCG   >t --no-double  --verbose
 time sort -g -k1 t > t.s
-time src/rrikin_barriers GCUGCGAUGCAUGCCUCGAU AUCGAGGCAUGCAUCGCAGC <t.s > t2 --bar bar --rates rates --max-out 0.3 --min-rate 1e-6 --min-p-equ 1e-22  --no-double --verbose
+time src/rrikin_barriers GCUGCGAUGCAUGCCUCGAU UAGCUCCGUACGUAGCGUCG <t.s > t2 --bar bar --rates rates --max-out 0.3 --min-rate 1e-6 --min-p-equ 1e-22  --no-double --verbose
 treekin --t8 1e8 -mI -f rates --p0 2=1  < bar > kinetics 
 R --vanilla < kinetics.R

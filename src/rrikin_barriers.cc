@@ -8,8 +8,6 @@
  * the tests are performed.
  *
  * @todo change the transitions data structure to array of hashs
- *
- * @todo do we have a problem with detailed balance?
  */
 
 /**
@@ -148,20 +146,24 @@ main(int argc, char **argv)
     if (cmdline_parser (argc, argv, &args_info) != 0)
 	exit(1) ;
     
-    if ( !args_info.homodimer_given && args_info.inputs_num != 2 ) {
-	std::cerr << "Expect two sequences on command line."<<std::endl;
+    bool homodimer=args_info.homodimer_given;
+    bool antisense=args_info.antisense_given;
+    
+    size_t expected_sequences=(homodimer||antisense)?1:2;
+
+    if (homodimer && antisense) {
+	std::cerr << "Options homodimer and antisense are mutually exclusive."<<std::endl;
 	cmdline_parser_print_help();
 	cmdline_parser_free(&args_info);
 	exit(1);
     }
     
-    if ( args_info.homodimer_given && args_info.inputs_num != 1 ) {
-	std::cerr << "Expect one sequence on command line."<<std::endl;
+    if ( args_info.inputs_num != expected_sequences ) {
+	std::cerr << "Expect "<<expected_sequences<<" sequence(s) on command line."<<std::endl;
 	cmdline_parser_print_help();
 	cmdline_parser_free(&args_info);
 	exit(1);
-    }
-    
+    }    
     
     double max_outflow  = args_info.max_outflow_arg;
     double min_rate     = args_info.min_rate_arg;
@@ -170,13 +172,12 @@ main(int argc, char **argv)
     bool special_open_state = ! args_info.no_special_open_state_given;
     bool gradient       = ! args_info.no_gradient_given;
     
-    bool homodimer      =  args_info.homodimer_given;  
     
     consider_double_sites = ! args_info.no_double_sites_given;
 
-    simplify_graph = ! args_info.dont_simplify_graph_given;
-    verbose        = args_info.verbose_given;
-    debug_out      = args_info.debug_given;
+    simplify_graph      = ! args_info.dont_simplify_graph_given;
+    verbose             = args_info.verbose_given;
+    debug_out           = args_info.debug_given;
     
     std::string ratesfile;
     if (args_info.ratesfile_given) {
@@ -189,14 +190,22 @@ main(int argc, char **argv)
     }
 
     std::string seqA = args_info.inputs[0];
+    HybEnsModel::norm_RNA_seq(seqA);
     std::string seqB = "";
     
     if (homodimer) {
-	seqB = args_info.inputs[0];
-	std::reverse(seqB.begin(),seqB.end());
-	// complement
+	seqB = seqA;
+	HybEnsModel::reverse(seqB);
+    }  else if (antisense) {
+	seqB = seqA;
+	HybEnsModel::complement(seqB);
     } else {
 	seqB = args_info.inputs[1];
+	HybEnsModel::norm_RNA_seq(seqB);
+    }
+
+    if (verbose) {
+	std::cerr << "seqA="<<seqA<<", seqB="<<seqB << std::endl;
     }
 
     cmdline_parser_free(&args_info);
@@ -221,11 +230,14 @@ main(int argc, char **argv)
     stopwatch.stop("construct");
     
     size_t num_total_basins = bg.num_basins();
-
+    
     if (verbose) {
-	    std::cerr << "Generated "<<num_total_basins<<" basins." << std::endl;
-	    bg.print_stats(std::cerr);
-	    stopwatch.print_info(std::cerr);
+	if (bg.model().is_homodimer()) {
+	    std::cerr << "Model homodimer."<<std::endl;
+	}
+	std::cerr << "Generated "<<num_total_basins<<" basins." << std::endl;
+	bg.print_stats(std::cerr);
+	stopwatch.print_info(std::cerr);
     }
 
     
@@ -238,7 +250,9 @@ main(int argc, char **argv)
 	
 	stopwatch.start("merge");
 	
-	bg.merge_basins(max_outflow,min_p_equ,min_rate);
+	std::vector<bool> to_be_merged;
+	bg.select_merge_basins(max_outflow,min_p_equ,to_be_merged);
+	bg.merge_all_basins(to_be_merged,min_rate);
 	
 	stopwatch.stop("merge");
 	
@@ -297,6 +311,14 @@ main(int argc, char **argv)
 	}
     }
     
+	    
+    if (verbose) {
+	double max_diff = bg.check_rates();
+	if (max_diff > 1e-12) {
+	    std::cerr << "WARNING: maximal deviation from detailed balance:"<<max_diff<<std::endl;
+	}
+    }
+
     if (barfile != "") {
 	if (verbose) {
 	    std::cerr << "Write bar file for treekin '"<<barfile<<"'."<<std::endl;	
@@ -305,13 +327,6 @@ main(int argc, char **argv)
 	std::ofstream fout(barfile.c_str());
 	if (fout.good()) {
 	    bg.print_barriers(fout);
-	    
-	    if (verbose) {
-		double max_diff = bg.check_rates();
-		if (max_diff > 1e-5) {
-		    std::cerr << "WARNING: maximal deviation from detailed balance:"<<max_diff<<std::endl;
-		}
-	    }
 	    fout.close();
 	} else {
 	    std::cerr << "Cannot write barriers file."<<std::endl;

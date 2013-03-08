@@ -66,9 +66,9 @@ write_state(double energy, const HybEnsModel::StateDescription &state, bool bina
 	fwrite(reinterpret_cast<char *>(&code),sizeof(char),8,stdout);
 	fputc(0,stdout);
     } else {
-	if (state.num_sites()==0) {
+	if (state.size()==0) {
 	    printf("%6.2f\n",energy);	
-	} else if (state.num_sites()==1) {
+	} else if (state.size()==1) {
 	    printf("%6.2f %3lu %3lu %3lu %3lu\n",
 		   energy,
 		   state[0].i1,state[0].i2,state[0].j1,state[0].j2
@@ -175,6 +175,7 @@ enumerate_double_sites(const HybEnsModel &model,
 int
 main(int argc, char **argv)
 {
+
     LocARNA::StopWatch stopwatch;
     stopwatch.start("total");
 
@@ -183,16 +184,40 @@ main(int argc, char **argv)
     // get options (call gengetopt command line parser)
     if (cmdline_parser (argc, argv, &args_info) != 0)
 	exit(1) ;
+
+    bool homodimer=args_info.homodimer_given;
+    bool antisense=args_info.antisense_given;
     
-    if ( args_info.inputs_num != 2 ) {
-	std::cerr << "Expect two sequences as input on command line"<<std::endl;
+    size_t expected_sequences=(homodimer||antisense)?1:2;
+
+    if (homodimer && antisense) {
+	std::cerr << "Options homodimer and antisense are mutually exclusive."<<std::endl;
+	cmdline_parser_print_help();
+	cmdline_parser_free(&args_info);
+	exit(1);
+    }
+    
+    if ( args_info.inputs_num != expected_sequences ) {
+	std::cerr << "Expect "<<expected_sequences<<" sequence(s) on command line."<<std::endl;
 	cmdline_parser_print_help();
 	cmdline_parser_free(&args_info);
 	exit(1);
     }
     
     std::string seqA = args_info.inputs[0];
-    std::string seqB = args_info.inputs[1];
+    HybEnsModel::norm_RNA_seq(seqA);
+    std::string seqB = "";
+    
+    if (homodimer) {
+	seqB = seqA;
+	HybEnsModel::reverse(seqB);
+    } else if (antisense) {
+	seqB = seqA;
+	HybEnsModel::complement(seqB);
+    } else {
+	seqB = args_info.inputs[1];
+	HybEnsModel::norm_RNA_seq(seqB);
+    }
         
     // set some global variables for Vienna libRNA
     dangles=2;

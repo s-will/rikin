@@ -49,8 +49,6 @@ public:
     /** 
      * @brief return pointer to new object of next move type
      * 
-     * @param with_double allow moves involving double site states
-     *
      * @return Pointer to new object of next move type.
      *
      * @note The instantiations of this method determine the order of
@@ -58,7 +56,7 @@ public:
      */
     virtual
     Move *
-    nextMoveType(bool with_double) const = 0;
+    nextMoveType() const = 0;
 	
     /** 
      * Energy of transition state
@@ -230,7 +228,7 @@ public:
     ~GrowShrinkMoveFL();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -254,7 +252,7 @@ public:
     ~GrowShrinkMoveFR();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -278,7 +276,7 @@ public:
     ~GrowShrinkMoveSL();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -302,7 +300,7 @@ public:
     ~GrowShrinkMoveSR();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -337,7 +335,7 @@ public:
     ~ShiftMove();
         
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -383,7 +381,7 @@ public:
     ~RemoveSiteMove();
 
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -455,7 +453,7 @@ public:
     ~NewSiteMoveF();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
     
     bool
     first();
@@ -485,7 +483,7 @@ public:
     ~NewSiteMoveL();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -515,7 +513,7 @@ public:
     ~NewSiteMoveR();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -546,7 +544,7 @@ public:
     ~MergeMove();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -593,7 +591,7 @@ public:
     ~SplitMove();
 	
     Move *
-    nextMoveType(bool with_double) const;
+    nextMoveType() const;
 	
     bool
     first();
@@ -657,7 +655,9 @@ private:
     const StateDescription &origin_;
 	
     const HybEnsModel &model_;
-		
+
+    bool with_double_;
+    
 public:
 	
     /** 
@@ -665,8 +665,10 @@ public:
      * 
      * @param origin Description of origin state 
      */
-    MoveIterator(const StateDescription &origin, const HybEnsModel &model);
-	
+    MoveIterator(const StateDescription &origin, 
+		 const HybEnsModel &model, 
+		 bool with_double);
+    
     const StateDescription &
     origin() const {
 	return origin_;
@@ -676,14 +678,17 @@ public:
     model() const {
 	return model_;
     }
-		
-	
+
+    bool with_double() const {
+	return with_double_;
+    }
+
     /** 
      * @brief First move
      * 
      * @return Pointer to move to the first neighbor.
      *	 
-     * @note firstMove(bool with_double) and nextMove() are designed such that
+     * @note firstMove() and nextMove() are designed such that
      * they can be used in a for loop like
      * for(MoveIterator::Move *m=mi.firstMove(bool with_double); m!=NULL; m=mi.nextMove(m)) {}
      *
@@ -694,23 +699,22 @@ public:
      * neighbors. Otherwise it should be deleted explicitely.
      */
     Move *
-    firstMove(bool with_double) const;
+    firstMove() const;
 
     /** 
      * @brief Next move
      * 
      * @param[in,out] m pointer to move
-     * @param with_double allow moves involving double site states
      * 
      * @return pointer to next move
      *
      * @note destructive on *m
      *
-     * @see firstMove(bool with_double)
+     * @see firstMove()
      */
     Move *
-    nextMove(Move *m, bool with_double) const;
-
+    nextMove(Move *m) const;
+    
 };
 
 

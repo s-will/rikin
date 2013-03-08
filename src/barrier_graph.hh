@@ -174,6 +174,10 @@ public:
 		 bool debug_out
 		 );
 
+    const HybEnsModel &model() const {
+	return model_;
+    } 
+
     /** @brief total outflow of basin as partition function
 	@param x basin
 	@return  sum over transition state partition functions
@@ -243,6 +247,30 @@ public:
     double
     compute_Z() const;
     
+    /** 
+     * @brief Process a move during processing of a state
+     * 
+     * @param move move
+     */
+    void
+    process_move(const HybEnsModel::Move *move,
+		 const HybEnsModel::StateDescription &source_state,
+		 const HybEnsModel::energy_t &source_energy,
+		 HybEnsModel::energy_t &min_transition_energy,
+		 size_t &min_transition_index,
+		 std::vector<transition_t> &trans
+		 );
+
+    size_t
+    assign_to_basin(const HybEnsModel::StateDescription &source_state,
+		    const HybEnsModel::energy_t &source_energy,
+		    const HybEnsModel::energy_t &min_transition_energy,
+		    size_t min_tE_target_basin_index);
+	
+    void
+    register_transitions(size_t source_basin_index,
+			 std::vector<transition_t> &trans); 
+
     /**
      * @brief Process a single state in the construction of the barrier graph
      * 
@@ -271,14 +299,31 @@ private:
     };
 public:
     
-    /** @brief merge basins with large outflow to their neighbors
-     *
+    /** 
+     * @brief select basins to be merged bases on their outflow and minimum probability 
+     * 
      * @param max_outflow maximal outflow (sum of rates) where basin
      * is retained; otherwise it is distributed to its neighbors
      *
      * @param min_p_equ minimum equilibrium probability; basins with
      * lower probability are distributed to their neighbors
 
+     * @param[out] to_be_merged boolean vector indicating the basins to be merged
+     */
+    void
+    select_merge_basins(double max_outflow, double min_p_equ,std::vector<bool> &to_be_merged);
+
+
+    /**
+     * @brief merge a single basins to its neighbors
+     * @param x0 Basin
+     */
+    void
+    merge_basin(Basin &x0);
+
+    /** @brief merge basins to their neighbors
+     *
+     * @param to_be_merged boolean vector indicating the basins to be merged
      * @param min_rate minimum rate; transition with lower rate (in
      * both directions!) are removed during the merging
      *
@@ -293,17 +338,29 @@ public:
      *
      */
     void
-    merge_basins(double max_outflow, double min_p_equ, double min_rate);
+    merge_all_basins(std::vector<bool> &to_be_merged, double min_rate);
+    
+
+    
 
     /**
-     * @brief filter rates by minimum rate, also remove self-transitions
+     * @brief filter transitions of a single basin by minimum rate, also remove self-transitions
+     * @param x0 basin
+     * @param min_rate minimum rate; transition with lower rate (in
+     * both directions!) are removed
+     */
+    void
+    filter_basin_transitions(const Basin &x0, double min_rate);
+    
+    /**
+     * @brief filter transitions by minimum rate, also remove self-transitions
      * @param min_rate minimum rate; transition with lower rate (in
      * both directions!) are removed
      *
      */
-    void filter_rates(double min_rate);
+    void filter_transitions(double min_rate);
     
-    
+
     /** 
      * @brief Print the list of all basins of the barriers graph 
      * 

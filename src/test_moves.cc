@@ -63,12 +63,12 @@ main()
     //check state energy
     std::cout << "Energy of state "<<state<<" = "<< model.energy(state) << std::endl;
     
-    HybEnsModel::MoveIterator mi(state,model);
+    HybEnsModel::MoveIterator mi(state,model,true);
     
     size_t count_moves=0;
     size_t count_neighbors=0;
 
-    HybEnsModel::Move *move = mi.firstMove(true);
+    HybEnsModel::Move *move = mi.firstMove();
     if (move==NULL) {
 	std::cout << "No moves!" << std::endl;
     } else {
@@ -92,7 +92,7 @@ main()
 		    assert(state2.is_valid(model));
 		}
 	    }
-	} while ( (move = mi.nextMove(move,true))!=NULL );
+	} while ( (move = mi.nextMove(move))!=NULL );
 	std::cout << std::endl;
     }
     
