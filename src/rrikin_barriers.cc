@@ -189,6 +189,12 @@ main(int argc, char **argv)
 	barfile = args_info.barfile_arg;
     }
 
+    std::string pffile;
+    if (args_info.pffile_given) {
+	pffile = args_info.pffile_arg;
+    }
+
+
     std::string seqA = args_info.inputs[0];
     HybEnsModel::norm_RNA_seq(seqA);
     std::string seqB = "";
@@ -349,6 +355,21 @@ main(int argc, char **argv)
 	
     }
 
+    if (pffile != "") {
+    
+	if (verbose) {
+	    std::cerr << "Write partition functions of basins and transition states to files '"<<pffile<<"'."<<std::endl;
+	}
+	std::ofstream fout(pffile.c_str());
+	if (fout.good()) {
+	    bg.print_pfs(fout);
+	} else {
+	    std::cerr << "Cannot write partition functions to file."<<std::endl;
+	}
+	fout.close();
+	
+    }
+    
     if (verbose) {
 	stopwatch.print_info(std::cerr);
     }    

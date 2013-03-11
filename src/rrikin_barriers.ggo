@@ -14,6 +14,7 @@ option "min-p-equ" - "Minimum equilibrium probability of a basin; otherwise merg
 
 option "barfile" - "Write treekin compatible barrier file" string optional
 option "ratesfile" - "Write rates matrix to a treekin compatible file" string optional
+option "pffile" - "Write partition functions of basins and transition states" string optional
 
 option "no-double-sites" - "Don't consider double hybridization sites" optional
 

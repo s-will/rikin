@@ -806,6 +806,35 @@ BarrierGraph::print_treekin_ratesmatrix(std::ostream &out) const
 
 
 void
+BarrierGraph::print_pfs(std::ostream &out) const {
+    for(size_t i=0; i<basins_.size(); ++i) {
+	if (!basins_[i].merged()) {
+	    
+	    std::vector<double> row(basins_.size());
+	    
+	    const transitions_map_t::const_iterator &ts = transitions_.find(i);
+	    if (ts != transitions_.end()) {
+		// "bucket sort"
+		for(transitions_map_row_t::const_iterator it=ts->second.begin();
+		    it != ts->second.end(); ++it) {
+		    row[it->first] = it->second.get_Z();
+		}
+	    }
+	    
+	    // set diagonal
+	    row[i] = basins_[i].get_Z();
+	    
+	    for(size_t j=0; j<row.size();++j) {
+		if (!basins_[j].merged()) {
+		    out << row[j] << " ";
+		}
+	    }
+	    out << "\n";
+	}
+    }
+}
+
+void
 BarrierGraph::reindex() {
     std::vector<bool> keep(basins_.size());
     for (std::vector<Basin>::iterator it=basins_.begin();

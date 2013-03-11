@@ -27,33 +27,58 @@ outfilename = arg_list{2};
 ############################################################
 ## parameters
 ##
-starttime  = 1;         # start time
-endtime    = 1e12;      # end time
-tinc       = 1.02;       # time increment
-startstate = 2;         # state with initial probability 1
+starttime  = 1e-1;         # start time
+endtime    = 1e12;         # end time
+tinc       = 1.02;         # time increment
+startstate = 2;            # state with initial probability 1
 
+use_diagonalization=true;
+
+verbose=false;
 
 ############################################################
 ##
 ## functions
 
-function fprintvec(fout,v,dim)
-  for i=1:dim
-    fprintf(fout," %e",v(i,1));
+function fprintvec(fout,v)
+  fprintf(fout," %g",v);
+endfunction
+
+function printvec(v)
+  fprintvec(stdout,v);
+endfunction
+
+function [v,d] = eigsort (v,d)
+  [dd,ix] = sort (-diag (d));
+  for i=1:length(d)
+    d(i,i) = - dd(i);
+  end;
+  v = v(:,ix)
+endfunction
+
+## force symmetrize (like done in treekin MxDiagonalize)
+function m = symmetrize(m)
+  n=length(m);
+  for i=1:n
+    for j=i+1:n
+      m(i,j) = ( m(i,j)+m(j,i) ) / 2;
+      m(j,i) = m(i,j);
+    endfor
   endfor
 endfunction
 
-function printvec(v,dim)
-  fprintvec(stdout,v,dim);
+function res = expdiag(m)
+  res=diag(exp(diag(m)));
 endfunction
-
 
 
 ############################################################
 ##
 ## main
 
-printf("Load rates from file %s\n",ratesfilename);
+if (verbose)
+  printf("Load rates from file %s\n",ratesfilename);
+endif
 R = load("-ascii",ratesfilename);
 dim=size(R,1);
 
@@ -62,14 +87,15 @@ if (size(R,2)!=dim)
   exit(1);
 endif  
 
-format "short" "e";
-
+format "short";
 
 pi0 = zeros(dim,1);
 pi0(startstate,1)=1;
-printf("PI_0: ");
-printvec(pi0,dim)
-printf("\n");
+if (verbose)
+  printf("PI_0: ");
+  printvec(pi0,dim)
+  printf("\n");
+endif
 
 ## recalculate diagonal of R (as -rowsum)
 R = R - diag(diag(R)); # set diagonal to 0
@@ -77,33 +103,107 @@ rowsums = R * ones(dim,1);
 R = R - diag(rowsums);
 R = transpose(R);
 
-pie = expm(endtime*R)*pi0;
-printf("PI_e: ");
-printvec(pie,dim)
-printf("\n");
+pie = expm(endtime*R)*pi0; ## pi at endtime
+if (verbose)
+  printf("PI_e: ");
+  printvec(pie)
+  printf("\n");
+endif
 
 #printf("Rates:\n");
 #disp(R);
 
-printf("\n");
-printf("Compute distributions at times %e..%e (until convergence)\n",starttime,endtime);
+if (verbose)
+  printf("\n");
+  printf("Compute distributions at times %e..%e (until convergence)\n",starttime,endtime);
+endif
 
+if (use_diagonalization)
+  ## make symmetric (works for rate matrices in detailed balance)
+  ## ATTENTION: this requires to know the correct pi8
+  ##
+  pi8=pie; #assume pie is the equilibrium distribution
+  
+  sqrPI_ = diag(sqrt(pi8));
+  _sqrPI = diag(sqrt(pi8).^(-1));
+  symmR=R;
+  symmR = symmR + diag(ones(1,dim));              # translate matrix
+  symmR = _sqrPI*symmR*sqrPI_;
+
+  # printf("symmetrized rates:\n");
+  # disp(symmR);
+  # symmR=symmetrize(symmR);
+  # printf("force-symmetrized rates:\n");
+  # disp(symmR);
+
+  [eigvecs,eigvals]=eig(symmR);
+  
+  #[eigvecs,eigvals]=eigsort(eigvecs,eigvals);
+
+  if (verbose)
+    printf("Eigenvalues:\n");
+    disp(transpose(diag(eigvals)));
+  endif
+
+  # printf("Eigenvectors:\n");
+  # disp(eigvecs);
+  
+  eigvecs_inv  = transpose(eigvecs);
+  #eigvecs_inv = inverse(eigvecs);
+  
+  # compensate for translation of matrix
+  eigvals = eigvals - diag(ones(1,dim));
+
+  # printf("Compute symmetrized rates from evecs and evals again:\n");
+  # control1 = eigvecs * eigvals * eigvecs_inv;
+  # disp(control1);
+
+  # printf("Compute desymmetrized rates from evecs and evals again:\n");
+  # disp(sqrPI_*(symmR-diag(ones(1,dim)))*_sqrPI);
+
+  # printf("direct matrix exponentiation:\n");
+  # control2 = expm(symmR-diag(ones(1,dim)));
+  # disp(control2);
+
+  # printf("from diagonalization:\n");
+  # control3 = eigvecs * expdiag(eigvals) * eigvecs_inv;
+  # disp(control3);
+  
+  ## precompute sub products
+  pre_left  = sqrPI_ * eigvecs;
+  pre_right = eigvecs_inv * _sqrPI * pi0;
+endif
+
+
+## open the output file to write distributions pi_t
 fout = fopen (outfilename, "w");
 
 time=starttime;
+
+
 while(time<endtime)
-  pi = expm(time*R)*pi0;
+  if (use_diagonalization)
+    pi = pre_left * expdiag(time*eigvals) * pre_right;
+  else
+    pi = expm(time*R)*pi0;
+  endif
   fprintf(fout,"%e",time);
-  fprintvec(fout,pi,dim)
+  fprintvec(fout,pi)
   fprintf(fout,"\n");
   
-  diff=transpose(abs(pi-pie))*ones(dim,1);
-  # disp(diff)
-  if (diff(1,1) < 1e-8)
-    printf("Convergence at time %e.\n",time);
+  pi_sum=ones(1,dim)*pi;
+  if (pi_sum > 1.05)
+    printf("Probability sum greater 1 at time %g (sum=%g).\n",time,pi_sum);
     break;
   endif
-
+  
+  diff=transpose(abs(pi-pie))*ones(dim,1);
+  #disp(diff)
+  if (diff(1,1) < 1e-3)
+    printf("Convergence at time %g.\n",time);
+    break;
+  endif
+  
   time *= tinc;
 endwhile
 

@@ -458,7 +458,17 @@ public:
      */
     void
     print_treekin_ratesmatrix(std::ostream &out) const;    
-
+    
+    /** 
+     * @brief print partition functions of basins and transitions to stream 
+     * 
+     * Prints full matrix of transition pfs and sets diagonal to basin pfs 
+     *
+     * @param out output stream 
+     */
+    void
+    print_pfs(std::ostream &out) const;
+        
     /**
      * @brief convert state description to dot bracket notation
      * @param sd state description
