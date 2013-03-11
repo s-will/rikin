@@ -471,10 +471,11 @@ public:
      * Prints full matrix of transition pfs and sets diagonal to basin pfs 
      *
      * @param out output stream 
+     * @param binary write binary data
      */
     void
-    print_pfs(std::ostream &out) const;
-        
+    print_pfs(std::ostream &out,bool binary=false) const;
+
     /**
      * @brief convert state description to dot bracket notation
      * @param sd state description

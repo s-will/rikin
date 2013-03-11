@@ -358,9 +358,9 @@ main(int argc, char **argv)
 	if (verbose) {
 	    std::cerr << "Write partition functions of basins and transition states to files '"<<pffile<<"'."<<std::endl;
 	}
-	std::ofstream fout(pffile.c_str());
+	std::ofstream fout(pffile.c_str(),std::ios::out | std::ios::binary);
 	if (fout.good()) {
-	    bg.print_pfs(fout);
+	    bg.print_pfs(fout,true);
 	} else {
 	    std::cerr << "Cannot write partition functions to file."<<std::endl;
 	}

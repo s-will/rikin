@@ -810,7 +810,18 @@ BarrierGraph::print_treekin_ratesmatrix(std::ostream &out) const
 
 
 void
-BarrierGraph::print_pfs(std::ostream &out) const {
+BarrierGraph::print_pfs(std::ostream &out,bool binary) const {
+    if (binary) {
+	// write dimension
+	size_t dim=0;
+	for(size_t i=0; i<basins_.size(); ++i) {
+	    if (!basins_[i].merged()) {
+		dim++;
+	    }
+	}
+	out.write(reinterpret_cast<const char *>(&dim),sizeof(dim));
+    }
+    
     for(size_t i=0; i<basins_.size(); ++i) {
 	if (!basins_[i].merged()) {
 	    
@@ -830,10 +841,14 @@ BarrierGraph::print_pfs(std::ostream &out) const {
 	    
 	    for(size_t j=0; j<row.size();++j) {
 		if (!basins_[j].merged()) {
-		    out << row[j] << " ";
+		    if (binary) {
+			out.write(reinterpret_cast<const char *>(&row[j]),sizeof(row[j]));
+		    } else {
+			out << row[j] << " ";
+		    }
 		}
 	    }
-	    out << "\n";
+	    if (!binary) {out << "\n";}
 	}
     }
 }

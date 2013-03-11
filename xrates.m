@@ -35,6 +35,7 @@ startstate = 2;            # state with initial probability 1
 use_diagonalization=true;
 
 verbose=true;
+binary=true;
 
 ############################################################
 ##
@@ -79,10 +80,19 @@ endfunction
 if (verbose)
   printf("Load pfs from file %s\n",pffilename);
 endif
-pfs = load("-ascii",pffilename);
+
+if (!binary)
+  pfs = load("-ascii",pffilename);
+  dim=size(pfs,1);
+else
+  fh=fopen(pffilename);
+  dim = fread(fh,1,"unsigned long");
+  pfs = fread(fh,[dim,dim],"double");
+  fclose(fh);
+endif
+
 # disp(pfs)
 
-dim=size(pfs,1);
 if (size(pfs,2)!=dim)
   printf("ERROR: pf file has to contain a square matrix.\n");
   exit(1);
