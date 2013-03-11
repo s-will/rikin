@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <limits>
 #include <cmath>
+#include <set>
 
 /* Output transitions */
 
@@ -570,6 +571,45 @@ BarrierGraph::merge_basins_by_outflow(double max_outflow,double min_p_equ, doubl
     }
 }
 
+
+void
+BarrierGraph::reduce_basin_set(const std::set<size_t> &to_keep, double min_rate) {
+    // sort basins increasing by their partition function
+    std::vector<size_t> sorted_basin_idxs;
+
+    for (size_t i=0; i<basins_.size(); ++i) sorted_basin_idxs.push_back(i);
+    sort(sorted_basin_idxs.begin(),sorted_basin_idxs.end(),compBasinIdxs(*this));
+        
+    // run through sorted basins and merge
+    for (size_t i=0; i<basins_.size(); ++i) {
+	
+	Basin &x0 = basins_[sorted_basin_idxs[i]];
+	
+	//if (x0.merged()) continue;
+	assert(!x0.merged());
+	
+	
+	transitions_map_row_t &trs_x0=transitions_[x0.idx()];
+	
+	// remove transitions from state x0 to itself
+	if (trs_x0.end()!=trs_x0.find(x0.idx())) {
+	    trs_x0.erase(x0.idx());
+	}
+	
+	// remove transitions wiht rates lower than min_rate
+	filter_basin_transitions(x0,min_rate);
+	
+        if (to_keep.count(x0.idx()) == 0) {
+	    
+	    if (verbose_) {
+		std::cerr << "Dissolve basin "<< x0.idx() << std::endl;
+	    }
+	    
+	    merge_basin(x0);
+	
+	}
+    }
+}
 
 
 BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB,

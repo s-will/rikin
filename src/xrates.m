@@ -28,14 +28,15 @@ outfilename = arg_list{2};
 ## parameters
 ##
 starttime  = 1e-1;         # start time
-endtime    = 1e12;         # end time
-tinc       = 1.02;         # time increment
+endtime    = 1e14;         # end time
+tinc       = 1.2;          # time increment
 startstate = 2;            # state with initial probability 1
 
-use_diagonalization=true;
+mode="diag";        # use diagonalization (fast, but errorprone)
+#mode="expm";        # use expm (slow, more stable)
 
-verbose=true;
-binary=true;
+verbose=true;   # verbose output
+binary=true;    # read pfs in binary format
 
 ############################################################
 ##
@@ -91,6 +92,11 @@ else
   fclose(fh);
 endif
 
+dev_symm = norm(pfs-transpose(pfs),2);
+printf("Check input symmetry: %g (value should be almost 0)\n",dev_symm);
+
+pfs = symmetrize(pfs); # input has to be symmetric! Everything else is wrong input
+
 # disp(pfs)
 
 if (size(pfs,2)!=dim)
@@ -137,7 +143,7 @@ endif
 
 R=transpose(R); # we need R_ij = rate from j to i
 
-if (use_diagonalization)
+if (mode=="diag")
   ## make symmetric (works for rate matrices in detailed balance)
   ## ATTENTION: this requires to know the correct pi8
   ##
@@ -149,8 +155,8 @@ if (use_diagonalization)
   symmR = _sqrPI*symmR*sqrPI_;
 
   # printf("symmetrized rates:\n");
-  # disp(symmR);
-  # symmR=symmetrize(symmR);
+  # disp(symmR);  
+  #symmR=symmetrize(symmR); # force symmetrizing can make things worse  
   # printf("force-symmetrized rates:\n");
   # disp(symmR);
 
@@ -184,8 +190,13 @@ if (use_diagonalization)
   # disp(control2);
 
   # printf("from diagonalization:\n");
-  # control3 = eigvecs * expdiag(eigvals) * eigvecs_inv;
+  control3 = eigvecs * expdiag(eigvals) * eigvecs_inv;
   # disp(control3);
+  
+  dev_diag=norm(symmR - eigvecs * expdiag(eigvals) * eigvecs_inv,2);
+
+  printf("Control diagonalization: %g (value should be almost 0)\n",dev_diag);
+
   
   ## precompute sub products
   pre_left  = sqrPI_ * eigvecs;
@@ -196,11 +207,12 @@ endif
 ## open the output file to write distributions pi_t
 fout = fopen (outfilename, "w");
 
+
+step=0;
 time=starttime;
 
-
 while(time<endtime)
-  if (use_diagonalization)
+  if (mode=="diag")
     pi = pre_left * expdiag(time*eigvals) * pre_right;
   else
     pi = expm(time*R)*pi0;
@@ -210,10 +222,10 @@ while(time<endtime)
   fprintf(fout,"\n");
   
   pi_sum=ones(1,dim)*pi;
-  if (pi_sum > 1.05)
-    printf("Probability sum greater 1 at time %g (sum=%g).\n",time,pi_sum);
-    break;
-  endif
+  #if (pi_sum > 1.05)
+  #  printf("Probability sum greater 1 at time %g (sum=%g).\n",time,pi_sum);
+  #  break;
+  #endif
   
   diff=transpose(abs(pi-pi8))*ones(dim,1);
   #disp(diff)
@@ -223,6 +235,9 @@ while(time<endtime)
   endif
   
   time *= tinc;
+  step++;
 endwhile
+
+printf("Computed distributions at %d time points\n",step);
 
 fclose(fout);

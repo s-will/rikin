@@ -29,6 +29,8 @@ option "no-gradient" - "Don't combine into basins by gradient walk" optional
 option "homodimer" - "Compute rates for homodimer (only one sequence accepted)" optional
 option "antisense" - "Computes rates for sense/antisense pair (only one sequence accepted)" optional
 
+option "to_keep" - "Keep only the specified basins (separate indices by comma)" int optional multiple
+
 option "verbose" - "Turn on verbose output" optional
 option "debug" - "Turn on debugging output" optional
 

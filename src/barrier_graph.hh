@@ -1,6 +1,9 @@
 #ifndef BARRIER_GRAPH_HH
 #define BARRIER_GRAPH_HH
 
+
+#include <set>
+
 /**
  * Implements generation of barrier graph and maintains the graph
  * 
@@ -347,6 +350,16 @@ public:
     merge_basins_by_outflow(double max_outflow, double min_p_equ, double min_rate);
     
 
+    /** 
+     * Reduce the set of basins to those in keep set
+     * 
+     * @param to_keep set of indices of basins to keep
+     * @param min_rate minimal rate (for merging)
+     *
+     * all basins that are not in the set are merged (in decreasing order of their size)
+     */
+    void
+    reduce_basin_set(const std::set<size_t> &to_keep, double min_rate);
     
 
     /**

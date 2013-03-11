@@ -178,7 +178,13 @@ main(int argc, char **argv)
     simplify_graph      = ! args_info.dont_simplify_graph_given;
     verbose             = args_info.verbose_given;
     debug_out           = args_info.debug_given;
-    
+
+    size_t to_keep_given       = args_info.to_keep_given;
+    std::set<size_t> to_keep_set;
+    for(size_t i=0; i<to_keep_given;++i) {
+	to_keep_set.insert(args_info.to_keep_arg[i]-1);
+    }
+
     std::string ratesfile;
     if (args_info.ratesfile_given) {
 	ratesfile = args_info.ratesfile_arg;
@@ -287,6 +293,23 @@ main(int argc, char **argv)
 	bg.print_stats(std::cerr);
     }
     
+    /* handle use-defined basin merging */
+    
+    if (to_keep_given) {
+
+	if (verbose) {
+	    std::cerr << "Keep only the "<<to_keep_given<<" specified basins." << std::endl;
+	}
+	
+	bg.reduce_basin_set(to_keep_set,min_rate);
+
+	if (verbose) {
+	    std::cerr << "Reindex" << std::endl;
+	}
+	bg.reindex();
+	
+    }
+
 
     // print basins of barrier graph
     bg.print_basins(std::cout);    
@@ -304,7 +327,7 @@ main(int argc, char **argv)
 		std::cerr << component_sizes[i]<<" ";
 	    std::cerr <<std::endl;
 	
-	    std::cerr << "Keep only the first component, which contains the global minimum." 
+	    std::cerr << "Keep only the first component (which contains the open state.)" 
 		      << std::endl;
 	}
 	
@@ -367,10 +390,10 @@ main(int argc, char **argv)
 	fout.close();
 	
     }
-    
+        
     if (verbose) {
 	stopwatch.print_info(std::cerr);
-    }    
+    }
 
     exit(0);
 }
