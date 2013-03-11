@@ -302,16 +302,17 @@ public:
     /** 
      * @brief select basins to be merged bases on their outflow and minimum probability 
      * 
+     * @param x0 basin
      * @param max_outflow maximal outflow (sum of rates) where basin
      * is retained; otherwise it is distributed to its neighbors
      *
      * @param min_p_equ minimum equilibrium probability; basins with
      * lower probability are distributed to their neighbors
-
-     * @param[out] to_be_merged boolean vector indicating the basins to be merged
+     * 
+     * @returns whether basin should be merged
      */
-    void
-    select_merge_basins(double max_outflow, double min_p_equ,std::vector<bool> &to_be_merged);
+    bool
+    is_to_be_merged(const Basin &x0, double max_outflow, double min_p_equ) const;
 
 
     /**
@@ -323,7 +324,12 @@ public:
 
     /** @brief merge basins to their neighbors
      *
-     * @param to_be_merged boolean vector indicating the basins to be merged
+     * @param max_outflow maximal outflow (sum of rates) where basin
+     * is retained; otherwise it is distributed to its neighbors
+     *
+     * @param min_p_equ minimum equilibrium probability; basins with
+     * lower probability are distributed to their neighbors
+     *
      * @param min_rate minimum rate; transition with lower rate (in
      * both directions!) are removed during the merging
      *
@@ -338,7 +344,7 @@ public:
      *
      */
     void
-    merge_all_basins(std::vector<bool> &to_be_merged, double min_rate);
+    merge_basins_by_outflow(double max_outflow, double min_p_equ, double min_rate);
     
 
     

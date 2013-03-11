@@ -11,16 +11,16 @@ printf ("\n");
 
 ## print help message
 function help()
-  printf("USAGE: %s <rates> <outfile>\n",program_name());
+  printf("USAGE: %s <pfs> <outfile>\n",program_name());
 endfunction
 
 ## check command line arguments
 if (nargin<2)
-  printf("ERROR: please provide rates and output file.\n");
+  printf("ERROR: please provide pf and output file.\n");
   help();
   exit(1);
 endif
-ratesfilename = arg_list{1};
+pffilename = arg_list{1};
 outfilename = arg_list{2};
 
 
@@ -34,7 +34,7 @@ startstate = 2;            # state with initial probability 1
 
 use_diagonalization=true;
 
-verbose=false;
+verbose=true;
 
 ############################################################
 ##
@@ -77,15 +77,28 @@ endfunction
 ## main
 
 if (verbose)
-  printf("Load rates from file %s\n",ratesfilename);
+  printf("Load pfs from file %s\n",pffilename);
 endif
-R = load("-ascii",ratesfilename);
-dim=size(R,1);
+pfs = load("-ascii",pffilename);
+# disp(pfs)
 
-if (size(R,2)!=dim)
-  printf("ERROR: Rates file has to contain a square matrix.\n");
+dim=size(pfs,1);
+if (size(pfs,2)!=dim)
+  printf("ERROR: pf file has to contain a square matrix.\n");
   exit(1);
-endif  
+endif
+
+basin_pfs = diag(pfs);
+
+R = pfs ./ repmat(basin_pfs, 1,dim);
+
+## recalculate diagonal of R (as -rowsum)
+R = R - diag(diag(R)); # set diagonal to 0
+rowsums = R * ones(dim,1);
+R = R - diag(rowsums);
+
+#printf("R: \n");
+#disp(R)
 
 format "short";
 
@@ -93,36 +106,31 @@ pi0 = zeros(dim,1);
 pi0(startstate,1)=1;
 if (verbose)
   printf("PI_0: ");
-  printvec(pi0,dim)
+  printvec(pi0)
   printf("\n");
 endif
 
-## recalculate diagonal of R (as -rowsum)
-R = R - diag(diag(R)); # set diagonal to 0
-rowsums = R * ones(dim,1);
-R = R - diag(rowsums);
-R = transpose(R);
-
-pie = expm(endtime*R)*pi0; ## pi at endtime
+# pi8 = expm(endtime*R)*pi0; ## pi at endtime
+pi8 = basin_pfs / (ones(1,dim)*basin_pfs); ## pi at endtime
 if (verbose)
-  printf("PI_e: ");
-  printvec(pie)
+  printf("PI_8: ");
+  printvec(pi8)
   printf("\n");
 endif
 
-#printf("Rates:\n");
-#disp(R);
 
 if (verbose)
   printf("\n");
   printf("Compute distributions at times %e..%e (until convergence)\n",starttime,endtime);
 endif
 
+
+R=transpose(R); # we need R_ij = rate from j to i
+
 if (use_diagonalization)
   ## make symmetric (works for rate matrices in detailed balance)
   ## ATTENTION: this requires to know the correct pi8
   ##
-  pi8=pie; #assume pie is the equilibrium distribution
   
   sqrPI_ = diag(sqrt(pi8));
   _sqrPI = diag(sqrt(pi8).^(-1));
@@ -141,8 +149,8 @@ if (use_diagonalization)
   #[eigvecs,eigvals]=eigsort(eigvecs,eigvals);
 
   if (verbose)
-    printf("Eigenvalues:\n");
-    disp(transpose(diag(eigvals)));
+    #printf("Eigenvalues:\n");
+    #disp(transpose(diag(eigvals)));
   endif
 
   # printf("Eigenvectors:\n");
@@ -197,7 +205,7 @@ while(time<endtime)
     break;
   endif
   
-  diff=transpose(abs(pi-pie))*ones(dim,1);
+  diff=transpose(abs(pi-pi8))*ones(dim,1);
   #disp(diff)
   if (diff(1,1) < 1e-3)
     printf("Convergence at time %g.\n",time);

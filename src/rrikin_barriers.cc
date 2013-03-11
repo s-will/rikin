@@ -256,9 +256,7 @@ main(int argc, char **argv)
 	
 	stopwatch.start("merge");
 	
-	std::vector<bool> to_be_merged;
-	bg.select_merge_basins(max_outflow,min_p_equ,to_be_merged);
-	bg.merge_all_basins(to_be_merged,min_rate);
+	bg.merge_basins_by_outflow(max_outflow,min_p_equ,min_rate);
 	
 	stopwatch.stop("merge");
 	

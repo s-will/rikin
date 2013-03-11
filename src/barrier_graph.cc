@@ -390,41 +390,6 @@ BarrierGraph::num_transitions() const {
 }
 
 void
-BarrierGraph::select_merge_basins(double max_outflow, double min_p_equ,std::vector<bool> &to_be_merged)
-{
-    // decide on merge non-recursively
-    double total_Z = compute_Z();
-    
-    // first determine for each basin, whether it should be merged
-    to_be_merged.resize(basins_.size());
-    for (size_t i=0; i<basins_.size(); ++i) {
-	Basin &x0 = basins_[i];
-	// compute total outflow
-        double total_out = outflow_pf(x0);
-	
-	// probability in equilibrium
-	double p_equ = basins_[i].get_Z() / total_Z;
-	
-       	to_be_merged[i] = 
-	    (total_out/x0.get_Z() > max_outflow)
-	    || (p_equ < min_p_equ);
-        
-	if (special_open_state_ && x0.get_local_minimum().size()==0) {
-	    if (verbose_) {
-		std::cerr << "Suppress merge of open state basin."<<std::endl;
-	    }
-	    to_be_merged[i]=false;
-	}
-	
-	if (debug_out_) {
-	    std::cerr << i << " " << x0.get_Z() << " " << total_out << " r=" << (total_out/x0.get_Z());
-	    
-	    std::cerr <<"  \t";
-	}
-    }
-}
-
-void
 BarrierGraph::filter_basin_transitions(const Basin &x0, double min_rate) {
     transitions_map_row_t &trs_x0=transitions_[x0.idx()];
     for (transitions_map_row_t::iterator it=trs_x0.begin();
@@ -528,8 +493,46 @@ BarrierGraph::merge_basin(Basin &x0) {
 }
 
 
+bool
+BarrierGraph::is_to_be_merged(const Basin &x0,double max_outflow,double min_p_equ) const {
+    double total_Z = compute_Z();
+    
+    // compute total outflow
+    double total_out = outflow_pf(x0);
+    
+    // probability in equilibrium
+    double p_equ = x0.get_Z() / total_Z;
+    
+    bool to_be_merged = 
+	(p_equ < min_p_equ) 
+	|| (total_out/x0.get_Z() > max_outflow)
+	;
+    
+    if (debug_out_) {
+	if (to_be_merged) {
+	    std::cerr << "Select basin "<<x0.idx()<<" for merge because ";
+	    if (total_out/x0.get_Z()) {
+		std::cerr << "total outflow is "<<total_out/x0.get_Z();
+	    }
+	    if (p_equ < min_p_equ) {
+		std::cerr << "equilibrium probability is "<<p_equ;
+	    }
+	    std::cerr<<std::endl;
+	}
+    }
+    
+    if (special_open_state_ && x0.get_local_minimum().size()==0) {
+	if (verbose_) {
+	    std::cerr << "Suppress merge of open state basin."<<std::endl;
+	}
+	to_be_merged=false;
+    }
+    
+    return to_be_merged;
+}
+
 void
-BarrierGraph::merge_all_basins(std::vector<bool> &to_be_merged, double min_rate) {
+BarrierGraph::merge_basins_by_outflow(double max_outflow,double min_p_equ, double min_rate) {
     // sort basins increasing by their partition function
     std::vector<size_t> sorted_basin_idxs;
 
@@ -555,11 +558,12 @@ BarrierGraph::merge_all_basins(std::vector<bool> &to_be_merged, double min_rate)
 	// remove transitions wiht rates lower than min_rate
 	filter_basin_transitions(x0,min_rate);
 	            
-        if (to_be_merged[x0.idx()]) {
+        if (is_to_be_merged(x0,max_outflow,min_p_equ)) {
 	    
 	    if (debug_out_) {
-		std::cerr << "Dissolve basin "<< x0.idx() << std::endl;
+		std::cerr << "Dissolve basin "<< x0.idx() << " with outflow "<< outflow_pf(x0)/x0.get_Z() << std::endl;
 	    }
+	    
 	    merge_basin(x0);
 	
 	}
