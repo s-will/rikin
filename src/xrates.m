@@ -1,42 +1,301 @@
 #!/usr/bin/octave -qf
-printf ("XRates -- version 0.1 --");
 
-arg_list = argv ();
+tool_name="XRates";
+tool_version="0.2";
+tool_description="Calculate kinetics from weights/pfs of states and transitions by solving the master equation for Arrhenius rates.";
 
-## echo argument list
-for i = 1:nargin
-  printf (" %s", arg_list{i});
-endfor
-printf ("\n");
+# ## like perl's findbin, get the directory in that the script resides.
+# ## e.g., this can be added to the function search path by addpath
+# function ans = findbin()
+#   ans = fileparts(make_absolute_filename(program_invocation_name));
+# endfunction
 
-## print help message
-function help()
-  printf("USAGE: %s <pfs> <outfile>\n",program_name());
+# # printf("Script resides in directory %s\n",findbin());
+# addpath(findbin());
+
+############################################################
+## simple octave option parser
+
+
+function parser=argparse_addOption(parser,
+			  option_name,
+			  option_shortname,
+			  option_type,
+			  option_required,
+			  option_help)
+  
+  n=length(parser);
+  n++;
+
+  if (length(option_name)==0)
+    printf("argparse: non-empty (long) names required for all options.\n");
+    return;
+  endif
+
+  positional=true;
+  if ((length(option_name)>2 && substr(option_name,1,2)=="--"))
+    positional=false;
+    option_name=substr(option_name,3,length(option_name)-2);
+  endif
+  
+  if length(option_shortname)>0
+    positional = false;
+  endif
+
+  parser(n).positional=positional;
+  parser(n).name=option_name;
+  parser(n).shortname=option_shortname;
+  parser(n).type=option_type;
+  parser(n).required=option_required;
+  parser(n).help=option_help;
 endfunction
 
-## check command line arguments
-if (nargin<2)
-  printf("ERROR: please provide pf and output file.\n");
-  help();
-  exit(1);
+function p=argparse_parser
+  p=[];
+  p=argparse_addOption(p,"--help","h","",false,"Print this help.");
+endfunction
+
+function res=argparse_wrapText(text,prefix,width)
+  splitat=0;
+  splitskip=1;
+  idx=strchr(text,"\n");
+  if idx < width
+    splitat=idx;
+  elseif length(text)>width
+    idx=strchr(substr(text,1,width)," ",1,"last");
+    if (length(idx)>0)
+      splitat=idx;
+    else
+      splitat=width;
+      splitskip=0;
+    endif
+  endif
+  
+  if splitat>0
+    leading_text=substr(text,1,splitat-splitskip);
+    remaining_text = substr(text,splitat+1,length(text)-splitat);
+    
+    res = cstrcat(leading_text,
+		  "\n",prefix,
+		  strtrim(argparse_wrapText(remaining_text,prefix,width)));
+  else
+    res=text;
+  endif
+  
+endfunction
+
+function ans=argparse_buildOptionHelpString(p)
+  namestr="";
+
+  if (!p.positional)
+    namestr=strcat(namestr,"--");
+  endif
+  namestr=strcat(namestr,p.name);
+  
+  if (length(p.shortname)>0)
+    if (length(p.name)>0)
+      namestr=strcat(namestr,",");
+    endif
+    namestr=strcat(namestr,"-",p.shortname);
+  endif
+  
+  if (length(p.type)>0)
+    namestr=strcat(namestr," <",p.type,">");
+  endif
+  
+  helpstr=p.help;
+  if (p.required)
+    helpstr=strcat(helpstr," (mandatory)");
+  endif
+  
+  prefix=sprintf("  %-30s","");
+  helpstr=argparse_wrapText(helpstr,prefix,terminal_size()(2)-34);
+
+  ans=sprintf("  %-30s%s",namestr,helpstr);
+  
+endfunction
+  
+function argparse_help(parser)
+  printf("\n");
+  
+  for i=1:length(parser)
+    p=parser(i);
+    printf("%s\n",argparse_buildOptionHelpString(p));
+  endfor
+endfunction
+
+function args = argparse_parse(parser,def_args)
+endfunction
+
+function ans=argparse_toolHeader(tool_name,tool_version,tool_description)
+  ans=sprintf("%s %s -- %s",
+	      tool_name,
+	      tool_version,
+	      argparse_wrapText(tool_description,"  ",74));
+endfunction
+
+function [args,arg_list,error_msg]=argparse_parseArgs(parser,def_args,arg_list)
+  args=struct();
+  error_msg="";
+  
+  positionals=[];
+  
+  for i=1:length(parser)
+    p=parser(i);
+    if p.positional
+      positionals=[positionals,i];
+    else
+      
+      idx=find(strcmp(arg_list,strcat("--",p.name)));
+      
+      if length(idx)==0 && length(p.shortname)>0
+       	sidx=find(strcmp(arg_list,strcat("-",p.shortname)));
+	if length(sidx)>0
+	  if length(idx)>0
+	    error_msg = strcat(error_msg,sprintf("Long and short option given for --%s.\n",p.name));
+	  endif
+	  idx=sidx;
+	endif
+      endif
+      
+      if strcmp(p.type,"")
+	flag=true;
+       	noidx=find(strcmp(arg_list,strcat("--no-",p.name)));
+	if length(noidx)>0
+	  if length(idx)>0
+	    error_msg = strcat(error_msg,sprintf("Clash between arguments --%s and --no-%s.\n",p.name,p.name));
+	  endif
+	  arg_list(idx,:)=[];
+	  if idx<noidx
+	    noidx--;
+	  endif
+	  idx=noidx;
+	  flag=false;
+	endif
+      endif
+      
+      if length(idx)!=0
+	if (!strcmp(p.type,""))
+	  
+	  args.(p.name) = arg_list{idx+1};
+	  
+	  if (! strcmp(p.type,"string"))
+	    args.(p.name) = str2num(args.(p.name));
+	  endif
+	  
+	  arg_list(idx+1,:)=[];
+	else 
+	  args.(p.name) = flag;
+	endif
+	arg_list(idx,:)=[];
+      endif
+    endif
+  endfor
+  
+  ## check for unknown options
+  for i=1:length(arg_list)
+    a=arg_list{i};
+    if (length(a)>0 && strcmp(substr(a,1,1),"-"))
+      error_msg=strcat(error_msg,sprintf("Unknown option %s.\n",a));
+    endif
+  endfor
+
+  ## process positionals
+  for i=1:length(positionals)
+    p=parser(positionals(i));
+    
+    if (length(arg_list)==0) 
+      if p.required
+	error_msg = strcat(error_msg,sprintf("Positional argument '%s' is missing.\n",p.name));
+      endif
+    else
+      args.(p.name) = arg_list{1};
+      arg_list(1,:)=[];
+    endif
+  endfor
+
+  ## check for required options
+  for i=1:length(parser)
+    p=parser(i);
+    if p.required
+      if !p.positional && ! isfield(args,p.name)
+	error_msg = strcat(error_msg,sprintf("Required option '%s' is missing.\n",p.name));
+      endif
+    endif
+  endfor
+  
+  ## set default arguments
+  
+  def_fieldnames=fieldnames(def_args);
+  for i=1:length(def_fieldnames)
+    fieldname=def_fieldnames{i};
+    if (!isfield(args,fieldname)) 
+      args.(fieldname)=def_args.(fieldname);
+    endif
+  endfor
+  
+endfunction
+
+## end octave option parser
+############################################################
+
+## default arguments
+def_args = struct(
+		  "verbose", false,
+		  "binary", true,
+		  "t0", 1e-1,
+		  "t8", 1e16,
+		  "tinc", 1.2,
+		  "binary", true
+		  );
+
+parser=argparse_parser();
+parser=argparse_addOption(parser,"--verbose","v","",false,"Be verbose.");
+parser=argparse_addOption(parser,"--binary","b","",false,"Binary input");
+parser=argparse_addOption(parser,"--out","","string",true,"Name of output file. The distributions at each time point until convergence are written as a table to this file.");
+parser=argparse_addOption(parser,"--t0","","double",false,"Start time");
+parser=argparse_addOption(parser,"--t8","","double",false,"End time");
+parser=argparse_addOption(parser,"in","","string",true,"Input file. Matrix of transition weights/partition functions; the diagonal contains state weights.");
+
+## note: optional positional arguments are allowed, but should be at the end (otherwise chaos prevails)
+## parser=argparse_addOption(parser,"out2","","string",false,"Second output file");
+
+
+printf("%s\n\n",argparse_toolHeader(tool_name,tool_version,tool_description));
+
+[args,arg_list,error_msg] = argparse_parseArgs(parser,def_args,argv());
+
+if (isfield(args,"help"))
+  argparse_help(parser);
+  exit(0);
 endif
-pffilename = arg_list{1};
-outfilename = arg_list{2};
+
+if (length(error_msg)>0)
+  printf("Error: %s\n",error_msg);
+  argparse_help(parser);
+  exit(-1);
+endif
+
+disp(args);
+
+pffilename = args.in;
+outfilename = args.out;
 
 
 ############################################################
 ## parameters
 ##
-starttime  = 1e-1;         # start time
-endtime    = 1e14;         # end time
-tinc       = 1.2;          # time increment
+starttime  = args.t0;            # start time
+endtime    = args.t8;            # end time
+tinc       = args.tinc;          # time increment
 startstate = 2;            # state with initial probability 1
 
-mode="diag";        # use diagonalization (fast, but errorprone)
-#mode="expm";        # use expm (slow, more stable)
+#mode="diag";        # use diagonalization (fast, but errorprone)
+mode="expm";        # use expm (slow, more stable)
 
-verbose=true;   # verbose output
-binary=true;    # read pfs in binary format
+verbose = isfield(args,"verbose") && args.verbose;   # verbose output
+binary  = isfield(args,"binary")  && args.binary;    # read pfs in binary format
+
 
 ############################################################
 ##
@@ -60,13 +319,7 @@ endfunction
 
 ## force symmetrize (like done in treekin MxDiagonalize)
 function m = symmetrize(m)
-  n=length(m);
-  for i=1:n
-    for j=i+1:n
-      m(i,j) = ( m(i,j)+m(j,i) ) / 2;
-      m(j,i) = m(i,j);
-    endfor
-  endfor
+  m=(m+transpose(m))/2;
 endfunction
 
 function res = expdiag(m)
@@ -92,7 +345,7 @@ else
   fclose(fh);
 endif
 
-dev_symm = norm(pfs-transpose(pfs),2);
+dev_symm = norm( pfs-transpose(pfs),2);
 printf("Check input symmetry: %g (value should be almost 0)\n",dev_symm);
 
 pfs = symmetrize(pfs); # input has to be symmetric! Everything else is wrong input
