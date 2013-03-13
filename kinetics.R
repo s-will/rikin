@@ -7,7 +7,7 @@ colors = rainbow(5)
 
 pdf("kinetics.pdf")
 
-plot(c(),c(),xlim=c(1,max(time)),ylim=c(0,1),xlab="Time",ylab="p",log="x")
+plot(c(),c(),xlim=c(min(time),max(time)),ylim=c(0,1),xlab="Time",ylab="p",log="x")
 
 niceidxs <- c()
 nicemaxs <- c()

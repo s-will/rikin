@@ -158,6 +158,14 @@ function [args,arg_list,error_msg]=argparse_parseArgs(parser,def_args,arg_list)
 	endif
       endif
       
+      ## catch multiple options
+      if length(idx)>1
+	error_msg = strcat(error_msg,sprintf("Multiple options --%s disallowed.\n",p.name));
+	return;
+      endif
+      
+      remove_idxs=[];
+      
       if strcmp(p.type,"")
 	flag=true;
        	noidx=find(strcmp(arg_list,strcat("--no-",p.name)));
@@ -165,30 +173,36 @@ function [args,arg_list,error_msg]=argparse_parseArgs(parser,def_args,arg_list)
 	  if length(idx)>0
 	    error_msg = strcat(error_msg,sprintf("Clash between arguments --%s and --no-%s.\n",p.name,p.name));
 	  endif
-	  arg_list(idx,:)=[];
-	  if idx<noidx
-	    noidx--;
-	  endif
+	  remove_idxs=idx;
 	  idx=noidx;
 	  flag=false;
 	endif
       endif
-      
+
       if length(idx)!=0
 	if (!strcmp(p.type,""))
 	  
-	  args.(p.name) = arg_list{idx+1};
-	  
-	  if (! strcmp(p.type,"string"))
-	    args.(p.name) = str2num(args.(p.name));
+	  if length(arg_list)>idx
+	    args.(p.name) = arg_list{idx+1};
+	    
+	    if (! strcmp(p.type,"string"))
+	      args.(p.name) = str2num(args.(p.name));
+	      if length(args.(p.name))==0
+		error_msg = strcat(error_msg,sprintf("Value missing or of wrong type for option %s.\n",p.name));
+		return;
+	      endif
+	    endif
+	    
+	    remove_idxs=[remove_idxs,idx+1];
+	  else
+	    error_msg = strcat(error_msg,sprintf("Value for option --%s missing.\n",p.name));
 	  endif
-	  
-	  arg_list(idx+1,:)=[];
 	else 
 	  args.(p.name) = flag;
 	endif
-	arg_list(idx,:)=[];
+	remove_idxs=[remove_idxs,idx];
       endif
+      arg_list(remove_idxs,:)=[];
     endif
   endfor
   
@@ -239,23 +253,32 @@ endfunction
 ## end octave option parser
 ############################################################
 
+############################################################
 ## default arguments
+##
 def_args = struct(
 		  "verbose", false,
 		  "binary", true,
 		  "t0", 1e-1,
 		  "t8", 1e16,
 		  "tinc", 1.2,
-		  "binary", true
+		  "binary", true,
+		  "mode", "expm",
+		  "p0", 2
 		  );
 
 parser=argparse_parser();
 parser=argparse_addOption(parser,"--verbose","v","",false,"Be verbose.");
 parser=argparse_addOption(parser,"--binary","b","",false,"Binary input");
-parser=argparse_addOption(parser,"--out","","string",true,"Name of output file. The distributions at each time point until convergence are written as a table to this file.");
+parser=argparse_addOption(parser,"--out","","string",true,
+			  "Name of output file. The distributions at each time point until convergence are written as a table to this file.");
 parser=argparse_addOption(parser,"--t0","","double",false,"Start time");
 parser=argparse_addOption(parser,"--t8","","double",false,"End time");
-parser=argparse_addOption(parser,"in","","string",true,"Input file. Matrix of transition weights/partition functions; the diagonal contains state weights.");
+parser=argparse_addOption(parser,"--tinc","","double",false,"Time increment");
+parser=argparse_addOption(parser,"--mode","","string",false,"Mode (expm or diag)");
+parser=argparse_addOption(parser,"--p0","","int",false,"State with initial probability 1");
+parser=argparse_addOption(parser,"in","","string",true,
+			  "Input file. Matrix of transition weights/partition functions; the diagonal contains state weights.");
 
 ## note: optional positional arguments are allowed, but should be at the end (otherwise chaos prevails)
 ## parser=argparse_addOption(parser,"out2","","string",false,"Second output file");
@@ -276,24 +299,35 @@ if (length(error_msg)>0)
   exit(-1);
 endif
 
-disp(args);
+############################################################
+## parameters
+##
+
+verbose = isfield(args,"verbose") && args.verbose;   # verbose output
+
+if verbose
+  printf("Arguments:\n");
+  disp(args);
+endif
+
 
 pffilename = args.in;
 outfilename = args.out;
 
 
-############################################################
-## parameters
-##
 starttime  = args.t0;            # start time
 endtime    = args.t8;            # end time
 tinc       = args.tinc;          # time increment
-startstate = 2;            # state with initial probability 1
+startstate = args.p0;            # state with initial probability 1
 
 #mode="diag";        # use diagonalization (fast, but errorprone)
-mode="expm";        # use expm (slow, more stable)
+mode=args.mode;        # use expm (slow, more stable)
 
-verbose = isfield(args,"verbose") && args.verbose;   # verbose output
+if ! strcmp(mode,"expm") && ! strcmp(mode,"diag")
+    printf("Error: unsupported mode %s.\n",mode);
+    exit(-1);
+endif
+
 binary  = isfield(args,"binary")  && args.binary;    # read pfs in binary format
 
 
