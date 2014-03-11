@@ -148,6 +148,26 @@ main(int argc, char **argv)
     
     bool homodimer=args_info.homodimer_given;
     bool antisense=args_info.antisense_given;
+
+    
+    // names of molecules for rxns and spcs output
+    std::string nameA = "A";
+    std::string nameB = "B";
+    
+    if (args_info.nameA_given) {
+	nameA=args_info.nameA_arg;
+    }
+    
+    bool nameB_given=args_info.nameB_given;
+    if (args_info.nameB_given) {
+	nameB=args_info.nameB_arg;
+    }
+    
+    bool nameAB_given=args_info.nameAB_given;
+    std::string nameAB;
+    if (args_info.nameAB_given) {
+	nameAB=args_info.nameAB_arg;
+    }
     
     size_t expected_sequences=(homodimer||antisense)?1:2;
 
@@ -164,7 +184,7 @@ main(int argc, char **argv)
 	cmdline_parser_free(&args_info);
 	exit(1);
     }    
-    
+
     double max_outflow  = args_info.max_outflow_arg;
     double min_rate     = args_info.min_rate_arg;
     double min_p_equ    = args_info.min_p_equ_arg;
@@ -200,6 +220,16 @@ main(int argc, char **argv)
 	pffile = args_info.pffile_arg;
     }
 
+    std::string rxnsfile;
+    if (args_info.rxns_given) {
+        rxnsfile = args_info.rxns_arg;
+    }
+
+    std::string spcsfile;
+    if (args_info.spcs_given) {
+        spcsfile = args_info.spcs_arg;
+    }
+
 
     std::string seqA = args_info.inputs[0];
     HybEnsModel::norm_RNA_seq(seqA);
@@ -215,6 +245,7 @@ main(int argc, char **argv)
 	seqB = args_info.inputs[1];
 	HybEnsModel::norm_RNA_seq(seqB);
     }
+
 
     if (verbose) {
 	std::cerr << "seqA="<<seqA<<", seqB="<<seqB << std::endl;
@@ -243,6 +274,7 @@ main(int argc, char **argv)
     
     size_t num_total_basins = bg.num_basins();
     
+
     if (verbose) {
 	if (bg.model().is_homodimer()) {
 	    std::cerr << "Model homodimer."<<std::endl;
@@ -379,7 +411,7 @@ main(int argc, char **argv)
     if (pffile != "") {
     
 	if (verbose) {
-	    std::cerr << "Write partition functions of basins and transition states to files '"<<pffile<<"'."<<std::endl;
+	    std::cerr << "Write partition functions of basins and transition states to file '"<<pffile<<"'."<<std::endl;
 	}
 	std::ofstream fout(pffile.c_str(),std::ios::out | std::ios::binary);
 	if (fout.good()) {
@@ -389,7 +421,47 @@ main(int argc, char **argv)
 	}
 	fout.close();
 	
+    }    
+
+    //handle names of molecules in rxns/spcs files
+    if (!nameB_given && bg.model().is_homodimer()) {
+	nameB=nameA;
+    }    
+    if (!nameAB_given) {
+	nameAB=nameA+nameB;
     }
+
+    if (rxnsfile != "") {
+    
+	if (verbose) {
+	    std::cerr << "Write reactions to file '"<<rxnsfile<<"'."<<std::endl;
+	}
+	std::ofstream fout(rxnsfile.c_str(),std::ios::out | std::ios::binary);
+	if (fout.good()) {
+	    bg.print_rxns(fout,nameA,nameB,nameAB);
+	} else {
+	    std::cerr << "Cannot write reactions to file."<<std::endl;
+	}
+	fout.close();
+	
+    }
+
+    if (spcsfile != "") {
+    
+	if (verbose) {
+	    std::cerr << "Write reactions to file '"<<spcsfile<<"'."<<std::endl;
+	}
+	std::ofstream fout(spcsfile.c_str(),std::ios::out | std::ios::binary);
+	if (fout.good()) {
+	    bg.print_spcs(fout,nameA,nameB,nameAB);
+	} else {
+	    std::cerr << "Cannot write reactions to file."<<std::endl;
+	}
+	fout.close();
+	
+    }
+
+
         
     if (verbose) {
 	stopwatch.print_info(std::cerr);

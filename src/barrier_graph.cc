@@ -8,6 +8,7 @@
 #include <limits>
 #include <cmath>
 #include <set>
+#include <sstream>
 
 /* Output transitions */
 
@@ -889,6 +890,74 @@ BarrierGraph::print_pfs(std::ostream &out,bool binary) const {
 		}
 	    }
 	    if (!binary) {out << "\n";}
+	}
+    }
+}
+
+void
+BarrierGraph::print_rxns(std::ostream &out,
+			 const std::string &nameA,
+			 const std::string &nameB,
+			 const std::string &nameAB) const {
+    const size_t openstate_index=1;
+   
+    for(size_t i=0; i<basins_.size(); ++i) {
+	if (!basins_[i].merged()) {
+	    const transitions_map_t::const_iterator &ts = transitions_.find(i);
+	    if (ts != transitions_.end()) {
+		for(transitions_map_row_t::const_iterator it=ts->second.begin();
+		    it != ts->second.end(); ++it) {
+		    size_t j=it->first;
+		    double rate = it->second.get_Z()/basins_[i].get_Z();
+		    
+		    std::ostringstream subs1;
+		    std::ostringstream subs2;
+		    std::ostringstream prods1;
+		    std::ostringstream prods2;
+		    
+		    if (i!=openstate_index) {
+			subs1<<nameAB<<i+1;
+			subs2<<nameAB<<i+1;
+		    } else {
+			subs1<<nameA<<"+"<<nameB;
+			subs2<<nameA<<" "<<nameB;
+		    }
+		    
+		    if (j!=openstate_index) {
+			prods1<<nameAB<<j+1;
+			prods2<<nameAB<<j+1;
+		    } else {
+			prods1<<nameA<<"+"<<nameB;
+			prods2<<nameA<<" "<<nameB;
+		    }
+
+		    out << "Rxn " << subs1.str() << "->" << prods1.str() <<std::endl
+			<< "Subs " << subs2.str() << std::endl
+			<< "Prods " << prods2.str() <<std::endl
+			<< "Rate " << rate <<std::endl;    
+		    
+		    out << std::endl;
+		}
+	    }
+	}
+    }
+}
+
+void
+BarrierGraph::print_spcs(std::ostream &out,
+			 const std::string &nameA,
+			 const std::string &nameB,
+			 const std::string &nameAB) const {
+    const size_t openstate_index=1;
+
+    if (nameA!=nameB) {
+	out << nameA << " " << 1 << std::endl;
+	out << nameB << " " << 1 << std::endl;
+    }
+
+    for(size_t i=0; i<basins_.size(); ++i) {
+	if (!basins_[i].merged() && (i!=openstate_index)) {
+	    out << nameAB << (i+1) << " " << 0<< std::endl;
 	}
     }
 }

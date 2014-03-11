@@ -489,6 +489,38 @@ public:
     void
     print_pfs(std::ostream &out,bool binary=false) const;
 
+    /** 
+     * @brief print reactions to stream
+     * 
+     * Prints reactions in format 'rxns' (compatible to Stochastinator)
+     *
+     * @param out output stream
+     * @param nameA name of homomer A
+     * @param nameB name of homomer B
+     * @param nameAB name of dimer
+     */
+    void
+    print_rxns(std::ostream &out,
+	       const std::string &nameA,
+	       const std::string &nameB,
+	       const std::string &nameAB) const;
+
+    /** 
+     * @brief print species to stream
+     * 
+     * Prints reactions in format 'spcs' (compatible to Stochastinator)
+     *
+     * @param out output stream
+     * @param nameA name of homomer A
+     * @param nameB name of homomer B
+     * @param nameAB name of dimer
+     */
+    void
+    print_spcs(std::ostream &out,
+	       const std::string &nameA,
+	       const std::string &nameB,
+	       const std::string &nameAB) const;
+    
     /**
      * @brief convert state description to dot bracket notation
      * @param sd state description
