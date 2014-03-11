@@ -29,4 +29,10 @@ src/rrikin_barriers_cmdline.c
 src/rrikin_barriers_cmdline.h
 src/rrikin_enum_cmdline.c
 src/rrikin_enum_cmdline.h
+Stochastirator-tests/
+src/test_moves
+src/SparseMatrix/test
+src/SparseMatrix/test_sparse_vector
+src/SparseMatrix/test_symmetric_sparse_matrix
+src/Obsolete
 *~
