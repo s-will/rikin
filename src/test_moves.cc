@@ -51,7 +51,7 @@ main()
     // enumerate moves
 
     std::cout << "Generate model ..." << std::endl;
-    HybEnsModel model(seqA,seqB);
+    HybEnsModel model(seqA,seqB,std::max(seqA.length(),seqB.length()),true);
     std::cout << "    DONE." << std::endl;
     
     //    HybEnsModel::StateDescription state(8,9,16,17);
