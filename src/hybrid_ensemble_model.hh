@@ -341,8 +341,13 @@ public:
      * construct from sequences
      * @param seqA sequence A
      * @param seqB sequence B
+     * @param maxsitesize maximum length of a unpaired site
+     * @param cond whether to model double sites
      */
-    HybEnsModel(std::string seqA, std::string seqB);
+    HybEnsModel(std::string seqA, std::string seqB,
+		size_t maxsitesize,
+		bool cond
+		);
     
     /** 
      * @brief Energy of a state
@@ -554,7 +559,7 @@ private:
     //! @brief maximal number of unpaired bases in a loop (for each sequence)
     const size_t maxunpinloop_;
     
-    //! @brief minimal number of bases in a site (for each sequence)
+    //! @brief minimal number of bases in one site (for each sequence)
     const size_t minsitesize_;
     
     //! @brief minimal number of bases between two sites (for each sequence)
@@ -564,8 +569,11 @@ private:
     //! @note in order to make the states represnting disjoint sets of structures,
     //! minsitedist_ should be larger than maxunpinloop_
     const size_t minsitedist_;
-   
-    
+
+
+    //! @brief maximal number of bases in one site (for each sequence)
+    const size_t maxsitesize_;
+        
     //! @brief whether seqA and seqB form homodimers
     //!
     //! true iff seqB is reverse complement of seqA

@@ -13,6 +13,10 @@ option "max-hyb-energy" - "Threshold for single hybridization site energy" doubl
 
 option "max-total-energy" - "Threshold for single hybridization site energy" double default="1e12" optional
 
+option "max-hyb-length" - "Maximum length of each subsequence in hybridization site" int default="-1" optional
+
+option "max-hyb-length-diff" - "Maximum difference of lengths in hybridization sites" int default="-1" optional
+
 option "no-double-sites" - "Don't enumerate double hybridization site configurations" optional
 
 option "add-open-state" - "Add the open state (without interaction)" optional

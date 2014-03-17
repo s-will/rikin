@@ -11,10 +11,15 @@ extern "C" {
 }
 
 
-UnpairedPF::UnpairedPF(const std::string &seq,int orientation) 
+UnpairedPF::UnpairedPF(const std::string &seq,
+		       int orientation,
+		       size_t maxsitesize,
+		       bool cond) 
     : seq_(seq),
       //orientation_(orientation),
-      RT_( (temperature+K0)*GASCONST/1000.0 )
+      RT_( (temperature+K0)*GASCONST/1000.0 ),
+      maxsitesize_(maxsitesize),
+      cond_(cond)
 {
     assert(orientation==-1 || orientation==1);
     
@@ -22,11 +27,11 @@ UnpairedPF::UnpairedPF(const std::string &seq,int orientation)
     
     // std::cout << "Create UnpairedPF from sequence "<<seq<<" ("<<seq_.length()<<")"<<std::endl;
     computeSingleProbs();
-    computeCondProbs();
+    if (cond_) { computeCondProbs(); }
     
     if  (orientation==-1) {
 	revert_single_probs();
-	revert_cond_probs();
+	if (cond_) { revert_cond_probs(); }
     }
 }
 
@@ -50,7 +55,7 @@ UnpairedPF::revert_single_probs() {
 void
 UnpairedPF::revert_cond_probs() {
     for (size_t i=1; i<=seq_.length(); i++) {
-	for (size_t j=i+1; j<=seq_.length(); j++) {
+	for (size_t j=i+1; (j-i+1<=maxsitesize_) && (j<=seq_.length()); j++) {
 	    revert_upper_triangle_matrix(seq_.length(),Pcond(i,j));
 	}
     }
@@ -62,14 +67,31 @@ UnpairedPF::unpaired_prob_single(size_t i, size_t j) const {
     assert(1<=i);
     assert(i<=j);
     assert(j<=seq_.length());
-        
+    assert(j-i+1 <= maxsitesize_);
+    
     return Psingle(i,j);
 }
 
 UnpairedPF::prob_t
 UnpairedPF::unpaired_prob_conditional(size_t i, size_t j,size_t k, size_t l) const {
+    assert(1<=i);
+    assert(i<=j);
+    assert(j<=seq_.length());
     
-    return Pcond(k,l)(i,j);
+    assert(1<=k);
+    assert(k<=l);
+    assert(l<=seq_.length());
+ 
+    assert(j<k);
+    
+    assert(j-i+1 <= maxsitesize_);
+    assert(l-k+1 <= maxsitesize_);
+    
+    if (cond_) {
+	return Pcond(k,l)(i,j);
+    } else {
+	return Psingle(i,j);
+    }
 }
 
 
@@ -115,8 +137,8 @@ UnpairedPF::computeProbsGeneric(LocARNA::Matrix<prob_t> &P, const char *structur
     int plfL=seq_.length(); // parameter -L of plfold
     
     // maximal size of unpaired region for which pf is computed
-    int maxUnpairedRegionSize=seq_.length();
-    
+    int maxUnpairedRegionSize=std::min(seq_.length(),maxsitesize_);
+
     const char *sequence=seq_.c_str();
     
     float cutoff = 0.0;    /* bpcutoff for plfold, does not influence
@@ -164,6 +186,7 @@ UnpairedPF::computeCondProbs(size_t i, size_t j) {
     assert(i<=j);
     assert(1<=i);
     assert(j<=seq_.length());
+    assert(j-i+1 <= maxsitesize_);
     
     // generate constraint structure string
     // of the form .....xxxxx......, where the string
@@ -186,7 +209,7 @@ UnpairedPF::computeCondProbs() {
     //std::cout << "Compute conditional unpaired probabilities ..." <<std::endl;
     for (size_t i=1; i<=seq_.length(); i++) {
 	//std::cout <<"  "<<i<<" "<<i<<".."<<seq_.length()<<std::endl;
-	for (size_t j=i+1; j<=seq_.length(); j++) {
+	for (size_t j=i+1; (j-i+1 <= maxsitesize_) && j<=seq_.length(); j++) {
 	    
 	    computeCondProbs(i,j);
 	    

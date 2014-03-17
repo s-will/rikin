@@ -164,15 +164,20 @@ HybEnsModel::StateDescription::is_valid(const HybEnsModel &model) const {
 // ------------------------------------------------------------
 // Implementation of HybEnsModel
 
-HybEnsModel::HybEnsModel(std::string seqA, std::string seqB)
+HybEnsModel::HybEnsModel(std::string seqA,
+			 std::string seqB,
+			 size_t maxsitesize,
+			 bool cond
+			 )
     : seqA_(seqA),
       seqB_(seqB),
-      uppfA_(seqA,+1),
-      uppfB_(seqB,-1),
+      uppfA_(seqA,+1,maxsitesize,cond),
+      uppfB_(seqB,-1,maxsitesize,cond),
       hybridpf_(seqA,seqB),
       maxunpinloop_(6),
       minsitesize_(3),
       minsitedist_(6),
+      maxsitesize_( maxsitesize ),
       homodimer_(false)
 {
     std::string seqA1=seqA;

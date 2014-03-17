@@ -34,8 +34,14 @@ public:
      * i..j, 1<=i<=j<=len
      * @param seq The RNA sequence
      * @param orientation +1 if seq is in forward orientation 5'->3', -1 otherwise.
+     * @param maxsitesize maximum length of unpaired regions
+     * @param cond whether to support dependant unpaired regions by conditional probabilities
+     * (if false, model sites as independent)
      */
-    UnpairedPF(const std::string &seq, int orientation);
+    UnpairedPF(const std::string &seq,
+	       int orientation, 
+	       size_t maxsitesize,
+	       bool cond);
     
     /**
      * @brief get probability of unpaired range (i.e. pf divided by Z)
@@ -101,6 +107,9 @@ private:
      * @note has to be compatible to Vienna lib
      */
     double RT_;
+
+    const size_t maxsitesize_;
+    const bool cond_;
     
 
     LocARNA::Matrix<prob_t> Psingle; //!< matrix to hold unpaired probabilities for single ranges

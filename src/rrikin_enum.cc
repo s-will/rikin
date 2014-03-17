@@ -85,8 +85,10 @@ write_state(double energy, const HybEnsModel::StateDescription &state, bool bina
 
 size_t
 enumerate_double_sites(const HybEnsModel &model,
-			    double th_hyb_energy,
-		       double th_total_energy,
+		       size_t maxsitesize,
+		       size_t maxsitesize_diff,
+		       double max_hyb_energy,
+		       double max_total_energy,
 		       bool binary) {
     
     // Indexing for double hybridization 
@@ -103,7 +105,7 @@ enumerate_double_sites(const HybEnsModel &model,
     const size_t minsitedist=model.minsitedist();
 
 	
-    //cout << "Double Hybridisations:" << endl;
+    //cout << "Double Hybridizations:" << endl;
     for (size_t i1=1; i1<=seqA.length(); i1++) {
 	
 	double progress = (i1/(double)seqA.size());
@@ -114,8 +116,13 @@ enumerate_double_sites(const HybEnsModel &model,
 		continue;
 	    }
 	    	    
-	    for (size_t j1=i1+minsitesize-1; j1<=seqA.length(); j1++) {
-		for (size_t j2=i2+minsitesize-1; j2<=seqB.length(); j2++) {
+	    for (size_t j1=i1+minsitesize-1; j1<=std::min(maxsitesize+i1-1,seqA.length()); j1++) {
+
+		size_t from_j2 = std::max(i2+minsitesize-1+maxsitesize_diff,j1-i1+i2)-maxsitesize_diff;
+		size_t to_j2   = std::min(maxsitesize+i2-1,seqB.length());
+		to_j2 = std::min(to_j2,j1-i1+i2+maxsitesize_diff);
+		
+		for (size_t j2=from_j2; j2<=to_j2; j2++) {
 		    
 		    if ( (model.pair_type(j1,j2)==0) ) {
 			continue;
@@ -125,7 +132,7 @@ enumerate_double_sites(const HybEnsModel &model,
 		    
 		    double energy_hyb1 = model.energy_hybrid(is1);
 		    
-		    if ( energy_hyb1 > th_hyb_energy ) continue;
+		    if ( energy_hyb1 > max_hyb_energy ) continue;
 		    
 		    for (size_t k1=j1+minsitedist+1; k1<=seqA.length(); k1++) {
 			for (size_t k2=j2+minsitedist+1; k2<=seqB.length(); k2++) {
@@ -133,8 +140,13 @@ enumerate_double_sites(const HybEnsModel &model,
 				continue;
 			    }
 			    
-			    for (size_t l1=k1+minsitesize-1; l1<=seqA.length(); l1++) {
-				for (size_t l2=k2+minsitesize-1; l2<=seqB.length(); l2++) {
+			    for (size_t l1=k1+minsitesize-1; l1<=std::min(maxsitesize+k1-1,seqA.length()); l1++) {
+				
+				size_t from_l2 = std::max(k2+minsitesize-1+maxsitesize_diff,l1-k1+k2)-maxsitesize_diff;
+				size_t to_l2   = std::min(maxsitesize+k2-1,seqB.length());
+				to_l2 = std::min(to_l2,l1-k1+k2+maxsitesize_diff);
+		
+				for (size_t l2=from_l2; l2<=to_l2; l2++) {
 				    if ( (model.pair_type(l1,l2)==0) ) {
 					continue;
 				    }
@@ -147,7 +159,7 @@ enumerate_double_sites(const HybEnsModel &model,
 
 				    double energy_hyb2 = model.energy_hybrid(is2);
 				    
-				    if (energy_hyb2 > th_hyb_energy) continue;
+				    if (energy_hyb2 > max_hyb_energy) continue;
 				    
 				    //double energy_unpair=model.energy_unpair(is1,is2);
 				    
@@ -156,7 +168,7 @@ enumerate_double_sites(const HybEnsModel &model,
 				    double total_energy=model.energy(state);
 				    
 				    // using cout<< instead of printf causes has extrem overhead
-				    if (total_energy <= th_total_energy) {
+				    if (total_energy <= max_total_energy) {
 					write_state(total_energy,state,binary);
 					count_double_states++;
 				    }
@@ -222,8 +234,18 @@ main(int argc, char **argv)
     // set some global variables for Vienna libRNA
     dangles=2;
     
-    const double th_hyb_energy = args_info.max_hyb_energy_arg;
-    const double th_total_energy = args_info.max_total_energy_arg;
+    const double max_hyb_energy   = args_info.max_hyb_energy_arg;
+    const double max_total_energy = args_info.max_total_energy_arg;
+    const size_t maxsitesize = 
+	(args_info.max_hyb_length_arg>=0)
+	? args_info.max_hyb_length_arg
+	: std::max(seqA.length(),seqB.length());
+    
+    const size_t maxsitesize_diff = 
+	(args_info.max_hyb_length_diff_arg>=0)
+	? args_info.max_hyb_length_diff_arg
+	: std::max(seqA.length(),seqB.length());
+    
     verbose        = args_info.verbose_given;
     bool enum_double_sites        = ! args_info.no_double_sites_given;
     bool binary        = args_info.binary_given;
@@ -235,7 +257,8 @@ main(int argc, char **argv)
 
     if (verbose) std::cerr << "Generate Model (precomputing energies for sequences of length "
 			   <<seqA.size()<<" and "<<seqB.size()<<")" << std::endl;
-    HybEnsModel model(seqA,seqB);
+
+    HybEnsModel model(seqA,seqB,maxsitesize,enum_double_sites);
 
     stopwatch.stop("generate_model");
     
@@ -243,7 +266,7 @@ main(int argc, char **argv)
 
     stopwatch.start("enumerate");
 
-    if (verbose) std::cerr << "Enumerate states (maximal single site hybridization energy " <<th_hyb_energy <<  ", max total energy " << th_total_energy << " )" << std::endl;
+    if (verbose) std::cerr << "Enumerate states (maximal single site hybridization energy " <<max_hyb_energy <<  ", max total energy " << max_total_energy << " )" << std::endl;
     
     const size_t minsitesize=model.minsitesize();
 
@@ -254,7 +277,7 @@ main(int argc, char **argv)
 	if (verbose) {
 	    std::cerr <<"Write open state"<<std::endl;
 	}
-	if (model.energy(empty_state) <= th_total_energy) {
+	if (model.energy(empty_state) <= max_total_energy) {
 	    check_state_validity(empty_state,model);
 	    write_state(model.energy(empty_state),empty_state,binary);
 	}
@@ -280,8 +303,15 @@ main(int argc, char **argv)
 	    if ( (model.pair_type(i1,i2)==0) ) {
 		continue;
 	    }
-	    for (size_t j1=i1+minsitesize-1; j1<=seqA.length(); j1++) {
-		for (size_t j2=i2+minsitesize-1; j2<=seqB.length(); j2++) {
+	    // enumerate j1 s.t. site length is between minimum site size and maximum hybridization site length
+	    for (size_t j1=i1+minsitesize-1; j1<=std::min(maxsitesize+i1-1,seqA.length()); j1++) {
+
+		// enumerate j2 s.t. site length is between minimum site size and maximum hybridization site length
+		// and, furthermore, the maximum hybridization site length difference is not exceeded
+		size_t from_j2 = std::max(i2+minsitesize-1+maxsitesize_diff,j1-i1+i2)-maxsitesize_diff;
+		size_t to_j2   = std::min(maxsitesize+i2-1,seqB.length());
+		to_j2 = std::min(to_j2,j1-i1+i2+maxsitesize_diff);
+		for (size_t j2=from_j2; j2<=to_j2; j2++) {
 		    if ( (model.pair_type(j1,j2))==0 ) {
 			continue;
 		    }
@@ -293,7 +323,7 @@ main(int argc, char **argv)
 		    double energy_hyb = 
 			model.energy_hybrid(state[0]);
 		    
-		    if ( energy_hyb > th_hyb_energy ) continue;
+		    if ( energy_hyb > max_hyb_energy ) continue;
 		    
 		    // double energy_unpair =
 		    // 	model.energy_unpair(state[0]);
@@ -305,7 +335,7 @@ main(int argc, char **argv)
 		    double total_energy=model.energy(state);
 		    
 		    // using cout<< instead of printf causes extrem overhead
-		    if (total_energy <= th_total_energy) {
+		    if (total_energy <= max_total_energy) {
 			write_state(total_energy,state,binary);
 			count_single_states++;
 		    }
@@ -330,7 +360,12 @@ main(int argc, char **argv)
 		      << std::endl;    
 	}
 	
-	count_double_states=enumerate_double_sites(model,th_hyb_energy,th_total_energy,binary);
+	count_double_states=enumerate_double_sites(model,
+						   maxsitesize,
+						   maxsitesize_diff,
+						   max_hyb_energy,
+						   max_total_energy,
+						   binary);
     
 
 	if (verbose) {
