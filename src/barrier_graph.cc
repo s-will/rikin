@@ -10,6 +10,9 @@
 #include <set>
 #include <sstream>
 
+
+const bool GRAD_WALK_MISSING=true; //whether to complete gradient walks for missing states
+
 /* Output transitions */
 
 std::ostream &
@@ -127,12 +130,12 @@ BarrierGraph::process_move(const HybEnsModel::Move *move,
 			   const HybEnsModel::StateDescription &source_state,
 			   const HybEnsModel::energy_t &source_energy,
 			   HybEnsModel::energy_t &min_transition_energy,
-			   size_t &min_tE_target_basin_index,
-			   std::vector<transition_t> &trans
+			   size_t &min_transE_target_basin_index,
+			   std::vector<transition_t> &transitions
 			   ) {
     //std::cout << " move "; move->print(std::cout); std::cout<<std::endl;
         
-    HybEnsModel::energy_t tE=move->transitionEnergy();
+    HybEnsModel::energy_t transE=move->transitionEnergy(); // -- energy of transition state
     
     HybEnsModel::StateDescription neigh_state=source_state;
     move->apply(neigh_state);
@@ -141,7 +144,6 @@ BarrierGraph::process_move(const HybEnsModel::Move *move,
 	return;
     }
     
-	
     // encode neighbor and search neighbor code in hash
     
     HybEnsModel::StateDescription::code_t neigh_code; // string for holding code
@@ -164,41 +166,78 @@ BarrierGraph::process_move(const HybEnsModel::Move *move,
 	size_t target_basin_index=it->second;
 	
 	// if transition energy to neigh_state is smaller than the former minimum
-	if ( tE < min_transition_energy ) {
+	if ( transE < min_transition_energy ) {
 	    // record new minimal energy transition
-	    min_transition_energy = tE;
-	    min_tE_target_basin_index = target_basin_index;
+	    min_transition_energy = transE;
+	    min_transE_target_basin_index = target_basin_index;
 	}
 	
 	// compute energy of neighbor state
 	double neigh_energy = model_.energy(neigh_state);
 	
 	// record new transition.  In this way, we collect all
-	// transitions from the source state to energetically
-	// lower target states Explicitly, we don't record the
-	// transitions to higher energy states. Since
-	// transitions are symmetric, we can later add those
-	// transitions.
-	trans.push_back(transition_t(source_energy,      // energy of source state
-				     target_basin_index, // index of target basin
-				     neigh_energy,       // energy of target state
-				     tE)                 // energy of the transition state
+	// transitions from the source state to energetically lower
+	// target states (recall: input states are sorted by energy).
+	// Notably, we don't record the transitions to higher energy
+	// states (recall: these states are not in the hash). Since
+	// transitions are symmetric, we add those transitions later.
+	transitions.push_back(transition_t(source_energy,
+				     target_basin_index,
+				     neigh_energy,
+				     transE)
 			);
 	
 	if (debug_out_) {
-	    std::cerr <<"\t"<< trans[trans.size()-1]
+	    std::cerr <<"\t"<< transitions[transitions.size()-1]
 		      << " by ";
 	    move->print(std::cerr);
 	    std::cerr << std::endl;
 	}
+    } else if (GRAD_WALK_MISSING
+	       &&
+	       neigh_state.max_site_size() > maxsitesize_
+	       && !isinf(model_.energy(neigh_state))
+	       ) {
+	// Attention: there are moves (shift moves) where the target state is invalid, but
+	// the transition energy is finite!
+
+	
+	// The neighbor state is not in the hash, because neighbor site length is beyond maxsitesize
+
+	// compute energy of neighbor state
+	
+	// skip open state if open state is special
+	if (!(special_open_state_ && source_state.size()==0)) {
+
+	    // if transition energy to neigh_state is smaller than the former minimum
+	    if ( transE < min_transition_energy) {
+		
+		// std::cerr
+		//     << ((model_.energy(neigh_state)>=source_energy)?"* ":"  ")
+		//     << source_state << " " << source_energy 
+		//     << " " << neigh_state
+		//     << " " << model_.energy(neigh_state) << " " << transE << std::endl;
+		
+		// record new minimal energy transition
+		min_transition_energy = transE;
+		min_transE_target_basin_index = std::numeric_limits<size_t>::max(); // signal mimimum not in hash
+	    
+		// transitions to states beyond maxsitesize are not recorded
+	    }
+	}
     }
+    // else {
+    // 	if (debug_out_ && !(special_open_state_ && source_state.size()==0) && model_.energy(neigh_state)<source_energy) {
+    // 	    std::cerr << "Neighbor "<< neigh_state<<" of "<<source_state<<" is missing."<<std::endl; 
+    // 	}
+    // }
 }
 
 size_t
 BarrierGraph::assign_to_basin(const HybEnsModel::StateDescription &source_state,
 			      const HybEnsModel::energy_t &source_energy,
 			      const HybEnsModel::energy_t &min_transition_energy,
-			      size_t min_tE_target_basin_index
+			      size_t min_transE_target_basin_index
 			      ) {
     size_t source_basin_index;
 
@@ -212,10 +251,11 @@ BarrierGraph::assign_to_basin(const HybEnsModel::StateDescription &source_state,
 	// no transition state to an energetically lower target
 	// state is energetically lower than the source state
 	//
-	// Consequently, source_state is a new local minimum
-	    
+	// Consequently, source_state is a new local minimum (among
+	// the previously seen states)
+	
 	source_basin_index = basins_.size();
-	    
+	
 	if (debug_out_) std::cerr << "  New basin "<<source_basin_index<<std::endl;
 
 	// put state into hash
@@ -227,12 +267,12 @@ BarrierGraph::assign_to_basin(const HybEnsModel::StateDescription &source_state,
 	    
     } else {
 	// source_state is not a local minimum but belongs to basin
-	// min_tE_target_basin_index, which is the basin that is reached
+	// min_transE_target_basin_index, which is the basin that is reached
 	// with the lowest transition energy.
 	    
 	// handle case where basin with index source_basin_index
 	// was merged before
-	source_basin_index = min_tE_target_basin_index;
+	source_basin_index = min_transE_target_basin_index;
 	
 	if (debug_out_) std::cerr << "  Assign to basin "<<source_basin_index<<std::endl;
 	    
@@ -286,9 +326,9 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state,
     double min_transition_energy = std::numeric_limits<double>::infinity();
 	
     // index of the basin of the neighbor state with minimum transition energy
-    size_t min_tE_target_basin_index = std::numeric_limits<size_t>::max();
+    size_t min_transE_neighbor_basin_index = std::numeric_limits<size_t>::max();
 
-    std::vector<transition_t> trans; //! transitions from source to neighbor states
+    std::vector<transition_t> transitions; //! transitions from source to neighbor states
 
     size_t moves_counter=0;
 
@@ -307,37 +347,66 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state,
 	process_move(move,
 		     source_state,
 		     source_energy,
-		     min_transition_energy,
-		     min_tE_target_basin_index,
-		     trans);
+		     min_transition_energy,       // <-- the last three params are output parameters!
+		     min_transE_neighbor_basin_index,
+		     transitions
+		     );
     }
-    
-    if (debug_out_) std::cerr << "  " << trans.size() << " transitions, "
+   
+    if (debug_out_) std::cerr << "  " << transitions.size() << " transitions, "
 			     << moves_counter << " moves" <<std::endl;
+    
+    // handle case "minimum neighbor state is not in hash"
+    if (GRAD_WALK_MISSING
+	&&
+	(min_transition_energy < source_energy) 
+	&&
+	(min_transE_neighbor_basin_index == std::numeric_limits<size_t>::max())) {
+	
+	// std::cerr 
+	//     << "min outside "
+	//     << source_state << " " << source_energy 
+	//     << " -> "
+	//     << min_transition_energy << std::endl; 
+	
+	// TODO this is not working properly without gradient basins 
+	assert(gradient_/* case !gradient not handled properly */);
+	
+	if (debug_out_) 
+	    std::cerr << source_state << " walks outside maxsitesize boundaries." << std::endl;	
+
+	// do gradient walk from source_state
+	gradient_walk(source_state, source_energy);
 	
 
+	//FIX LATER
+	min_transition_energy = std::numeric_limits<double>::infinity();
+    }
 
     if (moves_counter==0) {
 	if (debug_out_) std::cerr << "Ignore frozen state " << source_state << "." << std::endl;
 	return;
     }
 
-    // index of the basin of the processed source state
-    size_t source_basin_index=std::numeric_limits<size_t>::max();
+    // index of the basin of the source state
+    size_t basin_index=std::numeric_limits<size_t>::max();
  
     // in case of homodimer check for symmetry, and assign to basin of previously found symmetric state 
     if (model_.is_homodimer()) {
 	HybEnsModel::StateDescription symmetric_state = source_state.symmetric_state(model_.seqA().length());
 	
 	if (symmetric_state == source_state) {
+	    // if state is symmetric to itself, then do nothing
 	    if (debug_out_) {
 		std::cerr << "  State "<<to_dotbracket(source_state)
 			  <<" is self-symmetric."
 			  <<std::endl;
 	    }
 	} else {
+	    // Test whether the symmetric state of source_state has been seen before.
+	    // In this case, the two symmetric states are identified.
 	    state_hash_t::const_iterator symmetric_state_it=state_hash_.find(symmetric_state.encode());
-	    if (symmetric_state_it!=state_hash_.end()) {
+	    if (symmetric_state_it != state_hash_.end()) {
 		if (debug_out_) {
 		    std::cerr << "  State "<<to_dotbracket(source_state)
 			      <<" is equivalent to previously found "
@@ -345,24 +414,103 @@ BarrierGraph::process_state(const HybEnsModel::StateDescription &source_state,
 			      <<" of basin "<<symmetric_state_it->second<<"."<<std::endl;
 		}
 		
-		source_basin_index = symmetric_state_it->second;
-		if (debug_out_) std::cerr << "  Assign to basin "<<source_basin_index<<std::endl;
-		state_hash_[source_state.encode()] = source_basin_index;
-		basins_[source_basin_index].add_state(source_energy,model_);
+		basin_index = symmetric_state_it->second;
+		if (debug_out_) std::cerr << "  Assign to basin "<<basin_index<<std::endl;
+		state_hash_[source_state.encode()] = basin_index;
+		basins_[basin_index].add_state(source_energy,model_);
 	    }
 	}
-    }
+    } // end special homodimer symmetry handling
     
-    if ( source_basin_index == std::numeric_limits<size_t>::max()) { //unless already assigned
-	source_basin_index 
+    
+    // assign basin
+    if ( basin_index == std::numeric_limits<size_t>::max()) { //unless assigned by symm handling
+	// assign source state to either new basin or the basin of its deepest neighor; the latter, if barrier<=0
+	basin_index 
 	    = assign_to_basin(source_state,
 			      source_energy,
 			      min_transition_energy,
-			      min_tE_target_basin_index);
+			      min_transE_neighbor_basin_index);
     }
     
-    register_transitions(source_basin_index,trans);
+    // register the transitions from the source basin to other states in the hash
+    register_transitions(basin_index,transitions);
 
+}
+
+size_t BarrierGraph::gradient_walk(const HybEnsModel::StateDescription &source_state,
+				   double source_energy) {
+    
+    if (debug_out_) std::cerr << "Walk along from "<<source_state<<" "<<source_energy<<std::endl;
+    
+    HybEnsModel::StateDescription::code_t source_state_code = source_state.encode();
+    state_hash_t::const_iterator it = state_hash_.find(source_state_code);
+
+    if (state_hash_.end() != it) {
+	// hey, surprise! the state is already hashed
+
+	if (debug_out_) std::cerr << "... hits the hash at "<<it->second<<"."<<std::endl;
+	
+	// do nothing but return the basin index of the min tE neighbor
+	return it->second;
+    }
+    
+    // minimum transition state energy from source state source_state to a neighbor
+    double min_transE = std::numeric_limits<double>::infinity();
+    
+    // index of the basin of the neighbor state with minimum transition energy
+    HybEnsModel::StateDescription min_transE_state;
+    
+    size_t moves_counter=0;
+
+    // Enumerate neighbors of source_state to get minimum transition
+    // energy neighbor
+    HybEnsModel::MoveIterator mi(source_state,model_,consider_double_sites_);
+    for (HybEnsModel::Move *move = mi.firstMove(); move != NULL; move = mi.nextMove(move)) {
+	moves_counter++;
+	
+        HybEnsModel::MoveIterator mi(source_state,model_,consider_double_sites_);
+	for (HybEnsModel::Move *move = mi.firstMove(); move != NULL; move = mi.nextMove(move)) {
+	    HybEnsModel::energy_t tE=move->transitionEnergy();
+	    
+	    HybEnsModel::StateDescription neigh_state = source_state;
+	    move->apply(neigh_state);
+
+	    if (tE<min_transE && !isinf(model_.energy(neigh_state))) {
+		min_transE = tE;
+
+		min_transE_state = neigh_state;
+	    }
+	}
+    }
+
+    if (debug_out_)  std::cerr << "... min tE: "<<min_transE-source_energy<<std::endl;
+    
+    if (moves_counter==0) return std::numeric_limits<size_t>::max();
+    
+    size_t basin_index;
+    if (min_transE >= source_energy) {
+	// the source state is a local minimum, create basin and terminate
+	
+	basin_index = basins_.size();
+	    
+	if (debug_out_) std::cerr << "... new basin "<<basin_index<<"."<<std::endl;
+ 	
+	// generate new basin and put into object's basin list
+	Basin new_basin(basin_index,source_state,source_energy,model_);
+	basins_.push_back(new_basin);
+    } else {
+	// there is a gradient neighbor, walk along to find the final basin index
+	
+	basin_index = gradient_walk(min_transE_state,min_transE);
+	
+	basins_[basin_index].add_state(source_energy,model_);
+    }
+
+    // put state into hash
+    state_hash_[source_state_code] = basin_index;
+    
+    return basin_index;
 }
 
 size_t
@@ -613,18 +761,22 @@ BarrierGraph::reduce_basin_set(const std::set<size_t> &to_keep, double min_rate)
 }
 
 
-BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB,
+BarrierGraph::BarrierGraph(const std::string &seqA, 
+			   const std::string &seqB,
+			   std::istream &in,
 			   bool binary,
 			   bool special_open_state,
 			   bool consider_double_sites,
 			   bool gradient,
+			   size_t maxsitesize,
 			   bool verbose,
 			   bool debug_out)
     :
-    model_(seqA,seqB),
+    model_(seqA,seqB,std::max(seqA.length(),seqB.length()),true), // note: not restricted by maxsitesize
     special_open_state_(special_open_state),
     consider_double_sites_(consider_double_sites),
     gradient_(gradient),
+    maxsitesize_(maxsitesize),
     verbose_(verbose),
     debug_out_(debug_out)
 {
@@ -646,7 +798,9 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB,
 
 	HybEnsModel::StateDescription open_state;
 
-	if (debug_out_) std::cerr << "add open state " << open_state << std::endl;
+	if (debug_out_) { 
+	    std::cerr << "add open state " << open_state << std::endl;
+	}
 	
 	process_state(open_state, -4.1);
 	
@@ -654,7 +808,7 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB,
     }
     
 
-    while (read_state(std::cin,source_state,energy,line,binary)) {
+    while (read_state(in,source_state,energy,line,binary)) {
 	if (verbose_ && (state_counter%5000==0)) std::cerr << "\r" << state_counter;
 
 	if (energy < last_energy) {
@@ -663,7 +817,10 @@ BarrierGraph::BarrierGraph(const std::string &seqA, const std::string &seqB,
 	    exit(-1);
 	}
 
-	if (debug_out_) std::cerr << "read " << state_counter << " " << energy << " " << " "  << source_state << std::endl;
+	if (debug_out_) {
+	    std::cerr << "read " << state_counter << " " << energy << " "
+		      << " "  << source_state << std::endl;
+	}
 	
 	if (special_open_state_ && source_state.size()==0) {
 	    if (verbose_) {

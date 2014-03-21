@@ -291,7 +291,7 @@ public:
 	 * @return String describing the state 
 	 */
 	std::string
-	toString() const;
+	to_string() const;
 	
 	/** 
 	 * Test validity
@@ -302,6 +302,14 @@ public:
 	 */
 	bool
 	is_valid(const HybEnsModel &model) const;
+
+	/** 
+	 * Maximum site length
+	 * 
+	 * @return largest size of any subsequence in interaction sites 
+	 */
+	size_t
+	max_site_size() const;
 
 	/** 
 	 * @brief symmetric state for homodimers
@@ -472,7 +480,8 @@ public:
     /** 
      * Minimal size of interaction sites
      * 
-     * @return Minimal number of bases of a site in each sequence
+     * @return Minimal number of bases that the mode allows for sites
+     * in each sequence
      */
     const size_t
     minsitesize() const {
@@ -579,7 +588,7 @@ private:
     //! true iff seqB is reverse complement of seqA
     const bool homodimer_;
 
-};
+}; // end class HybEnsModel
 
 std::ostream &
 operator << (std::ostream &out, const HybEnsModel::StateDescription::ISite &isite);

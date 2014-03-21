@@ -1,9 +1,9 @@
 purpose "Calculate kinetics of RNA-RNA interaction"
 
-usage "rrikin_barriers [options] seq1 seq2"
+usage "_barriers [options] seq1 seq2"
 
 description "Reads energy-sorted list of states of RNA-RNA-interaction in the RRI hybrid ensemble model \
-and combines them into basin macrostates. Furthermore, computes rates between macro-states.\
+and combines them into basin macrostates. Furthermore, computes rates between macro-states. \
 States are modelled as equilibrated partitions of the whole interaction ensemble."
 
 args "-F rrikin_barriers_cmdline -u"
@@ -11,6 +11,8 @@ args "-F rrikin_barriers_cmdline -u"
 option "max-outflow" - "Maximal outflow of a basin; otherwise merge" double default="1e6" optional
 option "min-rate" - "Minimum transition rate; otherwise ignore" double default="0" optional
 option "min-p-equ" - "Minimum equilibrium probability of a basin; otherwise merge" double default="0" optional
+
+option "max-hyb-length" - "Maximum length of each subsequence in hybridization sites that are represented in input" int default="-1" optional
 
 option "barfile" - "Write treekin compatible barrier file" string optional
 option "ratesfile" - "Write rates matrix to a treekin compatible file" string optional

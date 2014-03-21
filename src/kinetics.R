@@ -1,11 +1,23 @@
-t<-read.table("kinetics")
+#!/usr/bin/Rscript
+
+### parse command line
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args)!=2) {
+    print("USAGE: kinetics.R input output");
+    quit();
+}
+input <- args[1]
+output <- args[2]
+### end parse command line
+
+t<-read.table(input)
 
 time<-t[[1]]
 n <- length(t)-1 # number of states
 
 colors = rainbow(5)
 
-pdf("kinetics.pdf")
+pdf(output)
 
 plot(c(),c(),xlim=c(min(time),max(time)),ylim=c(0,1),xlab="Time",ylab="p",log="x")
 

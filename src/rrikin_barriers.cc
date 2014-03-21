@@ -126,7 +126,7 @@ void
 Basin::print(std::ostream &out, const HybEnsModel &model) const {
     printf("%5lu %-32s %10.2f %6.2f %6.2f",
 	   index_,
-	   local_minimum.toString().c_str(),
+	   local_minimum.to_string().c_str(),
 	   states,
 	   - model.RT() * log(Z),
 	   minimum_energy
@@ -191,8 +191,7 @@ main(int argc, char **argv)
     bool binary         = args_info.binary_given;
     bool special_open_state = ! args_info.no_special_open_state_given;
     bool gradient       = ! args_info.no_gradient_given;
-    
-    
+
     consider_double_sites = ! args_info.no_double_sites_given;
 
     simplify_graph      = ! args_info.dont_simplify_graph_given;
@@ -246,6 +245,11 @@ main(int argc, char **argv)
 	HybEnsModel::norm_RNA_seq(seqB);
     }
 
+    const size_t maxsitesize = 
+	(args_info.max_hyb_length_arg>=0)
+	? args_info.max_hyb_length_arg
+	: std::max(seqA.length(),seqB.length());    
+    
 
     if (verbose) {
 	std::cerr << "seqA="<<seqA<<", seqB="<<seqB << std::endl;
@@ -263,10 +267,13 @@ main(int argc, char **argv)
     stopwatch.start("construct");
 
     // construct barrier graph
-    BarrierGraph bg(seqA,seqB,binary,
+    BarrierGraph bg(seqA,seqB,
+		    std::cin,
+		    binary,
 		    special_open_state,
 		    consider_double_sites,
 		    gradient,
+		    maxsitesize,
 		    verbose,
 		    debug_out);
     
@@ -325,7 +332,7 @@ main(int argc, char **argv)
 	bg.print_stats(std::cerr);
     }
     
-    /* handle use-defined basin merging */
+    // handle user-defined basin merging
     
     if (to_keep_given) {
 

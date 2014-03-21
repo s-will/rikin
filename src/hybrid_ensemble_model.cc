@@ -36,10 +36,20 @@ HybEnsModel::StateDescription::size() const {
 }
 
 std::string
-HybEnsModel::StateDescription::toString() const {
+HybEnsModel::StateDescription::to_string() const {
     std::ostringstream out;
     out << (*this);
     return out.str();
+}
+
+size_t
+HybEnsModel::StateDescription::max_site_size() const {
+    size_t mss=0;
+    for(std::vector<ISite>::const_iterator it=isites.begin(); it!=isites.end(); ++it) {
+	mss = std::max(mss,it->j1-it->i1+1);
+	mss = std::max(mss,it->j2-it->i2+1);
+    }
+    return mss;
 }
 
 
