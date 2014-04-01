@@ -167,11 +167,22 @@ public:
 		    return left?i2:j2; 
 		}
 	    }
-
+	    
 	};
 	
+	
+
 	//! type of encoded class representation
-	typedef uint64_t code_t;   
+	// typedef uint64_t code_t;
+	typedef std::pair<uint64_t,uint64_t> code_t;   
+	
+	class code_t_hash {
+	public:
+	    size_t
+	    operator ()( const code_t &x ) const {
+		return x.first + x.second*3571;
+	    }
+	};
 	
 	/** 
 	 * @brief Construct without interaction
@@ -238,6 +249,17 @@ public:
 	HybEnsModel::StateDescription &
 	decode(const code_t &code);
 	
+	/**
+	 * @brief write binary-encoded state to standard output
+	 */
+	void
+	write_binary() const;
+	
+	/**
+	 * @brief read binary-encoded state from istream
+	 */
+	bool
+	read_binary(std::istream &in);
 	
 	/** 
 	 * @brief Read access to interaction sites
@@ -354,6 +376,7 @@ public:
      */
     HybEnsModel(std::string seqA, std::string seqB,
 		size_t maxsitesize,
+		size_t maxsitesize_diff,
 		bool cond
 		);
     
@@ -595,6 +618,8 @@ operator << (std::ostream &out, const HybEnsModel::StateDescription::ISite &isit
 
 std::ostream &
 operator << (std::ostream &out, const HybEnsModel::StateDescription &sd);
+    
 
 
+    
 #endif

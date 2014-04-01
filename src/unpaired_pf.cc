@@ -67,6 +67,7 @@ UnpairedPF::unpaired_prob_single(size_t i, size_t j) const {
     assert(1<=i);
     assert(i<=j);
     assert(j<=seq_.length());
+    
     assert(j-i+1 <= maxsitesize_);
     
     return Psingle(i,j);
@@ -136,13 +137,13 @@ UnpairedPF::computeProbsGeneric(LocARNA::Matrix<prob_t> &P, const char *structur
     int plfW=seq_.length(); // parameter -W of plfold
     int plfL=seq_.length(); // parameter -L of plfold
     
+
     // maximal size of unpaired region for which pf is computed
     int maxUnpairedRegionSize=std::min(seq_.length(),maxsitesize_);
 
     const char *sequence=seq_.c_str();
     
-    float cutoff = 0.0;    /* bpcutoff for plfold, does not influence
-			      our results */
+    float cutoff = 1.0;    /* bpcutoff for plfold, don't keep base pairs in pl */
     
     // declare and alloc pup array
     double ** pup = (double **)space( sizeof(double *) * (seq_.length()+1) );

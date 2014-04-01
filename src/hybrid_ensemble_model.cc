@@ -1,6 +1,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include  <stdlib.h>
+#include  <stdio.h>
+
 
 #include "hybrid_ensemble_model.hh"
 
@@ -57,51 +60,36 @@ HybEnsModel::StateDescription::max_site_size() const {
 // encoding and decoding compressed representation
 //
 // use very simple code:
-// always use 1 byte per position and 8 bytes in total (two sites),
-// encode empty sites by invalid entry where i1 > j1
-// avoid 0 in encoding as long as positions are >0 (allows to write encoding to file and still use gnu's sort!)
-// fail if positions are too large.
+// always use 2 bytes per position and 8 * 2 bytes in total (two sites)
 //
-
-// implement the test for too large positions
-unsigned char
-fail_on_toolarge(size_t x) {
-    if (x>255) {
-	std::cerr << "HybEnsModel::StateDescription::encode: "
-		  << "Encoding does not support positions >=256."<<std::endl
-		  << "  Use smaller sequence or implement more flexible coding." << std::endl;
-	exit(-1);
-    }
-    return x;
-}
+// encode empty sites by invalid entry where i1 > j1 to avoid 0 in
+// encoding; as long as positions are >0 this allows to write encoding
+// to file and still use gnu's "sort -z"! ---  CURRENTLY BROKEN
+//
 
 HybEnsModel::StateDescription::code_t &
 HybEnsModel::StateDescription::encode(code_t &the_code) const {
     
-    assert(sizeof(char)==1);
-    
-    unsigned char *code=reinterpret_cast<unsigned char *>(&the_code);
-    
     for (size_t i=0; i<size(); i++) {
-	*(code++)=fail_on_toolarge(isites[i].i1);
-	*(code++)=fail_on_toolarge(isites[i].i2);
-	*(code++)=fail_on_toolarge(isites[i].j1);
-	*(code++)=fail_on_toolarge(isites[i].j2);
+	unsigned short *code = 
+	    reinterpret_cast<unsigned short *>((size()==0)?(&the_code.first):(&the_code.second));
+    
+	*(code++)=isites[i].i1;
+	*(code++)=isites[i].i2;
+	*(code++)=isites[i].j1;
+	*(code++)=isites[i].j2;
     }
     
+    // if site()!=2, mark the second site or both sites as empty
     for (size_t i=0; i<(2-size());i++) {
+	unsigned short *code = 
+	    reinterpret_cast<unsigned short *>((size()==1)?(&the_code.first):(&the_code.second));
+
 	*(code++)=2;
 	*(code++)=2;
 	*(code++)=1;
 	*(code++)=1;
     }
-    
-    // code-=8;
-    // std::cerr << "encode ";
-    // for (size_t i=0; i<8; i++) {
-    // 	std::cerr << (int)(code[i]) << " " ;
-    // }
-    // std::cerr << std::endl;
     
     return the_code;
 }
@@ -120,20 +108,49 @@ HybEnsModel::StateDescription::encode() const {
 
 HybEnsModel::StateDescription &
 HybEnsModel::StateDescription::decode(const code_t &the_code) {
-    const unsigned char *code=reinterpret_cast<const unsigned char *>(&the_code);
-        
     size_t num_sites=0;
-    if (code[0]<=code[2]) num_sites++;
-    if (code[4]<=code[6]) num_sites++;
+    for (size_t i=0; i<2; i++) {
+	const unsigned short *code = 
+	    reinterpret_cast<const unsigned short *>((size()==0)?(&the_code.first):(&the_code.second));
+	if (code[0]<=code[2]) num_sites++;
+    }
     
     isites.reserve(num_sites);
     isites.resize(0);
     
     for (size_t i=0; i<num_sites; i++) {
+	const unsigned short *code = 
+	    reinterpret_cast<const unsigned short *>((size()==0)?(&the_code.first):(&the_code.second));
 	isites.push_back(ISite(*(code),*(code+1),*(code+2),*(code+3)));
-	code+=4;
     }
     return *this;
+}
+
+void
+HybEnsModel::StateDescription::write_binary() const {
+    code_t code;
+    encode(code);
+    fwrite(reinterpret_cast<char *>(&code.first),sizeof(char),8,stdout);
+    fwrite(reinterpret_cast<char *>(&code.second),sizeof(char),8,stdout);
+    fputc(0,stdout);
+}
+
+bool
+HybEnsModel::StateDescription::read_binary(std::istream &in) {
+    HybEnsModel::StateDescription::code_t code;
+    
+    char *codebuf;
+    codebuf = reinterpret_cast<char *>(&code.first);
+    in.read(codebuf,8);
+    codebuf = reinterpret_cast<char *>(&code.second);
+    in.read(codebuf,8);
+        
+    if(in.get()!=0) {
+	return false;
+    }
+    
+    decode(code);
+    return true;
 }
 
 bool
@@ -177,13 +194,14 @@ HybEnsModel::StateDescription::is_valid(const HybEnsModel &model) const {
 HybEnsModel::HybEnsModel(std::string seqA,
 			 std::string seqB,
 			 size_t maxsitesize,
+			 size_t maxsitesize_diff,
 			 bool cond
 			 )
     : seqA_(seqA),
       seqB_(seqB),
       uppfA_(seqA,+1,maxsitesize,cond),
       uppfB_(seqB,-1,maxsitesize,cond),
-      hybridpf_(seqA,seqB),
+      hybridpf_(seqA,seqB,maxsitesize,maxsitesize_diff),
       maxunpinloop_(6),
       minsitesize_(3),
       minsitedist_(6),

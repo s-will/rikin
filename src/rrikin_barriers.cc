@@ -246,10 +246,17 @@ main(int argc, char **argv)
     }
 
     const size_t maxsitesize = 
-	(args_info.max_hyb_length_arg>=0)
-	? args_info.max_hyb_length_arg
-	: std::max(seqA.length(),seqB.length());    
-    
+    	(args_info.max_hyb_length_arg>=0)
+    	? args_info.max_hyb_length_arg
+    	: std::max(seqA.length(),seqB.length());    
+
+
+    const size_t maxsitesize_diff = 
+	(args_info.max_hyb_length_diff_arg>=0)
+	? args_info.max_hyb_length_diff_arg
+	: std::max(seqA.length(),seqB.length());
+
+    const double max_recover_energy=args_info.max_recover_energy_arg;
 
     if (verbose) {
 	std::cerr << "seqA="<<seqA<<", seqB="<<seqB << std::endl;
@@ -264,18 +271,25 @@ main(int argc, char **argv)
 	std::cerr << "Construct barrier graph." << std::endl;
     }
 
-    stopwatch.start("construct");
+    stopwatch.start("initialize");
 
     // construct barrier graph
     BarrierGraph bg(seqA,seqB,
-		    std::cin,
-		    binary,
 		    special_open_state,
+		    maxsitesize,
+		    maxsitesize_diff,
+		    max_recover_energy,
 		    consider_double_sites,
 		    gradient,
-		    maxsitesize,
 		    verbose,
 		    debug_out);
+    
+    stopwatch.stop("initialize");
+    
+    stopwatch.start("construct");
+
+    bg.read_states(std::cin,
+		   binary);
     
     stopwatch.stop("construct");
     
@@ -288,7 +302,7 @@ main(int argc, char **argv)
 	}
 	std::cerr << "Generated "<<num_total_basins<<" basins." << std::endl;
 	bg.print_stats(std::cerr);
-	stopwatch.print_info(std::cerr);
+	//stopwatch.print_info(std::cerr);
     }
 
     

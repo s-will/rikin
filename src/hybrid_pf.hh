@@ -29,9 +29,16 @@ public:
      * @brief construct with sequences A and B
      * @param seqA sequence A (5' -> 3')
      * @param seqB sequence B (3' -> 5')
+     * @param maxsitesize maximum sequence length in a site
+     * @param maxsitesize_diff maximum sequence length difference in a site
+     *
      * @note sequence B is in reverse orientation
      */
-    HybridPF(const std::string &seqA,const std::string &seqB);
+    HybridPF(const std::string &seqA,
+	     const std::string &seqB,
+	     size_t maxsitesize,
+	     size_t maxsitesize_diff
+	     );
     
     //! Destructor frees librna arrays
     ~HybridPF();
@@ -100,9 +107,12 @@ private:
     const std::string &seqA; //!< sequence A
     const std::string &seqB; //!< sequence B
     
+    const size_t maxsitesize_;
+    const size_t maxsitesize_diff_;
+
     const size_t lenA; //!< length of seqA
     const size_t lenB; //!< length of seqB
-
+    
     /**
      * @brief scaling factor for partition functions/boltzmann weights
      * @note has to be compatible to Vienna lib

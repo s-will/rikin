@@ -12,7 +12,11 @@ option "max-outflow" - "Maximal outflow of a basin; otherwise merge" double defa
 option "min-rate" - "Minimum transition rate; otherwise ignore" double default="0" optional
 option "min-p-equ" - "Minimum equilibrium probability of a basin; otherwise merge" double default="0" optional
 
-option "max-hyb-length" - "Maximum length of each subsequence in hybridization sites that are represented in input" int default="-1" optional
+option "max-hyb-length" - "Maximum length hybridization site length to be precomputed" int default="-1" optional
+
+option "max-hyb-length-diff" - "Maximum difference of lengths in hybridization sites" int default="-1" optional
+
+option "max-recover-energy" - "Maxmimum energy, where neighbors of a state are still recovered" double default="1e6" optional
 
 option "barfile" - "Write treekin compatible barrier file" string optional
 option "ratesfile" - "Write rates matrix to a treekin compatible file" string optional

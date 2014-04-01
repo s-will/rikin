@@ -3,6 +3,8 @@
 
 #include "hybrid_pf.hh"
 
+// #include "LocARNA/stopwatch.hh"
+
 extern "C" {
 #include "ViennaRNA/utils.h"
 #include "ViennaRNA/fold_vars.h"
@@ -10,19 +12,29 @@ extern "C" {
 #include "ViennaRNA/loop_energies.h"
 }
 
-HybridPF::HybridPF(const std::string &seqA_,const std::string &seqB_):
+HybridPF::HybridPF(const std::string &seqA_,
+		   const std::string &seqB_,
+		   size_t maxsitesize,
+		   size_t maxsitesize_diff):
     seqA(seqA_),
     seqB(seqB_),
+    maxsitesize_(maxsitesize),
+    maxsitesize_diff_(maxsitesize_diff),
     lenA(seqA_.length()),
     lenB(seqB_.length()),
     RT_( (temperature+K0)*GASCONST/1000.0 )
 {
     // std::cout << "Create HybridPF from sequences "<<seqA<<" and "<<seqB<<std::endl; 
-    
+
+    // LocARNA::StopWatch stopwatch(true);
+    // stopwatch.start("hybridpf_init");
+
     create_temporary();
 
     compute_hybrid_pf();
-    
+
+    // stopwatch.stop("hybridpf_init");
+    // stopwatch.print_info(std::cerr);
 }
 
 HybridPF::~HybridPF() {
@@ -141,7 +153,7 @@ HybridPF::initialize_hybrid_pf() {
 	    // Currently, we add no duplex energy (see below)
 	    
 	    Q(i1,i2)(i1,i2) = 
-		(ptype > 0) // is i.k pairing canonical ?
+		(ptype > 0) // is i1.i2 pairing canonical ?
 		// ?pf_params->expDuplexInit // instead of 1.0 ?
 		?1.0
 		:0.0;
@@ -165,13 +177,21 @@ HybridPF::compute_hybrid_pf_common_start(size_t i1, size_t i2) {
 	for (size_t k2=i2+1; k2<=max_k2; k2++) {
 	    
 	    // factor for energy contribution of loop
-	    // closed by k1.l1 with inner bp k.l
-		    
+	    // closed by i2.i2 with inner bp k1.k2
+	    
+	    if (pair_type(i1,i2)<=0) continue;
+	    
 	    pf_t exp_loopE = 
 		exp_ILoopE(i1,i2,k1,k2);
 	    
 	    for (size_t j1=k1; j1<=lenA; j1++) {
-		for (size_t j2=k2; j2<=lenB; j2++) {
+		
+		// site_length_diff = |(j1-i1)-(j2-i2)| <= maxsitesize_diff_
+		// ==                 (j1-i1+i2)-maxsitesize_diff_ <= j2 <= (j1-i1+i2)+maxsitesize_diff_
+		size_t min_j2=std::max(k2+maxsitesize_diff_,(j1-i1+i2))-maxsitesize_diff_;
+		size_t max_j2=std::min(lenB,(j1-i1+i2)+maxsitesize_diff_);
+		
+		for (size_t j2=min_j2; j2<=max_j2; j2++) {
 		    
 		    // std::cout << i1 << " " << i2 << " "
 		    // 	      << k1 << " " << k2 << " "

@@ -61,10 +61,8 @@ write_state(double energy, const HybEnsModel::StateDescription &state, bool bina
     if (binary) {
 	printf("%.2f ",energy);
 	
-	HybEnsModel::StateDescription::code_t code;
-	state.encode(code);
-	fwrite(reinterpret_cast<char *>(&code),sizeof(char),8,stdout);
-	fputc(0,stdout);
+	state.write_binary();
+	
     } else {
 	if (state.size()==0) {
 	    printf("%6.2f\n",energy);	
@@ -188,7 +186,7 @@ int
 main(int argc, char **argv)
 {
 
-    LocARNA::StopWatch stopwatch;
+    LocARNA::StopWatch stopwatch(false);
     stopwatch.start("total");
 
     gengetopt_args_info args_info;
@@ -258,11 +256,11 @@ main(int argc, char **argv)
     if (verbose) std::cerr << "Generate Model (precomputing energies for sequences of length "
 			   <<seqA.size()<<" and "<<seqB.size()<<")" << std::endl;
 
-    HybEnsModel model(seqA,seqB,maxsitesize,enum_double_sites);
+    HybEnsModel model(seqA,seqB,maxsitesize,maxsitesize_diff,enum_double_sites);
 
     stopwatch.stop("generate_model");
     
-    if (verbose) stopwatch.print_info(std::cerr);
+    //if (verbose) stopwatch.print_info(std::cerr);
 
     stopwatch.start("enumerate");
 
@@ -294,7 +292,7 @@ main(int argc, char **argv)
 	std::cerr << "Enumerate single hybridization site states"
 		  << std::endl;
     }
-    stopwatch.start("enum_single");
+    //stopwatch.start("enum_single");
     size_t count_single_states=0;
     
     //cout << "Single Hybridisations:" << endl;
@@ -343,11 +341,11 @@ main(int argc, char **argv)
 	    }
 	}
     }
-    stopwatch.stop("enum_single");
+    //stopwatch.stop("enum_single");
 
     if (verbose) {
 	std::cerr << "Enumerated "<<count_single_states<<" single site states"<<std::endl;
-	stopwatch.print_info(std::cerr);
+	//stopwatch.print_info(std::cerr);
     }
 
 
