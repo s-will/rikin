@@ -1,4 +1,4 @@
-purpose "Calculate kinetics of RNA-RNA interaction"
+purpose "Construct basin state system for kinetics of RNA-RNA interaction"
 
 usage "_barriers [options] seq1 seq2"
 
@@ -8,31 +8,15 @@ States are modelled as equilibrated partitions of the whole interaction ensemble
 
 args "-F rrikin_barriers_cmdline -u"
 
-option "max-outflow" - "Maximal outflow of a basin; otherwise merge" double default="1e6" optional
-option "min-rate" - "Minimum transition rate; otherwise ignore" double default="0" optional
-option "min-p-equ" - "Minimum equilibrium probability of a basin; otherwise merge" double default="0" optional
-
 option "max-hyb-length" - "Maximum length hybridization site length to be precomputed" int default="-1" optional
 
 option "max-hyb-length-diff" - "Maximum difference of lengths in hybridization sites" int default="-1" optional
 
 option "max-recover-energy" - "Maxmimum energy, where neighbors of a state are still recovered" double default="1e6" optional
 
-option "barfile" - "Write treekin compatible barrier file" string optional
-option "ratesfile" - "Write rates matrix to a treekin compatible file" string optional
-option "pffile" - "Write partition functions of basins and transition states" string optional
-
-option "rxns" - "Write reactions to file in 'rxns' format (Stochastirator-compatible)" string optional
-option "spcs" - "Write species to file in 'spcs' format (Stochastirator-compatible)" string optional
-option "nameA" - "Specify name of molecule A in rxns/spcs (def=A)" string optional
-option "nameB" - "Specify name of molecule B in rxns/spcs (def=B, in case of homodimer, defaults to nameA)" string optional
-option "nameAB" - "Specify name of molecule AB in rxns/spcs (def=nameA+nameB)" string optional
-
 option "no-double-sites" - "Don't consider double hybridization sites" optional
 
 option "no-special-open-state" - "Treat open state like other states" optional
-
-option "dont-simplify-graph" - "Turn of all barrier graph simplifications" optional
 
 option "binary" - "Assume binary encoding of states in input" optional
 
@@ -41,14 +25,11 @@ option "no-gradient" - "Don't combine into basins by gradient walk" optional
 option "homodimer" - "Compute rates for homodimer (only one sequence accepted)" optional
 option "antisense" - "Computes rates for sense/antisense pair (only one sequence accepted)" optional
 
-
-
-option "to_keep" - "Keep only the specified basins (separate indices by comma)" int optional multiple
-
-
 option "verbose" - "Turn on verbose output" optional
 option "debug" - "Turn on debugging output" optional
 
+
+option "output" o "Output filename" string
 
 text "\nInput sequences:\n"
 text "  seq1 first sequence in forward orientation\n"

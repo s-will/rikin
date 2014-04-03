@@ -380,7 +380,9 @@ else
 endif
 
 dev_symm = norm( pfs-transpose(pfs),2);
-printf("Check input symmetry: %g (value should be almost 0)\n",dev_symm);
+if (dev_symm>0.01)
+  printf("Check input symmetry: %g (value should be almost 0)\n",dev_symm);
+endif
 
 pfs = symmetrize(pfs); # input has to be symmetric! Everything else is wrong input
 

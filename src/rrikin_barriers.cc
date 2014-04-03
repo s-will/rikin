@@ -1,13 +1,13 @@
 /**
- * @todo Try the use of a lru cache
- * (e.g. http://code.google.com/p/lru-cache-cpp/). Check first if the
- * hash causes our space problems with large instances.
- *
  * @todo what happens if the input list is incomplete? I.e. there are
  * lower energy neighbors which are not in the hash? Check how exactly
  * the tests are performed.
  *
  * @todo change the transitions data structure to array of hashs
+ *
+ * @todo (low priority) Try the use of a lru cache
+ * (e.g. http://code.google.com/p/lru-cache-cpp/). Check first if the
+ * hash causes space problems with large instances.
  */
 
 /**
@@ -18,6 +18,8 @@
  * rrikin_barriers constructs the barrier tree/graph and rate matrix for the
  * macro state process that moves between basins in the energy
  * landscape.
+ *
+ * @todo check notes
  *
  * @note Due to our non-standard definition of transition energies, it
  * becomes necessary to rethink the definition of local minima and and
@@ -74,7 +76,7 @@
  */
 
 #include "basin_transition.hh"
-#include "barrier_graph.hh"
+#include "rri_barrier_graph.hh"
 
 #include <LocARNA/stopwatch.hh>
 
@@ -110,29 +112,6 @@ bool consider_double_sites;
 
 #include "rrikin_barriers_cmdline.h"
 
-/* Methods of basin */
-
-void Basin::print_header(std::ostream &out) const {
-    printf("%5s %-32s %10s %6s %6s",
-	   "idx",
-	   "description",
-	   "n_s",
-	   "ensE",
-	   "minE"
-	   );
-}
-
-void
-Basin::print(std::ostream &out, const HybEnsModel &model) const {
-    printf("%5lu %-32s %10.2f %6.2f %6.2f",
-	   index_,
-	   local_minimum.to_string().c_str(),
-	   states,
-	   - model.RT() * log(Z),
-	   minimum_energy
-	   );
-}
-
 
 int
 main(int argc, char **argv)
@@ -144,7 +123,7 @@ main(int argc, char **argv)
     
     // get options (call gengetopt command line parser)
     if (cmdline_parser (argc, argv, &args_info) != 0)
-	exit(1) ;
+	exit(1);
     
     bool homodimer=args_info.homodimer_given;
     bool antisense=args_info.antisense_given;
@@ -153,22 +132,7 @@ main(int argc, char **argv)
     // names of molecules for rxns and spcs output
     std::string nameA = "A";
     std::string nameB = "B";
-    
-    if (args_info.nameA_given) {
-	nameA=args_info.nameA_arg;
-    }
-    
-    bool nameB_given=args_info.nameB_given;
-    if (args_info.nameB_given) {
-	nameB=args_info.nameB_arg;
-    }
-    
-    bool nameAB_given=args_info.nameAB_given;
-    std::string nameAB;
-    if (args_info.nameAB_given) {
-	nameAB=args_info.nameAB_arg;
-    }
-    
+        
     size_t expected_sequences=(homodimer||antisense)?1:2;
 
     if (homodimer && antisense) {
@@ -185,50 +149,16 @@ main(int argc, char **argv)
 	exit(1);
     }    
 
-    double max_outflow  = args_info.max_outflow_arg;
-    double min_rate     = args_info.min_rate_arg;
-    double min_p_equ    = args_info.min_p_equ_arg;
     bool binary         = args_info.binary_given;
     bool special_open_state = ! args_info.no_special_open_state_given;
     bool gradient       = ! args_info.no_gradient_given;
 
     consider_double_sites = ! args_info.no_double_sites_given;
 
-    simplify_graph      = ! args_info.dont_simplify_graph_given;
     verbose             = args_info.verbose_given;
     debug_out           = args_info.debug_given;
 
-    size_t to_keep_given       = args_info.to_keep_given;
-    std::set<size_t> to_keep_set;
-    for(size_t i=0; i<to_keep_given;++i) {
-	to_keep_set.insert(args_info.to_keep_arg[i]-1);
-    }
-
-    std::string ratesfile;
-    if (args_info.ratesfile_given) {
-	ratesfile = args_info.ratesfile_arg;
-    }
-
-    std::string barfile;
-    if (args_info.barfile_given) {
-	barfile = args_info.barfile_arg;
-    }
-
-    std::string pffile;
-    if (args_info.pffile_given) {
-	pffile = args_info.pffile_arg;
-    }
-
-    std::string rxnsfile;
-    if (args_info.rxns_given) {
-        rxnsfile = args_info.rxns_arg;
-    }
-
-    std::string spcsfile;
-    if (args_info.spcs_given) {
-        spcsfile = args_info.spcs_arg;
-    }
-
+    std::string outputfile = args_info.output_arg;
 
     std::string seqA = args_info.inputs[0];
     HybEnsModel::norm_RNA_seq(seqA);
@@ -249,7 +179,6 @@ main(int argc, char **argv)
     	(args_info.max_hyb_length_arg>=0)
     	? args_info.max_hyb_length_arg
     	: std::max(seqA.length(),seqB.length());    
-
 
     const size_t maxsitesize_diff = 
 	(args_info.max_hyb_length_diff_arg>=0)
@@ -274,15 +203,15 @@ main(int argc, char **argv)
     stopwatch.start("initialize");
 
     // construct barrier graph
-    BarrierGraph bg(seqA,seqB,
-		    special_open_state,
-		    maxsitesize,
-		    maxsitesize_diff,
-		    max_recover_energy,
-		    consider_double_sites,
-		    gradient,
-		    verbose,
-		    debug_out);
+    RRIBarrierGraph bg(seqA,seqB,
+		       special_open_state,
+		       maxsitesize,
+		       maxsitesize_diff,
+		       max_recover_energy,
+		       consider_double_sites,
+		       gradient,
+		       verbose,
+		       debug_out);
     
     stopwatch.stop("initialize");
     
@@ -302,188 +231,12 @@ main(int argc, char **argv)
 	}
 	std::cerr << "Generated "<<num_total_basins<<" basins." << std::endl;
 	bg.print_stats(std::cerr);
-	//stopwatch.print_info(std::cerr);
-    }
-
-    
-    if (simplify_graph) {
-
-	if (verbose) {
-	    std::cerr << "Merge basins with outflow larger " << max_outflow << " or equilibrium probability smaller "<< min_p_equ << std::endl;
-	    std::cerr << "Remove rates smaller than " << min_rate << std::endl;	    
-	}
-	
-	stopwatch.start("merge");
-	
-	bg.merge_basins_by_outflow(max_outflow,min_p_equ,min_rate);
-	
-	stopwatch.stop("merge");
-	
-	if (verbose) {
-	    std::cerr << "Merged "<<num_total_basins-bg.num_basins()
-		      <<" basins resulting in "<<bg.num_basins()<<" states." << std::endl;
-	    bg.print_stats(std::cerr);
-	}
-	
-    }
-
-    if (verbose) {
-	std::cerr << "Reindex" << std::endl;
-    }
-    bg.reindex();
-
-    if (special_open_state) {
-	// Exchange basin indices 1 and 2 such that the global minimum is state 1
-	// and the open state is state 2
-    
-	if (verbose) {
-	    std::cerr << "Move global minimum to smallest index; open state to second index." << std::endl;
-	}
-	bg.swap_indices(0,1);
     }
     
-    if (verbose) {
-	bg.print_stats(std::cerr);
-    }
-    
-    // handle user-defined basin merging
-    
-    if (to_keep_given) {
+    std::ofstream out(outputfile.c_str(),std::ios::out | std::ios::binary);
+    bg.write_binary(out);
+    out.close();
 
-	if (verbose) {
-	    std::cerr << "Keep only the "<<to_keep_given<<" specified basins." << std::endl;
-	}
-	
-	bg.reduce_basin_set(to_keep_set,min_rate);
-
-	if (verbose) {
-	    std::cerr << "Reindex" << std::endl;
-	}
-	bg.reindex();
-	
-    }
-
-
-    // print basins of barrier graph
-    bg.print_basins(std::cout);    
-
-    std::cout << std::endl
-	      << std::endl;
-    bg.print_barrier_graph(std::cout);
-    
-    std::vector<size_t> components;
-    std::vector<size_t> component_sizes=bg.connected_components(components);
-    if (component_sizes.size()>1) {
-    	if (verbose) {
-	    std::cerr << "Components: #="<<component_sizes.size()<<" sizes: ";
-	    for (size_t i=0; i<component_sizes.size(); i++)
-		std::cerr << component_sizes[i]<<" ";
-	    std::cerr <<std::endl;
-	
-	    std::cerr << "Keep only the first component (which contains the open state.)" 
-		      << std::endl;
-	}
-	
-	bg.keep_single_component(1,components);
-	
-	if (verbose) {
-	    bg.print_stats(std::cerr);
-	}
-    }
-    
-	    
-    if (verbose) {
-	double max_diff = bg.check_rates();
-	if (max_diff > 1e-12) {
-	    std::cerr << "WARNING: maximal deviation from detailed balance:"<<max_diff<<std::endl;
-	}
-    }
-
-    if (barfile != "") {
-	if (verbose) {
-	    std::cerr << "Write bar file for treekin '"<<barfile<<"'."<<std::endl;	
-	}
-	
-	std::ofstream fout(barfile.c_str());
-	if (fout.good()) {
-	    bg.print_barriers(fout);
-	    fout.close();
-	} else {
-	    std::cerr << "Cannot write barriers file."<<std::endl;
-	}
-    }
-    
-        
-    if (ratesfile != "") {
-	if (verbose) {
-	    std::cerr << "Write rates matrix to file '"<<ratesfile<<"'."<<std::endl;
-	}
-	
-	std::ofstream fout(ratesfile.c_str());
-	if (fout.good()) {
-	    bg.print_treekin_ratesmatrix(fout);
-	} else {
-	    std::cerr << "Cannot write rates file."<<std::endl;
-	}
-	fout.close();
-	
-    }
-
-    if (pffile != "") {
-    
-	if (verbose) {
-	    std::cerr << "Write partition functions of basins and transition states to file '"<<pffile<<"'."<<std::endl;
-	}
-	std::ofstream fout(pffile.c_str(),std::ios::out | std::ios::binary);
-	if (fout.good()) {
-	    bg.print_pfs(fout,true);
-	} else {
-	    std::cerr << "Cannot write partition functions to file."<<std::endl;
-	}
-	fout.close();
-	
-    }    
-
-    //handle names of molecules in rxns/spcs files
-    if (!nameB_given && bg.model().is_homodimer()) {
-	nameB=nameA;
-    }    
-    if (!nameAB_given) {
-	nameAB=nameA+nameB;
-    }
-
-    if (rxnsfile != "") {
-    
-	if (verbose) {
-	    std::cerr << "Write reactions to file '"<<rxnsfile<<"'."<<std::endl;
-	}
-	std::ofstream fout(rxnsfile.c_str(),std::ios::out | std::ios::binary);
-	if (fout.good()) {
-	    bg.print_rxns(fout,nameA,nameB,nameAB);
-	} else {
-	    std::cerr << "Cannot write reactions to file."<<std::endl;
-	}
-	fout.close();
-	
-    }
-
-    if (spcsfile != "") {
-    
-	if (verbose) {
-	    std::cerr << "Write reactions to file '"<<spcsfile<<"'."<<std::endl;
-	}
-	std::ofstream fout(spcsfile.c_str(),std::ios::out | std::ios::binary);
-	if (fout.good()) {
-	    bg.print_spcs(fout,nameA,nameB,nameAB);
-	} else {
-	    std::cerr << "Cannot write reactions to file."<<std::endl;
-	}
-	fout.close();
-	
-    }
-
-
-        
     if (verbose) {
 	stopwatch.print_info(std::cerr);
     }

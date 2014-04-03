@@ -1,25 +1,32 @@
 #ifndef BARRIER_GRAPH_HH
 #define BARRIER_GRAPH_HH
 
-
+#include <vector>
 #include <set>
+#include <iostream>
+#include <limits>
+#include <tr1/unordered_map>
+
+#include "basin_transition.hh"
 
 /**
- * Implements generation of barrier graph and maintains the graph
+ * @brief Graph of basins and barriers
  * 
- * @note An adaptive walk is defined as a walk, where the energy of
- * each target state is smaller or equal to the energy of its source
- * state and the corresponding transition state energy is not larger
- * than the source state energy.
+ * Basins and barriers are characterized by their respective partition
+ * functions.  Supports merge of basins by distributing merged basins
+ * to their neighbors proportionally to the flow into each neighbor
+ * basin.
+ *
+ * @todo binary file format of barrier graph and pf-file format are equivalent => merge?!
  */
 class BarrierGraph
 {
-private:
+protected:
 
-
-    typedef std::tr1::unordered_map<size_t,BasinTransition>
+    //! a row of a transition map "matrix"
+    typedef 
+    std::tr1::unordered_map<size_t,BasinTransition> 
     transitions_map_row_t;
-    
     
     //! map from basin indices to basin transition define as map of
     //! maps, such that we can iterate over first index (equivalently,
@@ -27,180 +34,70 @@ private:
     typedef
     std::tr1::unordered_map<size_t,transitions_map_row_t>
     transitions_map_t;
-    
-    //! map of all transitions from this basin to other basins,
-    //! keys=basin indices of source and target @note this matrix is
-    //! symmetric, we maintain the equivalence of symmetric pairs
-    //! transitions[i][j] and transitions[j][i].
-    transitions_map_t transitions_;
-    
-    //! type of state hash, key=encoded state, value=index of assigned basin
-    typedef std::tr1::unordered_map< HybEnsModel::StateDescription::code_t,
-				     size_t,
-				     HybEnsModel::StateDescription::code_t_hash
-				     > state_hash_t;
-    
-    //! hybrid ensemble model
-    HybEnsModel model_;
-    
-    //! whether open state is special or treated like all other input states
-    bool special_open_state_;
-    
-    //! whether double sites are supported
-    bool consider_double_sites_;
 
-    //! whether gradient walks are used to combine states into basins
-    bool gradient_;
-
-    //! maximum site length (for each single sequence)
-    //size_t maxsitesize_;
-
+    //! whether first state is special or treated like all other input
+    //! states.  This is used to keep the open state basin.
+    bool special_first_state_;
+    
     /* control output */
+
+    //! verbose output
     bool verbose_;
+
+    //! debugging output
     bool debug_out_;
-
-
+    
+    /**
+     * @brief map of all transitions from one basin to another basins,
+     * keys=basin indices of source and target 
+     * 
+     * @note this matrix is
+     * symmetric, we maintain the equivalence of symmetric pairs
+     * transitions[i][j] and transitions[j][i].
+     */
+    transitions_map_t transitions_;        
+    
     //! vector storing basins of all local minima
     std::vector<Basin> basins_;
-    
-    //! hash of the state basin assignment indexed by encoded states
-    state_hash_t state_hash_;
-    
-    /** 
-     * Read a state description line from input stream
-     * 
-     * @param in input stream 
-     * @param[out] state state description 
-     * @param[out] energy state energy
-     * @param lineno line number (for error output)
-     * 
-     * @return whether valid state description line could be read
-     * @note Exit on invalid input!
-     */
-    bool
-    read_state(std::istream &in, HybEnsModel::StateDescription &state, 
-	       double &energy, size_t lineno,bool binary) const;
 
-public:
+protected:
+    
     /**
-     * A transition between two microstates
-     * 
+     * @brief minimal constructor for derived classes
      */
-    struct transition_t {
-	size_t source_basin_index;  //!< index of source basin
-	double source_state_energy; //!< energy of source state
-	size_t target_basin_index;  //!< index of target basin
-	double target_state_energy; //!< energy of target state
-	double transition_energy;   //!< energy of transition
-	
-	transition_t(double source_state_energy_,
-		     size_t target_basin_index_,
-		     double target_state_energy_,
-		     double transition_energy_)
-	    :source_basin_index(-1),                       // init with invalid source basin index
-	     source_state_energy(source_state_energy_),
-	     target_basin_index(target_basin_index_),
-	     target_state_energy(target_state_energy_),
-	     transition_energy(transition_energy_)
-	{}
-
-	transition_t(size_t source_basin_index_,
-		     double source_state_energy_,
-		     size_t target_basin_index_,
-		     double target_state_energy_,
-		     double transition_energy_)
-	    :source_basin_index(source_basin_index_),
-	     source_state_energy(source_state_energy_),
-	     target_basin_index(target_basin_index_),
-	     target_state_energy(target_state_energy_),
-	     transition_energy(transition_energy_)
-	{}
-
-
-	transition_t
-	reverse() const {
-	    return transition_t(target_basin_index,
-				target_state_energy,
-				source_basin_index,
-				source_state_energy,
-				transition_energy);
-	}
-	
-	double
-	barrier_energy() const {
-	    return std::max(source_state_energy,std::max(target_state_energy,transition_energy));
-	}
-    };
-    
-
-private:	
-
-    /** 
-     * @brief Register a new transition to a target basin in the source basin 
-     *
-     * 1) Determines the barrier energy and neighbor basin where the
-     * basin connects to with lowest barrier.
-     *
-     * 2) Determines the partition functions of transitions in the barrier graph 
-     *
-     * @param tr transition (containing 
-     */
-    void
-    add_transition( const transition_t &tr, const HybEnsModel &model);
+    BarrierGraph( bool special_first_state,
+		  bool verbose,
+		  bool debug_out
+		  )
+	: special_first_state_(special_first_state),
+	  verbose_(verbose),
+	  debug_out_(debug_out)
+    {
+    }
     
 public:
 
-
-    /** 
-     * @brief Construct and initialize (e.g. precompute energies)
-     * 
-     * @param seqA sequence A
-     * @param seqB sequence B
-     * @param special_open_state whether open state is treated as special state 
-     * (that is never merged with other states)
-     * @param maxsitesize maximum size of a sequence in an interaction site
-     * @param maxsitesize maximum size difference of sequences in an interaction site
-     * @param max_recover_energy maximum energy, where neighbors of a state are still recovered
-     * @param consider_double_sites whether double interaction sites are allowed
-     * @param gradient whether to combine states into basins due to gradient walks
-     * @param verbose turns on verbose output 
-     * @param debug_out turns on debugging output 
+    /**
+     * @brief Read barrier graph from binary stream
+     * @param in input stream
+     *
+     * Read in format written by write_binary()
      */
-    BarrierGraph(const std::string &seqA, 
-		 const std::string &seqB,
-		 bool special_open_state,
-		 size_t maxsitesize,
-		 size_t maxsitesize_diff,
-		 double max_recover_energy,
-		 bool consider_double_sites,
-		 bool gradient,
+    BarrierGraph(std::istream &in,
+		 bool special_first_state,
 		 bool verbose,
 		 bool debug_out
 		 );
 
     /**
-     * @brief read states from input stream
-     *
-     * @param in input stream of energy sorted states
-     * @param binary assume binary encoding of states in input
-     *
-     * Reads an energy-sorted list of states from input stream and
-     * constructs the barrier graph for these states. Merges basins
-     * that are separated by a barrier less than min_barrier_height
-     * above of one of the minima.  Note that the merging can be done
-     * during the construction of the barrier graph, since barriers
-     * are maxima of origin, target and transition state
-     * energies. This causes barrier energies to be sorted.
-     *
-     */
-    void
-    read_states(std::istream &in,
-		bool binary);
+     * @brief write barrier graph to stream such that it can be read
+     * in again
+     * 
+     * @param out output stream
+    */
+    std::ostream &
+    write_binary(std::ostream &out) const;
 
-
-    const HybEnsModel &model() const {
-	return model_;
-    } 
 
     /** @brief total outflow of basin as partition function
 	@param x basin
@@ -232,7 +129,7 @@ public:
 	@return sum of outflow rates
      */
     double
-    outflow(const Basin &x) const {
+    outflow_rate(const Basin &x) const {
 	return outflow_pf(x)/x.get_Z();
     }
 
@@ -271,89 +168,7 @@ public:
     double
     compute_Z() const;
     
-    /** 
-     * @brief Process a move during processing of a state
-     * 
-     * @param move move to be applied
-     * @param source_state the source state
-     * @param source_energy energy of the source state
-     * @param[out] min_transition_energy minimum of input value and transition energy of move
-     * @param[out] min_transition_index set to basin index of target basin if min_transition_energy is changed; set to maximum of size_t if target is not in hash
-     * @param[out] trans, vector of transitions; if 0L, dont't record transitions 
-     *
-     * The method applies the move and looks up the neighbor in the
-     * hash.  The neighbor state with lowest transition state over all
-     * neighor states is determined, where only neighbors are
-     * considered that are in the hash or larger than maxsitesize.
-     */
-    void
-    process_move(const HybEnsModel::Move *move,
-		 const HybEnsModel::StateDescription &source_state,
-		 const HybEnsModel::energy_t &source_energy,
-		 HybEnsModel::energy_t &min_transition_energy,
-		 size_t &min_transition_index,
-		 std::vector<transition_t> &trans
-		 );
-
-    /**
-     * @brief Assign state to a basin
-     *
-     * @param state state to be assigned to a basin
-     * @param energy energy of source state
-     * @param basin_index index of the basin
-     *
-     * Assigns the state to the basin, increasing its partition function;
-     * registers assignment in state hash
-     */
-    void
-    assign_to_basin(const HybEnsModel::StateDescription &state,
-		    const HybEnsModel::energy_t &energy,
-		    size_t basin_index);
-    
-    /**
-     * @brief Create new basin with one state 
-     *
-     * @param state state to be assigned to a basin
-     * @param energy energy of source state
-     *
-     * @return index of the basin
-     *
-     * Creates new basin, and assigns the state;
-     * registers assignment in state hash
-     */
-    size_t
-    create_new_basin(const HybEnsModel::StateDescription &state,
-		     const HybEnsModel::energy_t &energy);
-    
-    /** 
-     * @brief register transitions
-     * @param source_basin_index index of the source basin
-     * @param trans list of transitions from source to neighbor states, which are in the hash
-     *
-     * For all transitions from the source basin to a different basin,
-     * the transition state pf is increased; registers the forward and
-     * the backward transition.
-     */
-    void
-    register_transitions(size_t source_basin_index,
-			 std::vector<transition_t> &trans); 
-
-    /**
-     * @brief Process a single state in the construction of the barrier graph
-     * 
-     * Assumes that states are processed in ascending order of their energy.
-     * Generates the neighbors of source_state and in this way determines,
-     * whether the state is a local minimum or belongs to a known basin.
-     *
-     * @param source_state     state to be processed
-     * @param energy           energy of source_state
-     * @param force_new_basin  force creation of new basin, if true
-     */
-    void
-    process_state(const HybEnsModel::StateDescription &source_state, 
-		  double source_energy);
-
-private:
+    //! compare basin indices by their associated pfs
     class compBasinIdxs {
 	const BarrierGraph &bg_;
     public:
@@ -364,6 +179,7 @@ private:
 	    return bg_.basins_[a].get_Z() < bg_.basins_[b].get_Z();
 	}
     };
+
 public:
     
     /** 
@@ -387,17 +203,20 @@ public:
      * @param x0 Basin
      */
     void
-    merge_basin(Basin &x0);
+    dissolve_basin(Basin &x0);
 
-    /** @brief merge basins to their neighbors
+    /** @brief Prunes the barrier graph
+     *
+     * Dissolve small or volatile, high-outflow basins. Remove small
+     * transitions.
      *
      * @param max_outflow maximal outflow (sum of rates) where basin
      * is retained; otherwise it is distributed to its neighbors
      *
-     * @param min_p_equ minimum equilibrium probability; basins with
-     * lower probability are distributed to their neighbors
+     * @param min_p_equ minimum equilibrium probability; each basin with
+     * lower probability is distributed to its neighbors
      *
-     * @param min_rate minimum rate; transition with lower rate (in
+     * @param min_rate minimum rate; transitions with lower rate (in
      * both directions!) are removed during the merging
      *
      * @note ATTENTION: the min_rate criterion is applied during the
@@ -411,7 +230,7 @@ public:
      *
      */
     void
-    merge_basins_by_outflow(double max_outflow, double min_p_equ, double min_rate);
+    prune(double max_outflow, double min_p_equ, double min_rate);
     
 
     /** 
@@ -463,7 +282,7 @@ public:
     */
     void 
     print_barrier_graph(std::ostream &out) const;
-    
+
     /**
        @brief number of (non-merged) basins
     */
@@ -477,35 +296,16 @@ public:
     num_transitions() const;
 
     
+    //! @brief destructor
     ~BarrierGraph() {
     }
 
     /** @brief print some statistics of the barrier graph
 	@param ostream output stream
      */ 
-    void
-    print_stats(std::ostream &out) {
-	out << "basins:            "<<num_basins()<<std::endl;
-	out << "mean transitions:  "<<num_transitions()/num_basins()<<std::endl;
-	
-	double total_outflow=0.0;
-	for(size_t i=0; i<basins_.size(); ++i) {
-	    if (!basins_[i].merged()) {
-		total_outflow += outflow(basins_[i]);
-	    }
-	}
-	out << "mean outflow:      "<<total_outflow/num_basins()<<std::endl;
-    }
-
-    /** 
-     * @brief print treekin-compatible barriers list to stream 
-     * 
-     * @param out output stream 
-     */
-    void
-    print_barriers(std::ostream &out) const;    
-
-    
+    std::ostream &
+    print_stats(std::ostream &out) const;
+        
     /** 
      * @brief check validity of rates
      * @note assume there are no merged basins, e.g. after reindex()
@@ -585,13 +385,6 @@ public:
 	       const std::string &nameB,
 	       const std::string &nameAB) const;
     
-    /**
-     * @brief convert state description to dot bracket notation
-     * @param sd state description
-     */
-    std::string
-    to_dotbracket(const HybEnsModel::StateDescription &sd) const;
-
     /** @brief reindex basins, remove merged basins
      */
     void
@@ -611,6 +404,16 @@ public:
      */
     void swap_indices(size_t x, size_t y);
 
+
+    /** 
+     * @brief print treekin-compatible barriers list to stream 
+     * 
+     * @param out output stream 
+     */
+    void
+    print_treekin_barriers(std::ostream &out, std::string header, double RT) const;
+
+
 private:
     /** @brief print a double suited as rate in the ratematrix file for treekin
      */
@@ -619,36 +422,64 @@ private:
     format_rate_for_treekin(double x);
 
     
-    /** @brief dump barrier graph to stream
-	
-	such that it can be read in again by read_graph()
-    */
-    void dump_graph(std::ostream &out) const;
-    
-    /** @brief read barrier graph from stream
-	
-	in the format written by dump_graph()
-    */
-    void read_graph(std::istream &in) const;
-
-    /**
-     * @brief Perform gradient walk and create missing states on the walk
-     *
-     * @param state source state of the walk
-     * @param energy energy of source state
-     * @return target basin index of the walk
-     *
-     * Iteratively walks to the lowest transition energy neighbor of
-     * the source state, until the transition energy is larger than
-     * the source energy. Furthermor, terminates immediately if the
-     * neighbor is in the hash.
+    /** 
+     * @brief determine outflow distribution
      * 
-     * The source state and states on the walk are registered in the
-     * hash, and assigned to the target basin.
+     * @param outflows[out] vector of sorted outflows
      */
-    size_t create_gradient_walk(const HybEnsModel::StateDescription &state, 
-				double energy);
+    void
+    outflow_distribution(std::vector<double> &outflows) const;    
+    
+    /** 
+     * @brief determine equilibrium probability distribution
+     * 
+     * @param pequs[out] vector of sorted p_equs
+     */
+    void
+    pequ_distribution(std::vector<double> &pequs) const;
+
+public:
+    /** 
+     * @brief maximum outflow by quantile
+     * 
+     * @param q quantile of basins to keep
+     * 
+     * @return max outflow
+     */
+    double
+    max_outflow_by_quantile(double q) const;
+    
+    /** 
+     * @brief maximum outflow by number
+     * 
+     * @param n number of basins to keep
+     * 
+     * @return max outflow
+     */
+    double
+    max_outflow_by_number(size_t n) const;
+    
+    /** 
+     * @brief mimum p_equ by quantile
+     * 
+     * @param q quantile of basins to keep
+     * 
+     * @return min pequ
+     */
+    double
+    min_pequ_by_quantile(double q) const; 
+    
+    /** 
+     * @brief mimum p_equ by number
+     * 
+     * @param q number of basins to keep
+     * 
+     * @return min pequ
+     */
+    double
+    min_pequ_by_number(size_t n) const;
     
 };
+
 
 #endif

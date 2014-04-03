@@ -1,39 +1,43 @@
-bin_PROGRAMS=rrikin_enum rrikin_barriers test_moves
+bin_PROGRAMS=rrikin_enum rrikin_barriers rrikin_prune test_moves
 
-test_moves_SOURCES=test_moves.cc hybrid_pf.cc hybrid_pf.hh		\
-unpaired_pf.cc unpaired_pf.hh LocARNA/matrices.hh LPfold.h LPfold.c	\
-hybrid_ensemble_model.hh hybrid_ensemble_model.cc moves.hh moves.cc
+# base sources, common to all programs
+BASE_SRCS=hybrid_pf.cc hybrid_pf.hh unpaired_pf.cc unpaired_pf.hh	\
+LocARNA/matrices.hh LPfold.h LPfold.c hybrid_ensemble_model.hh		\
+hybrid_ensemble_model.cc moves.hh moves.cc
 
-rrikin_enum_SOURCES = rrikin_enum.cc hybrid_pf.cc hybrid_pf.hh		\
-unpaired_pf.cc unpaired_pf.hh LocARNA/matrices.hh LPfold.h LPfold.c	\
-hybrid_ensemble_model.hh hybrid_ensemble_model.cc moves.hh moves.cc	\
-rrikin_enum_cmdline.c rrikin_enum_cmdline.h
+# extended base sources, common to programs operating on barrier graph
+EXT_BASE_SRCS=$(BASE_SRCS) barrier_graph.hh barrier_graph.cc	\
+basin_transition.hh basin_transition.cc
 
-rrikin_barriers_SOURCES = rrikin_barriers.cc barrier_graph.hh		\
-barrier_graph.cc basin_transition.hh hybrid_pf.cc hybrid_pf.hh		\
-unpaired_pf.cc unpaired_pf.hh LocARNA/matrices.hh LPfold.h LPfold.c	\
-hybrid_ensemble_model.hh hybrid_ensemble_model.cc moves.cc		\
-rrikin_barriers_cmdline.c rrikin_barriers_cmdline.h
+
+test_moves_SOURCES=test_moves.cc $(BASE_SRCS)
+
+rrikin_enum_SOURCES = rrikin_enum.cc rrikin_enum_cmdline.c	\
+rrikin_enum_cmdline.h $(BASE_SRCS)
+
+rrikin_barriers_SOURCES = rrikin_barriers.cc			\
+rrikin_barriers_cmdline.c rrikin_barriers_cmdline.h		\
+rri_barrier_graph.hh rri_barrier_graph.cc $(EXT_BASE_SRCS)
+
+rrikin_prune_SOURCES = rrikin_prune.cc rrikin_prune_cmdline.c	\
+rrikin_prune_cmdline.h $(EXT_BASE_SRCS)
 
 
 ############################################################
 ## gengetopt command line parsers
 ##
 
-## register parsers as built sources
+## register parsers and config.h as built sources
 BUILT_SOURCES = rrikin_enum_cmdline.c rrikin_enum_cmdline.h	\
-rrikin_barriers_cmdline.c rrikin_barriers_cmdline.h config.h
+rrikin_barriers_cmdline.c rrikin_barriers_cmdline.h		\
+rrikin_prune_cmdline.c rrikin_prune_cmdline.h config.h
 
 ## register built sources as cleanfiles (otherwise they would not be
 ## removed by 'make clean')
 CLEANFILES = $(BUILT_SOURCES)
 
-rrikin_enum_cmdline.c: $(srcdir)/rrikin_enum.ggo
+%_cmdline.c: $(srcdir)/%.ggo
 	gengetopt < $<
-
-rrikin_barriers_cmdline.c: $(srcdir)/rrikin_barriers.ggo
-	gengetopt < $<
-
 
 ## get a copy of config.h in directory src 
 config.h: ../config.h

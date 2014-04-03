@@ -55,6 +55,25 @@ HybEnsModel::StateDescription::max_site_size() const {
     return mss;
 }
 
+std::string
+HybEnsModel::to_dotbracket(const StateDescription &sd) const {
+    size_t n = seqA().length();
+    size_t m = seqB().length();
+    
+    std::string s(n+m+1,'.');
+    
+    s[n] = '&';
+    
+    for (size_t k=0; k<sd.size(); k++) {
+	s[sd[k].i1-1]='(';
+	s[sd[k].j1-1]=')';
+	s[n+1+sd[k].i2-1]='(';
+	s[n+1+sd[k].j2-1]=')';
+    }
+    
+    return s;
+}
+
 
 // --------------------
 // encoding and decoding compressed representation
@@ -126,29 +145,29 @@ HybEnsModel::StateDescription::decode(const code_t &the_code) {
     return *this;
 }
 
-void
-HybEnsModel::StateDescription::write_binary() const {
+std::ostream &
+HybEnsModel::StateDescription::write_binary(std::ostream &out) const {
     code_t code;
     encode(code);
-    fwrite(reinterpret_cast<char *>(&code.first),sizeof(char),8,stdout);
-    fwrite(reinterpret_cast<char *>(&code.second),sizeof(char),8,stdout);
-    fputc(0,stdout);
+    
+    out.write(reinterpret_cast<char *>(&code.first),sizeof(code.first));
+    out.write(reinterpret_cast<char *>(&code.second),sizeof(code.second));
+    
+    // now, replaced by use of c++ stream
+    // fwrite(reinterpret_cast<char *>(&code.first),sizeof(char),8,stdout);
+    // fwrite(reinterpret_cast<char *>(&code.second),sizeof(char),8,stdout);
+    // fputc(0,stdout);
+
+    return out;
 }
 
 bool
 HybEnsModel::StateDescription::read_binary(std::istream &in) {
     HybEnsModel::StateDescription::code_t code;
     
-    char *codebuf;
-    codebuf = reinterpret_cast<char *>(&code.first);
-    in.read(codebuf,8);
-    codebuf = reinterpret_cast<char *>(&code.second);
-    in.read(codebuf,8);
-        
-    if(in.get()!=0) {
-	return false;
-    }
-    
+    in.read(reinterpret_cast<char *>(&code.first),sizeof(code.first));
+    in.read(reinterpret_cast<char *>(&code.second),sizeof(code.second));
+
     decode(code);
     return true;
 }

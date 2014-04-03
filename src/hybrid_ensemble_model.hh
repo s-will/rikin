@@ -250,10 +250,10 @@ public:
 	decode(const code_t &code);
 	
 	/**
-	 * @brief write binary-encoded state to standard output
+	 * @brief write binary-encoded state to stream
 	 */
-	void
-	write_binary() const;
+	std::ostream &
+	write_binary(std::ostream &out) const;
 	
 	/**
 	 * @brief read binary-encoded state from istream
@@ -354,7 +354,7 @@ public:
 	    }
 	    return sd;
 	}
-	
+		
     private:
 	/**
 	 * @brief positions of hybridization sites
@@ -364,6 +364,14 @@ public:
 	
     }; // end class StateDescription
 	    
+    /**
+     * @brief convert state description to dot bracket notation
+     * @param sd State description
+     * @return state as dot bracket string
+     */
+    std::string
+    to_dotbracket(const StateDescription &sd) const;
+
     
 #   include "moves.hh"
     

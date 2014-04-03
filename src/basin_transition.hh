@@ -1,13 +1,10 @@
 #ifndef BASIN_TRANSITION
 #define BASIN_TRANSITION
 
-#include "hybrid_ensemble_model.hh"
 #include <tr1/unordered_map>
-#include  <iostream>
-#include <limits>
+#include <iostream>
+//#include <limits>
 
-
-class BarrierGraph;
 
 /**
  * @brief A transition between two basins
@@ -19,48 +16,43 @@ class BarrierGraph;
  */
 class BasinTransition {
     
-    //double barrier; //! minimal energy of a transition state
-    double Z;       //! partition function of macro transition state
+    double Z_;       //! partition function of macro transition state
+
 public:
-    BasinTransition(): 
-	//barrier(std::numeric_limits<double>::infinity()),
-	Z(0) {}
+    BasinTransition():
+	Z_(0) {}
     
     /** 
      * Construct with transition energy and model
      * 
-     * @param transition_energy 
-     * @param model 
+     * @param transition_weight boltzmann weight of transition energy 
      */
-    BasinTransition(double transition_energy,const HybEnsModel &model)
+    BasinTransition(double transition_weight)
 	:
-	//barrier(transition_energy),
-	Z(model.boltzmann_weight(transition_energy))
+	Z_(transition_weight)
     {}
     
-    /** 
-     * Update transition with energy and model
-     * 
-     * @param transition_energy transition/barrier energy
-     * @param model hybrid ensemble model
-     */
-    void
-    update(double transition_energy,const HybEnsModel &model) {
-	//barrier = std::min(barrier,transition_energy);
-	Z+=model.boltzmann_weight(transition_energy);
-    }
     
-    /** 
-     * Update transition by energy and partition function of additional transition
-     *
-     * @param transition_energy transition/barrier energy
-     * @param Z_ partition functions
-     */
-    void
-    update(double transition_energy,double Z_) {
-	//barrier = std::min(barrier,transition_energy);
-	Z+=Z_;
-    }
+    // /** @brief construct from stream
+    //  */
+    // BasinTransition(std::istream &in);
+
+    // /** @brief write to stream (binary)
+    //  */
+    // std::ostream &
+    // write_binary(std::ostream &out);
+
+    
+    // /** 
+    //  * Update transition by energy and partition function of additional transition
+    //  *
+    //  * @param transition_energy transition/barrier energy
+    //  * @param Z partition functions
+    //  */
+    // void
+    // update(double transition_energy,double Z) {
+    // 	Z_ += Z;
+    // }
 
     /** 
      * Update transition by partition function of additional transition
@@ -70,27 +62,17 @@ public:
      */
     // obsolete note: does not correctly update the barrier
     void
-    update(double Z_) {
-	Z+=Z_;
+    update(double Z) {
+	Z_ += Z;
     }
-
     
-    /* 
-     * Get barrier
-     *  
-     * @return barrier of transition
-     
-    double
-    get_barrier() const {return barrier;}
-    */
-
     /** 
      * Get partition function
      * 
      * @return partition function of transition
      */	
     double
-    get_Z() const {return Z;}
+    get_Z() const {return Z_;}
 };
 
 
@@ -103,16 +85,15 @@ public:
  */
 class Basin {
     
-    //friend class BarrierGraph;
-    
     size_t index_; //<! index of basin 
-    HybEnsModel::StateDescription local_minimum; //!< local minimum
-    double minimum_energy; //!< energy of the local minimum
     double Z;      //!< partition function
 
     double states; //!< size in number of states   
     
     bool merged_;
+    
+    // double minimum_energy; //!< energy of the local minimum
+    // HybEnsModel::StateDescription local_minimum; //!< local minimum
     
 public:
        
@@ -120,27 +101,23 @@ public:
      * Construct a new basin with given index and local minimum
      * 
      * @param index The index of the basin
-     * @param local_minimum_ The local minimum of the basin
-     * @param energy_of_minimum The energy of the local minimum
+     * @param boltzmann_weight the initial Boltzmann weight
      */
-    Basin(size_t index, const HybEnsModel::StateDescription &local_minimum_,double energy_of_minimum, const HybEnsModel &model)
+    Basin(size_t index,
+	  double boltzmann_weight)
 	: index_(index),
-	  local_minimum(local_minimum_),
-	  minimum_energy(energy_of_minimum),
-	  Z(0.0),
-	  states(0),
+	  Z(boltzmann_weight),
+	  states(1),
 	  merged_(false)
     {
-	add_state(energy_of_minimum, model);
     }
     
     
     /** 
-     * Construct undefined xbasin
+     * Construct undefined basin
      */
     Basin() : merged_(true)
     {
-	
     }
 
     //! @brief Get index of basin
@@ -156,12 +133,16 @@ public:
 	index_=idx;
     }
     
+    /**
+     * @brief add a state to basin
+     * @param weight Boltzmann weight of the state
+     */
     void
-    add_state(double energy, const HybEnsModel &model) {
+    add_state(double weight) {
 	//assert(energy>=minimum_energy);
 	
 	states++;
-	Z += model.boltzmann_weight(energy);
+	Z += weight;
     }
     
     void 
@@ -179,25 +160,22 @@ public:
 	// minimum_energy=std::min(minimum_energy,x.minimum_energy);
     }
 
-    HybEnsModel::StateDescription
-    get_local_minimum() const {
-	return local_minimum;
-    }
-
     double
     get_Z() const {
 	return Z;
-    }
-	
-    double
-    get_minimum_energy() const {
-	return minimum_energy;
     }
     
     bool
     merged() const {
 	return merged_;
     }
+
+    /**
+     * @brief Is basin mergeable
+     * @note use this to forbid merge of special states, e.g. open state
+     */
+    bool
+    mergeable() const;
 
     /** @brief mark as merged
      */
@@ -211,12 +189,12 @@ public:
 	return states; 
     }
 
-    
     void
     print_header(std::ostream &out) const;
 
     void
-    print(std::ostream &out, const HybEnsModel &model) const;
+    print(std::ostream &out) const;
+
 };
 
 #endif

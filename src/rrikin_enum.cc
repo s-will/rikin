@@ -59,10 +59,13 @@ check_state_validity(const HybEnsModel::StateDescription &state,
 void
 write_state(double energy, const HybEnsModel::StateDescription &state, bool binary) {
     if (binary) {
-	printf("%.2f ",energy);
+	std::streamsize p_old=std::cout.precision(4);
+	std::cout << energy << " ";
+	std::cout.precision(p_old);
 	
-	state.write_binary();
-	
+	state.write_binary(std::cout);
+	std::cout.put(0);
+
     } else {
 	if (state.size()==0) {
 	    printf("%6.2f\n",energy);	
