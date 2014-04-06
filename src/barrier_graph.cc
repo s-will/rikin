@@ -28,9 +28,9 @@ BarrierGraph::BarrierGraph(std::istream &in,
     size_t stopper = std::numeric_limits<size_t>::max();
     size_t num_rates=0;
     
-    // get matrix dimension / number of basins
-    size_t dim;
-    in.read(reinterpret_cast<char *>(&dim),sizeof(dim));
+    // // get matrix dimension / number of basins
+    // size_t dim;
+    // in.read(reinterpret_cast<char *>(&dim),sizeof(dim));
     
     while( in ) {
 	size_t i=0; // row index
@@ -475,8 +475,8 @@ std::ostream &
 BarrierGraph::write_binary(std::ostream &out,  double min_rate) const {
     size_t stopper = std::numeric_limits<size_t>::max();
 
-    size_t dim=basins_.size();
-    out.write(reinterpret_cast<const char *>(&dim),sizeof(dim));
+    // size_t dim=basins_.size();
+    // out.write(reinterpret_cast<const char *>(&dim),sizeof(dim));
     
     // write matrix of transition pfs, where the diagonal consists of basin pfs
     for(size_t i=0; i<basins_.size(); ++i) {

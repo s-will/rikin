@@ -12,7 +12,7 @@ option "max-hyb-length" - "Maximum length hybridization site length to be precom
 
 option "max-hyb-length-diff" - "Maximum difference of lengths in hybridization sites" int default="-1" optional
 
-option "max-recover-energy" - "Maxmimum energy, where neighbors of a state are still recovered" double default="1e6" optional
+option "max-recover-energy" - "Recover states with smaller or equal energy; def=effectively turn off recovery" double default="-1e6" optional
 
 option "min-rate" - "Minimum transition rate; otherwise ignore (sparsifies edges)" double default="1e-12" optional
 

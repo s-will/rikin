@@ -90,7 +90,13 @@ public:
      * @param verbose turn on verbose output
      * @param debug_out turn on debugging output
      *
-     * Read in format written by write_binary()
+     * Read in "pf" format; same as written by write_binary()
+     *
+     * @note pf format:
+     * <i0><pf0><j00><tpf00>...<j0*><tpf0*><stopper><i1><pf1><j10><tpf00>...<j1*><tpf1*><stopper><j**><tpf*0>...<j**><tpf**><stopper><stopper>.
+     * indices are sizeof(size_t) bytes long; pfs, sizeof(double)
+     * bytes; binary encoding the stopper code is
+     * numeric_limits<size_t>::max()
      */
     BarrierGraph(std::istream &in,
 		 double min_rate,
