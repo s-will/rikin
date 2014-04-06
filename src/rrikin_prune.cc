@@ -79,10 +79,6 @@ main(int argc, char **argv)
 
     double max_outflow  = args_info.max_outflow_arg;
     double min_pequ    = args_info.min_pequ_arg;
-
-    // todo: check that min/max, qu, and num are not conflicting;
-    // currently, we resolve conflicts by override w/o complaints
-    // todo: in case of multiple specifications, one could use the strictest 
     
     double qu_outflow = 
 	args_info.qu_outflow_given
@@ -150,6 +146,7 @@ main(int argc, char **argv)
     // construct barrier graph
     std::ifstream in(inputfile.c_str(), std::ios::in | std::ios::binary);
     BarrierGraph bg(in,
+		    min_rate,
 		    special_first_state,
 		    verbose,
 		    debug_out);
@@ -169,18 +166,20 @@ main(int argc, char **argv)
 	
 	// if requested, determine max-outflow and min-pequ by quantile or basin number
 	if ( 0<=qu_outflow && qu_outflow<=100 ) {
-	    std::cerr << "Quantile outflow: "<<qu_outflow << std::endl;
-	    max_outflow = bg.max_outflow_by_quantile(qu_outflow);
+	    max_outflow = std::min( max_outflow,
+				    bg.max_outflow_by_quantile(qu_outflow) );
 	}
 	if ( num_outflow <= num_total_basins ) {
-	    max_outflow = bg.max_outflow_by_number(num_outflow);
+	    max_outflow = std::min( max_outflow,
+				    bg.max_outflow_by_number(num_outflow) );
 	}
 	if ( 0<=qu_pequ && qu_pequ<=100 ) {
-	    std::cerr << "Quantile pequ: "<<qu_pequ << std::endl;
-	    min_pequ = bg.min_pequ_by_quantile(qu_pequ);
+	    min_pequ = std::max( min_pequ, 
+				 bg.min_pequ_by_quantile(qu_pequ) );
 	}
 	if ( num_pequ <= num_total_basins ) {
-	    min_pequ = bg.min_pequ_by_number(num_pequ);
+	    min_pequ = std::max( min_pequ, 
+				 bg.min_pequ_by_number(num_pequ) );
 	}
 	
 	if (verbose) {
@@ -209,7 +208,7 @@ main(int argc, char **argv)
     bg.reindex();
 
     if (special_first_state) {
-	// Exchange basin indices 1 and 2 such that the global minimum is state 1
+	// Exchange basin indices 1 and 2 (1-based) such that the global minimum is state 1
 	// and the first state is state 2
     
 	// if (verbose) {
@@ -221,7 +220,6 @@ main(int argc, char **argv)
     // handle user-defined basin merging
     
     if (!to_keep_set.empty()) {
-
 	if (verbose) {
 	    std::cerr << "Keep only the "<<to_keep_set.size()<<" specified basins." << std::endl;
 	}
@@ -237,14 +235,6 @@ main(int argc, char **argv)
 	    bg.print_stats(std::cerr);
 	}
     }
-
-
-    // print basins of barrier graph
-    bg.print_basins(std::cout);    
-
-    std::cout << std::endl
-	      << std::endl;
-    bg.print_barrier_graph(std::cout);
     
     std::vector<size_t> components;
     std::vector<size_t> component_sizes=bg.connected_components(components);
@@ -255,25 +245,33 @@ main(int argc, char **argv)
 		std::cerr << component_sizes[i]<<" ";
 	    std::cerr <<std::endl;
 	
-	    std::cerr << "Keep only the first component (which contains the special first state.)" 
+	    std::cerr << "Keep only the first component." 
 		      << std::endl;
 	}
 	
-	bg.keep_single_component(1,components);
+	bg.keep_single_component(1,components); // note: this reindexes internally
 	
 	if (verbose) {
 	    bg.print_stats(std::cerr);
 	}
     }
     
-	    
-    if (verbose) {
-	double max_diff = bg.check_rates();
-	if (max_diff > 1e-12) {
-	    std::cerr << "WARNING: maximal deviation from detailed balance:"<<max_diff<<std::endl;
-	}
-    }
 
+
+    // print basins of barrier graph
+    bg.print_basins(std::cout);    
+
+    std::cout << std::endl
+	      << std::endl;
+    bg.print_barrier_graph(std::cout);
+
+
+	    
+    double max_diff = bg.check_rates();
+    if (max_diff > 1e-12) {
+	std::cerr << "WARNING: maximal deviation from detailed balance:"<<max_diff<<std::endl;
+    }
+    
     if (barfile != "") {
     	if (verbose) {
     	    std::cerr << "Write pseudo-bar file for treekin '"<<barfile<<"'."<<std::endl;	
@@ -317,7 +315,7 @@ main(int argc, char **argv)
 	}
 	fout.close();
 	
-    }    
+    }
 
     //handle names of molecules in rxns/spcs files
     if (!nameAB_given) {

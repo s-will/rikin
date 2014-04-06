@@ -16,6 +16,7 @@
 
 
 BarrierGraph::BarrierGraph(std::istream &in,
+			   double min_rate,
 			   bool special_first_state,
 			   bool verbose,
 			   bool debug_out
@@ -24,24 +25,40 @@ BarrierGraph::BarrierGraph(std::istream &in,
       verbose_(verbose),
       debug_out_(debug_out)
 {
+    size_t stopper = std::numeric_limits<size_t>::max();
+    size_t num_rates=0;
+    
     // get matrix dimension / number of basins
     size_t dim;
     in.read(reinterpret_cast<char *>(&dim),sizeof(dim));
     
-    for(size_t i=0; i<dim; ++i) {
-	
-	std::vector<double> row(dim);
-	
-	for(size_t j=0; j<dim; ++j) {
-	    in.read(reinterpret_cast<char *>(&row[j]),sizeof(row[j]));
+    while( in ) {
+	size_t i=0; // row index
+	in.read(reinterpret_cast<char *>(&i),sizeof(i));
+	if (i==stopper) { break; }
+
+	double pf;
+	in.read(reinterpret_cast<char *>(&pf),sizeof(pf));
+	while (basins_.size()<i) {
+	    Basin b = Basin(basins_.size(),0);
+	    b.mark_merged();
+	    basins_.push_back(b);
 	}
+	basins_.push_back(Basin(i,pf));
 	
-	basins_.push_back(Basin(i,row[i]));
-	for(size_t j=0; j<dim; ++j) {
-	    if (i==j) continue;
-	    transitions_[i][j]=BasinTransition(row[j]);
+	while( in ) {
+	    size_t j; // column index
+	    in.read(reinterpret_cast<char *>(&j),sizeof(j));
+	    if (j==stopper) { break; }
+	        
+	    double tpf;
+	    in.read(reinterpret_cast<char *>(&tpf),sizeof(tpf));
+	    
+	    num_rates++;
+	    transitions_[i][j]=BasinTransition(tpf);
 	}
     }
+    std::cerr << "Read "<<num_rates<<" rates."<<std::endl;
 }
 
 
@@ -205,7 +222,7 @@ BarrierGraph::is_to_be_merged(const Basin &x0,double max_outflow,double min_p_eq
     
     if ( special_first_state_ &&  x0.idx()==0 ) {
 	if (verbose_) {
-	    std::cerr << "Don't merge basin 1 ( p="<< p_equ << ", outflow="<< total_out <<" )."<<std::endl;
+	    std::cerr << "Keep (special) first basin ( p="<< p_equ << ", outflow="<< total_out/x0.get_Z() <<" )."<<std::endl;
 	}
 	to_be_merged=false;
     }
@@ -455,8 +472,42 @@ BarrierGraph::print_pfs(std::ostream &out,bool binary) const {
 }
 
 std::ostream &
-BarrierGraph::write_binary(std::ostream &out) const {
-    print_pfs(out,true);
+BarrierGraph::write_binary(std::ostream &out,  double min_rate) const {
+    size_t stopper = std::numeric_limits<size_t>::max();
+
+    size_t dim=basins_.size();
+    out.write(reinterpret_cast<const char *>(&dim),sizeof(dim));
+    
+    // write matrix of transition pfs, where the diagonal consists of basin pfs
+    for(size_t i=0; i<basins_.size(); ++i) {
+	if (!basins_[i].merged()) {
+	    
+	    out.write(reinterpret_cast<const char *>(&i),sizeof(i));
+	    double pf = basins_[i].get_Z();
+	    out.write(reinterpret_cast<const char *>(&pf),sizeof(pf));
+	    
+	    const transitions_map_t::const_iterator &ts = transitions_.find(i);
+	    if (ts != transitions_.end()) {
+		for(transitions_map_row_t::const_iterator it=ts->second.begin();
+		    it != ts->second.end(); ++it) {
+		    
+		    size_t j=it->first;
+		    double tpf = it->second.get_Z();
+		    
+		    // symmetric min-rate criterion!
+		    if ( tpf / std::min(pf, basins_[j].get_Z()) >= min_rate ) {
+			// write index
+			out.write(reinterpret_cast<const char *>(&j),sizeof(j));
+			// write pf
+			out.write(reinterpret_cast<const char *>(&tpf),sizeof(tpf));
+		    }
+		}
+	    }
+	    out.write(reinterpret_cast<const char *>(&stopper),sizeof(stopper));
+	}
+    }
+    out.write(reinterpret_cast<const char *>(&stopper),sizeof(stopper));
+    
     return out;
 }
 
@@ -539,7 +590,8 @@ BarrierGraph::reindex() {
 }
 
 void
-BarrierGraph::keep_single_component(size_t c,const std::vector<size_t> &components) {
+BarrierGraph::keep_single_component(size_t c,
+				    const std::vector<size_t> &components) {
     std::vector<bool> keep(basins_.size());
     for (std::vector<Basin>::iterator it=basins_.begin();
 	 basins_.end()!=it; ++it) {
@@ -799,16 +851,16 @@ BarrierGraph::min_pequ_by_quantile(double q) const {
     assert(0<=q && q<=100);
     std::vector<double> pequs;
     pequ_distribution(pequs);
-    if (q>=100) return 0.0;
-    return pequs[pequs.size()-1 - q*pequs.size()/100];
+    if (q==0) return 1.0;
+    return pequs[pequs.size() - q*pequs.size()/100];
 }
 
 double
 BarrierGraph::min_pequ_by_number(size_t n) const {
     std::vector<double> pequs;
     pequ_distribution(pequs);
-    if (n==pequs.size()) return 0.0;
-    return pequs[pequs.size()-1 - n];
+    if (n==0) return 1.0;
+    return pequs[pequs.size() - n];
 }
 
 
@@ -855,7 +907,7 @@ BarrierGraph::print_stats(std::ostream &out) const {
     for(size_t n=nbasins; n>1; n/=2) {
 	std::ostringstream fmtd;
 	fmtd.precision(2);
-	fmtd << pequs[n-1];
+	fmtd << pequs[nbasins-n];
 	out << fmtd.str() << "\t";
     }
     out << std::endl;

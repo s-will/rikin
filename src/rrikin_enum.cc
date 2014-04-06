@@ -256,7 +256,7 @@ main(int argc, char **argv)
     // enumerate states
     stopwatch.start("generate_model");
 
-    if (verbose) std::cerr << "Generate Model (precomputing energies for sequences of length "
+    if (verbose) std::cerr << "Initialize model (precomputing energies for sequences of length "
 			   <<seqA.size()<<" and "<<seqB.size()<<")" << std::endl;
 
     HybEnsModel model(seqA,seqB,maxsitesize,maxsitesize_diff,enum_double_sites);
@@ -267,7 +267,7 @@ main(int argc, char **argv)
 
     stopwatch.start("enumerate");
 
-    if (verbose) std::cerr << "Enumerate states (maximal single site hybridization energy " <<max_hyb_energy <<  ", max total energy " << max_total_energy << " )" << std::endl;
+    if (verbose) std::cerr << "Enumerate states ( max hyb length "<<maxsitesize<<", max hyb length diff "<<maxsitesize_diff<<", max ss hyb energy " <<max_hyb_energy <<  ", max total energy " << max_total_energy << " )" << std::endl;
     
     const size_t minsitesize=model.minsitesize();
 

@@ -58,12 +58,16 @@ protected:
     transitions_map_t transitions_;        
     
     //! vector storing basins of all local minima
-    std::vector<Basin> basins_;
+    std::vector<Basin> basins_; // 0-based, note: also basin indices are 0-based
 
 protected:
     
     /**
      * @brief minimal constructor for derived classes
+     *
+     * @param special_first_state never dissolve first state
+     * @param verbose turn on verbose output
+     * @param debug_out turn on debugging output
      */
     BarrierGraph( bool special_first_state,
 		  bool verbose,
@@ -78,25 +82,31 @@ protected:
 public:
 
     /**
-     * @brief Read barrier graph from binary stream
+     * @brief Read barrier graph in "bg" format from binary stream
+     *
      * @param in input stream
+     * @param min_rate minimum rate, filter input stream: drop smaller rates
+     * @param special_first_state never dissolve first state
+     * @param verbose turn on verbose output
+     * @param debug_out turn on debugging output
      *
      * Read in format written by write_binary()
      */
     BarrierGraph(std::istream &in,
+		 double min_rate,
 		 bool special_first_state,
 		 bool verbose,
 		 bool debug_out
 		 );
 
     /**
-     * @brief write barrier graph to stream such that it can be read
-     * in again
+     * @brief write barrier graph to stream in binary "bg" format
      * 
      * @param out output stream
-    */
+     *
+     */
     std::ostream &
-    write_binary(std::ostream &out) const;
+    write_binary(std::ostream &out, double min_rate) const;
 
 
     /** @brief total outflow of basin as partition function

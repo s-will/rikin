@@ -187,9 +187,11 @@ main(int argc, char **argv)
 
     const double max_recover_energy=args_info.max_recover_energy_arg;
 
-    if (verbose) {
-	std::cerr << "seqA="<<seqA<<", seqB="<<seqB << std::endl;
-    }
+    double min_rate     = args_info.min_rate_arg;
+
+    // if (verbose) {
+    // 	std::cerr << "seqA="<<seqA<<", seqB="<<seqB << std::endl;
+    // }
 
     cmdline_parser_free(&args_info);
     
@@ -197,7 +199,7 @@ main(int argc, char **argv)
     dangles=2;
     
     if (verbose) {
-	std::cerr << "Construct barrier graph." << std::endl;
+	std::cerr << "Initialize model." << std::endl;
     }
 
     stopwatch.start("initialize");
@@ -214,6 +216,11 @@ main(int argc, char **argv)
 		       debug_out);
     
     stopwatch.stop("initialize");
+
+
+    if (verbose) {
+	std::cerr << "Construct barrier graph." << std::endl;
+    }
     
     stopwatch.start("construct");
 
@@ -233,9 +240,14 @@ main(int argc, char **argv)
 	bg.print_stats(std::cerr);
     }
     
+    stopwatch.start("write");
+    if (verbose) {
+	std::cerr<<"Write output to "<<outputfile<<std::endl;
+    }
     std::ofstream out(outputfile.c_str(),std::ios::out | std::ios::binary);
-    bg.write_binary(out);
+    bg.write_binary(out, min_rate);
     out.close();
+    stopwatch.stop("write");
 
     if (verbose) {
 	stopwatch.print_info(std::cerr);
