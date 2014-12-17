@@ -6,8 +6,9 @@ LocARNA/matrices.hh LPfold.h LPfold.c hybrid_ensemble_model.hh		\
 hybrid_ensemble_model.cc moves.hh moves.cc
 
 # extended base sources, common to programs operating on barrier graph
-EXT_BASE_SRCS=$(BASE_SRCS) barrier_graph.hh barrier_graph.cc	\
-basin_transition.hh basin_transition.cc
+EXT_BASE_SRCS=$(BASE_SRCS) barrier_graph.hh barrier_graph.cc basin.hh	\
+basin.cc basin_info.hh basin_info.cc basin_pruning_info.hh		\
+basin_pruning_info.cc basin_transition.hh basin_transition.cc
 
 
 test_moves_SOURCES=test_moves.cc $(BASE_SRCS)

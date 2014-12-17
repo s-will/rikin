@@ -15,15 +15,41 @@
 #include <cassert>
 
 
+BarrierGraph::BarrierGraph( bool special_first_state,
+			    bool verbose,
+			    bool debug_out
+			    )
+    : special_first_state_(special_first_state),
+      verbose_(verbose),
+      debug_out_(debug_out),
+      track_pruning_(false),
+      num_input_states_(0),
+      min_contribution_(0)
+{
+}
+
+
+void
+BarrierGraph::push_back_basin(size_t index, double pf) {
+    basins_.push_back(Basin(index,pf));
+    if (track_pruning_) {
+	basin_pruning_infos_.push_back(BasinPruningInfo(index));
+    }
+}
+
 BarrierGraph::BarrierGraph(std::istream &in,
 			   double min_rate,
 			   bool special_first_state,
 			   bool verbose,
-			   bool debug_out
+			   bool debug_out,
+			   bool track_pruning
 			   )
     : special_first_state_(special_first_state),
       verbose_(verbose),
-      debug_out_(debug_out)
+      debug_out_(debug_out),
+      track_pruning_(track_pruning),
+      num_input_states_(0),
+      min_contribution_(1e-3)
 {
     size_t stopper = std::numeric_limits<size_t>::max();
     size_t num_rates=0;
@@ -39,12 +65,14 @@ BarrierGraph::BarrierGraph(std::istream &in,
 
 	double pf;
 	in.read(reinterpret_cast<char *>(&pf),sizeof(pf));
+
+	// pad with "merged" basins if index is not continuous in input
 	while (basins_.size()<i) {
-	    Basin b = Basin(basins_.size(),0);
-	    b.mark_merged();
-	    basins_.push_back(b);
+	    push_back_basin(basins_.size(),0);
+	    basins_[basins_.size()-1].mark_merged();
 	}
-	basins_.push_back(Basin(i,pf));
+	// register input basin
+	push_back_basin(i,pf);
 	
 	while( in ) {
 	    size_t j; // column index
@@ -59,6 +87,8 @@ BarrierGraph::BarrierGraph(std::istream &in,
 	}
     }
     std::cerr << "Read "<<num_rates<<" rates."<<std::endl;
+
+    num_input_states_ = basins_.size();
 }
 
 
@@ -97,7 +127,7 @@ BarrierGraph::filter_basin_transitions(const Basin &x0, double min_rate) {
 	//if (basins_[it->first].merged()) continue;
 	assert(!basins_[it->first].merged());
 	    
-	if (it->second.get_Z() / std::min(x0.get_Z(), basins_[it->first].get_Z())
+	if (it->second.Z() / std::min(x0.Z(), basins_[it->first].Z())
 	    < min_rate) {
 	    
 	    //remove transition
@@ -123,6 +153,62 @@ BarrierGraph::filter_transitions(double min_rate) {
     }    
 }
 
+double
+BarrierGraph::outflow_pf(const Basin &x) const {
+    double total_out=0;
+    
+    transitions_map_t::const_iterator trs_x_it=transitions_.find(x.idx());
+    
+    if (transitions_.end() == trs_x_it) return total_out;
+    
+    const transitions_map_row_t &trs_x = trs_x_it->second;
+    
+    for (transitions_map_row_t::const_iterator it=trs_x.begin();
+	 trs_x.end()!=it; ++it) {
+	
+	if (basins_[it->first].merged()) continue;
+	if (it->first==x.idx()) continue;
+	
+	total_out += it->second.Z();
+    }
+    return total_out;
+}
+
+double
+BarrierGraph::max_outflow(const Basin &x) const {
+    double max_outflow = - std::numeric_limits<double>::infinity();
+    
+    transitions_map_t::const_iterator trs_x_it=transitions_.find(x.idx());
+    
+    if (transitions_.end() == trs_x_it) return 0.0;
+    
+    const transitions_map_row_t &trs_x = trs_x_it->second;
+    
+    for (transitions_map_row_t::const_iterator it=trs_x.begin();
+	 trs_x.end()!=it; ++it) {
+	
+	if (basins_[it->first].merged()) continue;
+	if (it->first==x.idx()) continue;
+	
+	max_outflow = std::max(max_outflow, it->second.Z());
+    }
+    
+    return max_outflow/x.Z();
+}
+
+void
+BarrierGraph::merge_in_basin(Basin &x0, Basin &y, double fraction) {
+    y.merge_in(x0,fraction);
+
+    if (track_pruning_) {
+	size_t orig_index_x0 = basin_pruning_infos_[x0.idx()].orig_index();
+	basin_pruning_infos_[y.idx()].merge_in_basin(orig_index_x0,
+						     fraction,
+						     basin_pruning_infos_[x0.idx()],
+						     min_contribution_ / num_input_states_);
+    }
+}
+
 
 void
 BarrierGraph::dissolve_basin(Basin &x0) {
@@ -130,20 +216,22 @@ BarrierGraph::dissolve_basin(Basin &x0) {
     // compute total outflow
     double total_out = outflow_pf(x0);
     
+    // traverse neighbor basins of x0
     transitions_map_row_t &trs_x0=transitions_[x0.idx()];
     for (transitions_map_row_t::iterator it=trs_x0.begin();
 	 trs_x0.end()!=it; ++it) {
 	
 	Basin &y = basins_[it->first];
-	if (y.merged()) continue;
 	
+	// skip merged basins, and x0 itself
+	if (y.merged()) continue;
 	if (x0.idx()==y.idx()) continue;
 		
 	// 1) distribute the basin's partition function to its neighbors
-	double Z_yx0 =  it->second.get_Z();
+	double Z_yx0 =  it->second.Z();
 	double fraction = Z_yx0/total_out;
-		
-	y.merge_in(x0,fraction);
+	
+	merge_in_basin(x0,y,fraction);
 		
 	if (debug_out_) {
 	    std::cerr << "Transfer a fraction of " << fraction << " of " << x0.idx()
@@ -163,7 +251,7 @@ BarrierGraph::dissolve_basin(Basin &x0) {
 		    
 	    // update the transition from x to y (via x0)
 		    
-	    double Z_xx0 = transitions_[x.idx()][x0.idx()].get_Z();
+	    double Z_xx0 = transitions_[x.idx()][x0.idx()].Z();
 		    
 	    if (debug_out_) {
 		std::cerr << "Transfer a fraction of " << fraction << " of transition "
@@ -175,6 +263,7 @@ BarrierGraph::dissolve_basin(Basin &x0) {
 	} // end for it2 (over neighbors of x0)
 		
     } // end for it (over neighbors of x0)
+
 	    
     // finally, mark as merged
     if (debug_out_) {
@@ -200,18 +289,18 @@ BarrierGraph::is_to_be_merged(const Basin &x0,double max_outflow,double min_p_eq
     double total_out = outflow_pf(x0);
     
     // probability in equilibrium
-    double p_equ = x0.get_Z() / total_Z;
+    double p_equ = x0.Z() / total_Z;
     
     bool to_be_merged = 
 	(p_equ < min_p_equ) 
-	|| (total_out/x0.get_Z() > max_outflow)
+	|| (total_out/x0.Z() > max_outflow)
 	;
     
     if (debug_out_) {
 	if (to_be_merged) {
 	    std::cerr << "Select basin "<<x0.idx()<<" for merge because ";
-	    if (total_out/x0.get_Z()) {
-		std::cerr << "total outflow is "<<total_out/x0.get_Z();
+	    if (total_out/x0.Z()) {
+		std::cerr << "total outflow is "<<total_out/x0.Z();
 	    }
 	    if (p_equ < min_p_equ) {
 		std::cerr << "equilibrium probability is "<<p_equ;
@@ -222,7 +311,7 @@ BarrierGraph::is_to_be_merged(const Basin &x0,double max_outflow,double min_p_eq
     
     if ( special_first_state_ &&  x0.idx()==0 ) {
 	if (verbose_) {
-	    std::cerr << "Keep (special) first basin ( p="<< p_equ << ", outflow="<< total_out/x0.get_Z() <<" )."<<std::endl;
+	    std::cerr << "Keep (special) first basin ( p="<< p_equ << ", outflow="<< total_out/x0.Z() <<" )."<<std::endl;
 	}
 	to_be_merged=false;
     }
@@ -237,7 +326,7 @@ BarrierGraph::prune(double max_outflow,double min_p_equ, double min_rate) {
 
     for (size_t i=0; i<basins_.size(); ++i) sorted_basin_idxs.push_back(i);
     sort(sorted_basin_idxs.begin(),sorted_basin_idxs.end(),compBasinIdxs(*this));
-        
+
     // run through sorted basins and merge
     for (size_t i=0; i<basins_.size(); ++i) {
 	
@@ -260,7 +349,7 @@ BarrierGraph::prune(double max_outflow,double min_p_equ, double min_rate) {
         if (is_to_be_merged(x0,max_outflow,min_p_equ)) {
 	    
 	    if (debug_out_) {
-		std::cerr << "Dissolve basin "<< x0.idx() << " with outflow "<< outflow_pf(x0)/x0.get_Z() << std::endl;
+		std::cerr << "Dissolve basin "<< x0.idx() << " with outflow "<< outflow_pf(x0)/x0.Z() << std::endl;
 	    }
 	    
 	    dissolve_basin(x0);
@@ -269,7 +358,7 @@ BarrierGraph::prune(double max_outflow,double min_p_equ, double min_rate) {
     }
 }
 
-
+// reduce to keep set
 void
 BarrierGraph::reduce_basin_set(const std::set<size_t> &to_keep, double min_rate) {
     // sort basins increasing by their partition function
@@ -312,7 +401,7 @@ BarrierGraph::reduce_basin_set(const std::set<size_t> &to_keep, double min_rate)
 void
 BarrierGraph::print_edges(std::ostream &out,const Basin &b) const {
     out << b.idx()
-	// << " (" << b.get_Z() << ") "
+	// << " (" << b.Z() << ") "
 	<< "  -> ";
 	
     transitions_map_t::const_iterator
@@ -326,8 +415,8 @@ BarrierGraph::print_edges(std::ostream &out,const Basin &b) const {
 	    
 	if ((it->first!=b.idx()) && (!basins_[it->first].merged())) {
 	    out << " " << it->first
-		// << " (" << it->second.get_Z() << ")"
-		<< " " << (it->second.get_Z() / b.get_Z());
+		// << " (" << it->second.Z() << ")"
+		<< " " << (it->second.Z() / b.Z());
 	}
     }
     out << std::endl;
@@ -346,7 +435,7 @@ double BarrierGraph::compute_Z() const {
     double total_Z=0.0;
     for(size_t i=0; i<basins_.size(); ++i) {
 	if (!basins_[i].merged()) {
-	    total_Z += basins_[i].get_Z();
+	    total_Z += basins_[i].Z();
 	}
     }
     return total_Z;
@@ -367,7 +456,7 @@ BarrierGraph::print_basins(std::ostream &out) const {
 	    
 	    double max_out=max_outflow(basins_[i]);
 	    
-	    double p_equ = basins_[i].get_Z() / total_Z;
+	    double p_equ = basins_[i].Z() / total_Z;
 	    
 	    out << " \t" << max_out <<" \t" <<outflow_rate(basins_[i])
 		<<" \t" << p_equ;
@@ -404,7 +493,7 @@ BarrierGraph::print_treekin_ratesmatrix(std::ostream &out) const
 		// "bucket sort"
 		for(transitions_map_row_t::const_iterator it=ts->second.begin();
 		    it != ts->second.end(); ++it) {
-		    double rate = (it->second.get_Z() / basins_[i].get_Z());
+		    double rate = (it->second.Z() / basins_[i].Z());
 		    row[it->first] = rate;
 		    total += rate;
 		}
@@ -450,12 +539,12 @@ BarrierGraph::print_pfs(std::ostream &out,bool binary) const {
 		// "bucket sort"
 		for(transitions_map_row_t::const_iterator it=ts->second.begin();
 		    it != ts->second.end(); ++it) {
-		    row[it->first] = it->second.get_Z();
+		    row[it->first] = it->second.Z();
 		}
 	    }
 	    
 	    // set diagonal
-	    row[i] = basins_[i].get_Z();
+	    row[i] = basins_[i].Z();
 	    
 	    for(size_t j=0; j<row.size();++j) {
 		if (!basins_[j].merged()) {
@@ -483,7 +572,7 @@ BarrierGraph::write_binary(std::ostream &out,  double min_rate) const {
 	if (!basins_[i].merged()) {
 	    
 	    out.write(reinterpret_cast<const char *>(&i),sizeof(i));
-	    double pf = basins_[i].get_Z();
+	    double pf = basins_[i].Z();
 	    out.write(reinterpret_cast<const char *>(&pf),sizeof(pf));
 	    
 	    const transitions_map_t::const_iterator &ts = transitions_.find(i);
@@ -492,10 +581,10 @@ BarrierGraph::write_binary(std::ostream &out,  double min_rate) const {
 		    it != ts->second.end(); ++it) {
 		    
 		    size_t j=it->first;
-		    double tpf = it->second.get_Z();
+		    double tpf = it->second.Z();
 		    
 		    // symmetric min-rate criterion!
-		    if ( tpf / std::min(pf, basins_[j].get_Z()) >= min_rate ) {
+		    if ( tpf / std::min(pf, basins_[j].Z()) >= min_rate ) {
 			// write index
 			out.write(reinterpret_cast<const char *>(&j),sizeof(j));
 			// write pf
@@ -525,7 +614,7 @@ BarrierGraph::print_rxns(std::ostream &out,
 		for(transitions_map_row_t::const_iterator it=ts->second.begin();
 		    it != ts->second.end(); ++it) {
 		    size_t j=it->first;
-		    double rate = it->second.get_Z()/basins_[i].get_Z();
+		    double rate = it->second.Z()/basins_[i].Z();
 		    
 		    std::ostringstream subs1;
 		    std::ostringstream subs2;
@@ -601,13 +690,32 @@ BarrierGraph::keep_single_component(size_t c,
 }
 
 
+
+void 
+BarrierGraph::reindex_basin(Basin &x, size_t new_index) {
+    size_t old_index=x.idx();
+    
+    x.set_idx(new_index);
+    basins_[new_index]=x;
+    
+    if (track_pruning_) {
+	
+	// copy pruning information
+	basin_pruning_infos_[new_index]=basin_pruning_infos_[old_index];
+	
+    }
+}
+
 void
 BarrierGraph::reindex(const std::vector<bool> &keep) {
     
     std::vector<size_t> old2new(basins_.size());
     
     
-    // phase 0: remove transitions of merged basins_
+    // phase 0: remove entries in the transitions matrix that correspond to merged basins
+    
+    // * erase rows
+    //   for all basins not in keep: erase the corresponding row in the transitions matrix
     for (std::vector<Basin>::iterator it=basins_.begin();
 	 basins_.end()!=it; ++it) {
 	if (!keep[it->idx()]) {
@@ -615,16 +723,22 @@ BarrierGraph::reindex(const std::vector<bool> &keep) {
 	}
     }
 
+    // * erase columns
+    //   for all transitions matrix rows: for all basins not in keep: 
+    //     erase the column corresponding to the non-kept basin 
     for(transitions_map_t::iterator it=transitions_.begin();
 	it != transitions_.end(); ++it) {
+	// (here, we could -presumably more efficiently- run over the
+	// entries in the transition matrix row)
 	for (std::vector<Basin>::iterator it2=basins_.begin();
 	     basins_.end()!=it2; ++it2) {
+	    
 	    if (!keep[it2->idx()]) {
 		it->second.erase(it2->idx());
 	    }
 	}
     }
-
+    
     // phase 1: reindex basins_; copy in place
     {
 	size_t i=0;
@@ -633,13 +747,15 @@ BarrierGraph::reindex(const std::vector<bool> &keep) {
 	    if (keep[it->idx()]) {
 		old2new[it->idx()]=i;
 		if (it->idx()!=i) {
-		    it->set_idx(i);
-		    basins_[i]=*it;
+		    reindex_basin(*it,i);
 		}
 		i++;
 	    }
 	}
 	basins_.resize(i);
+	if (track_pruning_) {
+	    basin_pruning_infos_.resize(i);
+	}
     }
     
     // phase 2; remap transitions
@@ -683,10 +799,10 @@ BarrierGraph::check_rates() const
 		size_t j=it->first;
 		
 		//warning: the following finds can fail if data structures are not symmetric
-		double diff = abs(it->second.get_Z() -
-				  transitions_.find(j)->second.find(i)->second.get_Z());
+		double diff = abs(it->second.Z() -
+				  transitions_.find(j)->second.find(i)->second.Z());
 		
-		diff /= it->second.get_Z();
+		diff /= it->second.Z();
 		
 		max_diff = std::max(max_diff,diff);
 	    }
@@ -747,7 +863,7 @@ BarrierGraph::connected_components(std::vector<size_t> &components) const
 
 void
 BarrierGraph::swap_indices(size_t x, size_t y) {
-	
+    
     // first swap basins
     std::swap(basins_[x],basins_[y]);
     // (don't forget to swap indices of basins)
@@ -755,6 +871,12 @@ BarrierGraph::swap_indices(size_t x, size_t y) {
     basins_[x].set_idx(basins_[y].idx());
     basins_[y].set_idx(tmp);
     
+    // swap pruning information
+    if (track_pruning_) {
+	// swap pruning information records x and y
+	std::swap(basin_pruning_infos_[x],basin_pruning_infos_[y]);
+    }
+
     // then swap transitions:
     // -- first swap the rows
     std::swap(transitions_[x],transitions_[y]);
@@ -795,7 +917,7 @@ BarrierGraph::print_treekin_barriers(std::ostream &out,
 	energy.setf(std::ios_base::fixed, std::ios_base::floatfield);
 	energy << std::setprecision(2)
 	       << std::setw(6)
-	       << (- RT * log(basins_[i].get_Z()));
+	       << (- RT * log(basins_[i].Z()));
 
 	out << count << std::setw(ow) 
 	    << "-" //<< " " << to_dotbracket(basins_[i].get_local_minimum())
@@ -822,7 +944,7 @@ BarrierGraph::pequ_distribution(std::vector<double> &pequs) const {
     double total_Z = compute_Z();
     for(size_t i=0; i<basins_.size(); ++i) {
 	if (!basins_[i].merged()) {
-	    double p_equ = basins_[i].get_Z() / total_Z;
+	    double p_equ = basins_[i].Z() / total_Z;
 	    pequs.push_back( p_equ );
 	}
     }
@@ -916,3 +1038,17 @@ BarrierGraph::print_stats(std::ostream &out) const {
     return out;
 }
 
+std::ostream &
+BarrierGraph::write_pruning_track(std::ostream &out) const {
+    assert(track_pruning_);
+
+    for (size_t i=0; i<basins_.size(); i++) {
+	// out << i 
+	//     << "\t";
+	basin_pruning_infos_[i].write(out, min_contribution_, num_input_states_);
+	out << '\n';
+    }
+    
+    return out;
+
+}

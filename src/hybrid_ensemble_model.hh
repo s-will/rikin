@@ -64,6 +64,7 @@ public:
     class Move;
     
     typedef double energy_t;
+    typedef double pf_t;
     
     /**
      * @brief Describes an hybridization ensemble state in our model
@@ -188,6 +189,11 @@ public:
 	 * @brief Construct without interaction
 	 */
 	StateDescription();
+	
+	/** 
+	 * @brief Construct from code
+	 */
+	StateDescription(const code_t &code);
 	
 	/** 
 	 * @brief construct with single site and ensemble energy
@@ -385,6 +391,10 @@ public:
     HybEnsModel(std::string seqA, std::string seqB,
 		size_t maxsitesize,
 		size_t maxsitesize_diff,
+		size_t region_startA,
+		size_t region_endA,
+		size_t span,
+		size_t window,
 		bool cond
 		);
     
@@ -538,7 +548,7 @@ public:
 	return hybridpf_.RT();
     }
 
-    double
+    pf_t
     boltzmann_weight(energy_t energy) const {
 	return exp(-energy/RT());
     }

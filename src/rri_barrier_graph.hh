@@ -3,6 +3,7 @@
 
 #include "hybrid_ensemble_model.hh"
 #include "barrier_graph.hh"
+#include "basin_info.hh"
 
 /**
  * @brief Generation of RRI barrier graph
@@ -19,12 +20,15 @@
  * than the source state energy.
  */
 class RRIBarrierGraph: public BarrierGraph {
-
+    typedef HybEnsModel::energy_t energy_t;
+    typedef HybEnsModel::StateDescription::code_t code_t;
+    
 private:
     //! type of state hash, key=encoded state, value=index of assigned basin
-    typedef std::tr1::unordered_map< HybEnsModel::StateDescription::code_t,
+    typedef std::tr1::unordered_map< code_t,
 				     size_t,
 				     HybEnsModel::StateDescription::code_t_hash
+
 				     > state_hash_t;
     
     //! hybrid ensemble model
@@ -32,6 +36,12 @@ private:
 
     //! maximum recover energy
     double max_recover_energy_;
+
+    //! start of region of interaction sites in A
+    size_t region_startA_;
+    
+    //! end of region of interaction sites in A
+    size_t region_endA_;
 
     //! whether double sites are supported
     bool consider_double_sites_;
@@ -42,7 +52,12 @@ private:
     //! hash of the state basin assignment indexed by encoded states
     state_hash_t state_hash_;
 
-
+    //! whether gradient basin information is tracked
+    bool track_basins_;
+    
+    //! vector of additional infos for each basin (if track_) 
+    std::vector<BasinInfo> basin_infos_;
+    
     /** 
      * Read a state description line from input stream
      * 
@@ -69,8 +84,12 @@ public:
      * @param special_open_state whether open state is treated as special state 
      * (that is never merged with other states)
      * @param maxsitesize maximum size of a sequence in an interaction site
-     * @param maxsitesize maximum size difference of sequences in an interaction site
+     * @param maxsitesize_diff maximum size difference of sequences in an interaction site
      * @param max_recover_energy maximum energy, where neighbors of a state are still recovered
+     * @param region_start smallest left end of interaction site
+     * @param region_end largest right end of interaction site
+     * @param span base pair span for local folding
+     * @param window window size for local folding
      * @param consider_double_sites whether double interaction sites are allowed
      * @param gradient whether to combine states into basins due to gradient walks
      * @param verbose turns on verbose output 
@@ -82,6 +101,10 @@ public:
 		    size_t maxsitesize,
 		    size_t maxsitesize_diff,
 		    double max_recover_energy,
+		    size_t region_startA,
+		    size_t region_endA,
+		    size_t span,
+		    size_t window,
 		    bool consider_double_sites,
 		    bool gradient,
 		    bool verbose,
@@ -196,16 +219,17 @@ private:
      * @param[out] min_transition_index set to basin index of target basin if min_transition_energy is changed; set to maximum of size_t if target is not in hash
      * @param[out] trans, vector of transitions; if 0L, dont't record transitions 
      *
+     * @return whether move is valid (within region)
      * The method applies the move and looks up the neighbor in the
      * hash.  The neighbor state with lowest transition state over all
      * neighor states is determined, where only neighbors are
      * considered that are in the hash or larger than maxsitesize.
      */
-    void
+    bool
     process_move(const HybEnsModel::Move *move,
 		 const HybEnsModel::StateDescription &source_state,
-		 const HybEnsModel::energy_t &source_energy,
-		 HybEnsModel::energy_t &min_transition_energy,
+		 energy_t source_energy,
+		 energy_t &min_transition_energy,
 		 size_t &min_transition_index,
 		 std::vector<transition_t> &trans
 		 );
@@ -223,7 +247,7 @@ private:
      */
     void
     assign_to_basin(const HybEnsModel::StateDescription &state,
-		    const HybEnsModel::energy_t &energy,
+		    energy_t energy,
 		    size_t basin_index);
     
     /**
@@ -239,7 +263,7 @@ private:
      */
     size_t
     create_new_basin(const HybEnsModel::StateDescription &state,
-		     const HybEnsModel::energy_t &energy);
+		     energy_t energy);
     
     /** 
      * @brief register transitions
@@ -253,6 +277,13 @@ private:
     void
     register_transitions(size_t source_basin_index,
 			 std::vector<transition_t> &trans); 
+    
+    /** @brief check for state in region
+     * @param state the state to check
+     * @return whether state is outside of region
+     */
+    bool
+    state_outside_region(const HybEnsModel::StateDescription &state) const;
 
     /**
      * @brief Process a single state in the construction of the barrier graph
@@ -288,6 +319,48 @@ private:
      */
     size_t create_gradient_walk(const HybEnsModel::StateDescription &state, 
 				double energy);
+
+private:
+
+    /**
+     * @brief Append new basin to basins list
+     *
+     * @param basin_index basin index
+     * @param state_code  code of the basin minimum state
+     * @param energy      energy of the basin minimum
+     *
+     * @note keeps tracking information up to date
+     */
+    void 
+    push_back_basin(size_t basin_index, const code_t &state_code, energy_t energy);
+    
+    /**
+     * @brief add a state to a basin
+     *
+     * @param basin_index basin index
+     * @param state_code  code of the added state
+     * @param energy      energy of the added state
+     *
+     * @note keeps tracking information up to date
+     */
+    void
+    add_state_to_basin(size_t basin_index, const code_t &state_code, double energy);
+
+public:
+    
+    /**
+     * @brief turn on tracking of basin information
+     */
+    void
+    track_basins();
+    
+    /**
+     * @brief write basin information
+     * @param out output stream
+     * @return stream
+     */
+    std::ostream &
+    write_basin_track(std::ostream &out) const;
 
 };
 

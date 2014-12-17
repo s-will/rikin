@@ -35,12 +35,16 @@ public:
      * @param seq The RNA sequence
      * @param orientation +1 if seq is in forward orientation 5'->3', -1 otherwise.
      * @param maxsitesize maximum length of unpaired regions
+     * @param span base pair span for local folding
+     * @param window window size for local folding
      * @param cond whether to support dependant unpaired regions by conditional probabilities
      * (if false, model sites as independent)
      */
     UnpairedPF(const std::string &seq,
 	       int orientation, 
 	       size_t maxsitesize,
+	       size_t span,
+	       size_t window,
 	       bool cond);
     
     /**
@@ -109,6 +113,10 @@ private:
     double RT_;
 
     const size_t maxsitesize_;
+    
+    const size_t span_;
+    const size_t window_;
+
     const bool cond_;
     
 

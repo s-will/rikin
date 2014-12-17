@@ -24,11 +24,13 @@ src/Makefile
 src/*.o
 src/rrikin_barriers
 src/rrikin_enum
-src/hpf
+src/rrikin_prune
 src/rrikin_barriers_cmdline.c
 src/rrikin_barriers_cmdline.h
 src/rrikin_enum_cmdline.c
 src/rrikin_enum_cmdline.h
+src/rrikin_prune_cmdline.c
+src/rrikin_prune_cmdline.h
 Stochastirator-tests/
 src/test_moves
 src/SparseMatrix/test

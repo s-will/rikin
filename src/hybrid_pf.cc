@@ -15,13 +15,18 @@ extern "C" {
 HybridPF::HybridPF(const std::string &seqA_,
 		   const std::string &seqB_,
 		   size_t maxsitesize,
-		   size_t maxsitesize_diff):
+		   size_t maxsitesize_diff,
+		   size_t region_startA,
+		   size_t region_endA
+		   ):
     seqA(seqA_),
     seqB(seqB_),
     maxsitesize_(maxsitesize),
     maxsitesize_diff_(maxsitesize_diff),
-    lenA(seqA_.length()),
-    lenB(seqB_.length()),
+    region_startA_(region_startA),
+    region_endA_(region_endA),
+    lenA_(seqA_.length()),
+    lenB_(seqB_.length()),
     RT_( (temperature+K0)*GASCONST/1000.0 )
 {
     // std::cout << "Create HybridPF from sequences "<<seqA<<" and "<<seqB<<std::endl; 
@@ -68,12 +73,12 @@ HybridPF::free_temporary() {
 int
 HybridPF::pair_type(size_t i1, size_t i2) const {
     assert(1 <= i1);
-    assert(i1 <= lenA);
+    assert(i1 <= lenA_);
     assert(1 <= i2);
     
-    if (! (i2 <= lenB) ) {
-	std::cerr <<"i2: "<<i2<<" lenB: "<<lenB<<std::endl;
-	assert(i2 <= lenB);
+    if (! (i2 <= lenB_) ) {
+	std::cerr <<"i2: "<<i2<<" lenB: "<<lenB_<<std::endl;
+	assert(i2 <= lenB_);
     }
 
     return pair[SA[i1]][SB[i2]];
@@ -124,28 +129,30 @@ HybridPF::ILoopE(size_t i1, size_t i2, size_t k1,  size_t k2) const {
 void
 HybridPF::initialize_hybrid_pf() {
     // resize Q
-    Q.resize(lenA+1,lenB+1);
-    for (size_t i1=1; i1<=lenA; i1++) {
-	for (size_t i2=1; i2<=lenB; i2++) {
-	    Q(i1,i2).resize(lenA+1,lenB+1);
+    Q.resize(region_endA_-region_startA_+1,lenB_,
+	     region_startA_,1);
+    for (size_t i1=region_startA_; i1<=region_endA_; i1++) {
+	for (size_t i2=1; i2<=lenB_; i2++) {
+	    Q(i1,i2).resize(region_endA_-region_startA_+1,lenB_,
+			    region_startA_,1);
 	}
     }
  
     // initialisation
     
     // fill with 0
-    for (size_t i1=1; i1<=lenA; i1++) {
-	for (size_t i2=1; i2<=lenB; i2++) {
+    for (size_t i1=region_startA_; i1<=region_endA_; i1++) {
+	for (size_t i2=1; i2<=lenB_; i2++) {
 	    Q(i1,i2).fill(0);
 	} 
     }
 
     
-    // set Q[i][i2][i][i2] to 1
-    // if (i,i2) is a possible interaction base pair
+    // set Q[i][i2][i][i2] to
+    // 1 if (i,i2) is a possible interaction base pair
     // and 0 otherwise
-    for (size_t i1=1; i1<=lenA; i1++) {
-	for (size_t i2=1; i2<=lenB; i2++) {    
+    for (size_t i1=region_startA_; i1<=region_endA_; i1++) {
+	for (size_t i2=1; i2<=lenB_; i2++) {
 	    int ptype = pair_type(i1,i2);
 	    
 	    // Do we want the Duplex Init Energy added to each hybridisation????
@@ -168,11 +175,11 @@ HybridPF::compute_hybrid_pf_common_start(size_t i1, size_t i2) {
     // iterate over interaction loops closed by i1.i2 with innner
     // base pair k1.k2 such that k1-i1 + k2-i2 <= MAXLOOP
     
-    size_t max_k1 = std::min(lenA, i1+MAXLOOP+1);
+    size_t max_k1 = std::min(region_endA_, i1+MAXLOOP+1);
     for (size_t k1=i1+1; k1<=max_k1; k1++) {
 	
 	// here compute min_l1 such that maxlooplength constraint holds
-	size_t max_k2 = std::min(lenB, i2+MAXLOOP+1-(k1-i1-1));
+	size_t max_k2 = std::min(lenB_, i2+MAXLOOP+1-(k1-i1-1));
 	
 	for (size_t k2=i2+1; k2<=max_k2; k2++) {
 	    
@@ -184,12 +191,12 @@ HybridPF::compute_hybrid_pf_common_start(size_t i1, size_t i2) {
 	    pf_t exp_loopE = 
 		exp_ILoopE(i1,i2,k1,k2);
 	    
-	    for (size_t j1=k1; j1<=lenA; j1++) {
+	    for (size_t j1=k1; j1<=region_endA_; j1++) {
 		
 		// site_length_diff = |(j1-i1)-(j2-i2)| <= maxsitesize_diff_
 		// ==                 (j1-i1+i2)-maxsitesize_diff_ <= j2 <= (j1-i1+i2)+maxsitesize_diff_
 		size_t min_j2=std::max(k2+maxsitesize_diff_,(j1-i1+i2))-maxsitesize_diff_;
-		size_t max_j2=std::min(lenB,(j1-i1+i2)+maxsitesize_diff_);
+		size_t max_j2=std::min(lenB_,(j1-i1+i2)+maxsitesize_diff_);
 		
 		for (size_t j2=min_j2; j2<=max_j2; j2++) {
 		    
@@ -213,8 +220,8 @@ void
 HybridPF::compute_hybrid_pf() { 
     initialize_hybrid_pf();
     
-    for (size_t i1=lenA; i1>=1; i1--) {
-	for (size_t i2=lenB; i2>=1; i2--) {
+    for (size_t i1=region_endA_; i1>=region_startA_; i1--) {
+	for (size_t i2=lenB_; i2>=1; i2--) {
 	    if (pair_type(i1,i2)>0) {
 		compute_hybrid_pf_common_start(i1,i2);
 	    }

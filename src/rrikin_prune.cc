@@ -3,6 +3,7 @@
  *
  * Defines main() of the program rrikin_prune
  */
+
 #include "basin_transition.hh"
 #include "barrier_graph.hh"
 
@@ -23,12 +24,7 @@ extern "C" {
 #include "ViennaRNA/fold_vars.h" // defines global variables
 }
 
-/* control output */
-bool debug_out;
-bool verbose;
 
-/* control behavior */
-bool simplify_graph;
 
 bool consider_double_sites;
 
@@ -101,13 +97,22 @@ main(int argc, char **argv)
 	: std::numeric_limits<size_t>::max();  
 
     
-    double min_rate     = args_info.min_rate_arg;
+    double min_rate = args_info.min_rate_arg;
     
     bool special_first_state = ! args_info.no_special_first_state_given;
 
-    simplify_graph      = ! args_info.dont_simplify_graph_given;
-    verbose             = args_info.verbose_given;
-    debug_out           = args_info.debug_given;
+    /* control behavior */
+    bool simplify_graph      = ! args_info.dont_simplify_graph_given;
+    
+    /* control output */
+    bool verbose             = args_info.verbose_given;
+    bool debug_out           = args_info.debug_given;
+
+    /* tracking */
+    bool track = args_info.track_given;
+    std::string track_file;
+    if (track) { track_file = args_info.track_arg; }
+
 
     std::set<size_t> to_keep_set;
     for(size_t i=0; i<args_info.to_keep_given;++i) {
@@ -141,7 +146,7 @@ main(int argc, char **argv)
     
     cmdline_parser_free(&args_info);
     
-    stopwatch.start("read_input");
+    //stopwatch.start("read");
 
     // construct barrier graph
     std::ifstream in(inputfile.c_str(), std::ios::in | std::ios::binary);
@@ -149,10 +154,12 @@ main(int argc, char **argv)
 		    min_rate,
 		    special_first_state,
 		    verbose,
-		    debug_out);
+		    debug_out,
+		    track);
     in.close();
-
-    stopwatch.stop("read_input");
+    
+    //stopwatch.stop("read");
+    
     
     size_t num_total_basins = bg.num_basins();
     
@@ -353,7 +360,19 @@ main(int argc, char **argv)
     }
 
 
-        
+    if (track) {
+	stopwatch.start("write_pruning_info");
+	try {
+	    std::ofstream out(track_file.c_str());
+	    bg.write_pruning_track(out);
+	    out.close();
+	} catch(const std::ofstream::failure &e) {
+	    std::cerr << "Cannot write pruning track to file "<<track_file<<". "<<e.what()<<std::endl;
+	}
+	stopwatch.stop("write_pruning_info");
+    }
+    
+    
     if (verbose) {
 	stopwatch.print_info(std::cerr);
     }

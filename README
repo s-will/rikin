@@ -1,0 +1,15 @@
+RNAplfold: arithmetic mean of probabilities (is not correct! since we would need geometric mean)
+==> INTERSESTING SIDE PROJECT: RNAplfold with geometric means
+
+by using RNAplfold, we can use entire mRNAs and restrict interaction sites to some tails.
+==> Extend UnpairedPF.hh
+
+Criteria for pruning:
+
+  - transition rate < th_tr                        ==> remove edge
+  - equilibrium probability < th_eq (e.g. < 1e-10) ==> resolve state
+  - outflow > th_o (number or quantile based)      ==> resolve state
+
+(TODO: order! describe exactly)
+
+

@@ -16,6 +16,12 @@ HybEnsModel::StateDescription::StateDescription()
 {
 }
 
+HybEnsModel::StateDescription::StateDescription(const code_t &code) 
+    :isites(0)
+{
+    decode(code);
+}
+
 
 HybEnsModel::StateDescription::StateDescription(size_t i1, size_t i2, size_t j1, size_t j2)
     : isites(1,ISite(i1,i2,j1,j2))
@@ -84,14 +90,14 @@ HybEnsModel::to_dotbracket(const StateDescription &sd) const {
 // encode empty sites by invalid entry where i1 > j1 to avoid 0 in
 // encoding; as long as positions are >0 this allows to write encoding
 // to file and still use gnu's "sort -z"! ---  CURRENTLY BROKEN
+// (This was working as long as we used one byte per index)
 //
-
 HybEnsModel::StateDescription::code_t &
 HybEnsModel::StateDescription::encode(code_t &the_code) const {
     
     for (size_t i=0; i<size(); i++) {
 	unsigned short *code = 
-	    reinterpret_cast<unsigned short *>((size()==0)?(&the_code.first):(&the_code.second));
+	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
     
 	*(code++)=isites[i].i1;
 	*(code++)=isites[i].i2;
@@ -100,9 +106,9 @@ HybEnsModel::StateDescription::encode(code_t &the_code) const {
     }
     
     // if site()!=2, mark the second site or both sites as empty
-    for (size_t i=0; i<(2-size());i++) {
+    for (size_t i=size(); i<2; i++) {
 	unsigned short *code = 
-	    reinterpret_cast<unsigned short *>((size()==1)?(&the_code.first):(&the_code.second));
+	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
 
 	*(code++)=2;
 	*(code++)=2;
@@ -127,11 +133,15 @@ HybEnsModel::StateDescription::encode() const {
 
 HybEnsModel::StateDescription &
 HybEnsModel::StateDescription::decode(const code_t &the_code) {
+    
+    // determine number of encoded sites
     size_t num_sites=0;
     for (size_t i=0; i<2; i++) {
 	const unsigned short *code = 
-	    reinterpret_cast<const unsigned short *>((size()==0)?(&the_code.first):(&the_code.second));
-	if (code[0]<=code[2]) num_sites++;
+	    reinterpret_cast<const unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
+	
+	if (code[0]<=code[2]) { num_sites++; } 
+	else { break; } // break at first invalid site
     }
     
     isites.reserve(num_sites);
@@ -139,7 +149,7 @@ HybEnsModel::StateDescription::decode(const code_t &the_code) {
     
     for (size_t i=0; i<num_sites; i++) {
 	const unsigned short *code = 
-	    reinterpret_cast<const unsigned short *>((size()==0)?(&the_code.first):(&the_code.second));
+	    reinterpret_cast<const unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
 	isites.push_back(ISite(*(code),*(code+1),*(code+2),*(code+3)));
     }
     return *this;
@@ -214,13 +224,21 @@ HybEnsModel::HybEnsModel(std::string seqA,
 			 std::string seqB,
 			 size_t maxsitesize,
 			 size_t maxsitesize_diff,
+			 size_t region_startA,
+			 size_t region_endA,
+			 size_t span,
+			 size_t window,
 			 bool cond
 			 )
     : seqA_(seqA),
       seqB_(seqB),
-      uppfA_(seqA,+1,maxsitesize,cond),
-      uppfB_(seqB,-1,maxsitesize,cond),
-      hybridpf_(seqA,seqB,maxsitesize,maxsitesize_diff),
+      uppfA_(seqA,+1,maxsitesize,span,window,cond),
+      uppfB_(seqB,-1,maxsitesize,span,window,cond),
+      hybridpf_(seqA,seqB,
+		maxsitesize,
+		maxsitesize_diff,
+		region_startA,
+		region_endA),
       maxunpinloop_(6),
       minsitesize_(3),
       minsitedist_(6),

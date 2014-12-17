@@ -14,11 +14,15 @@ extern "C" {
 UnpairedPF::UnpairedPF(const std::string &seq,
 		       int orientation,
 		       size_t maxsitesize,
+		       size_t span,
+		       size_t window,
 		       bool cond) 
     : seq_(seq),
       //orientation_(orientation),
       RT_( (temperature+K0)*GASCONST/1000.0 ),
       maxsitesize_(maxsitesize),
+      span_(span),
+      window_(window),
       cond_(cond)
 {
     assert(orientation==-1 || orientation==1);
@@ -134,10 +138,9 @@ UnpairedPF::computeProbsGeneric(LocARNA::Matrix<prob_t> &P, const char *structur
     int fold_constrained_before=fold_constrained;
     if (structure!=NULL) {fold_constrained=-1;}
     
-    int plfW=seq_.length(); // parameter -W of plfold
-    int plfL=seq_.length(); // parameter -L of plfold
+    int plfW=std::min(window_,seq_.length()); // parameter -W of plfold
+    int plfL=std::min(span_,seq_.length()); // parameter -L of plfold
     
-
     // maximal size of unpaired region for which pf is computed
     int maxUnpairedRegionSize=std::min(seq_.length(),maxsitesize_);
 

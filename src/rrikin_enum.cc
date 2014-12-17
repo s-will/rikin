@@ -11,14 +11,19 @@
  */
 
 
-#include  <iostream>
+#include <iostream>
 
-#include  <stdlib.h>
-#include  <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 
-#include  <string.h>
-#include  <math.h>
-#include <assert.h>
+#include <string>
+#include <cmath>
+
+#include <limits>
+
+#include <cassert>
+
+
 
 extern "C" {
 #include "ViennaRNA/fold_vars.h" // defines global variables
@@ -88,6 +93,8 @@ size_t
 enumerate_double_sites(const HybEnsModel &model,
 		       size_t maxsitesize,
 		       size_t maxsitesize_diff,
+		       size_t region_startA,
+		       size_t region_endA,
 		       double max_hyb_energy,
 		       double max_total_energy,
 		       bool binary) {
@@ -107,9 +114,9 @@ enumerate_double_sites(const HybEnsModel &model,
 
 	
     //cout << "Double Hybridizations:" << endl;
-    for (size_t i1=1; i1<=seqA.length(); i1++) {
+    for (size_t i1=region_startA; i1<=region_endA; i1++) {
 	
-	double progress = (i1/(double)seqA.size());
+	double progress = (i1/(double)(region_endA-region_startA+1));
 	if (verbose) std::cerr << "\r" << (int(progress*10000)/100.0) << " %   ";
 
 	for (size_t i2=1; i2<=seqB.length(); i2++) {
@@ -117,7 +124,7 @@ enumerate_double_sites(const HybEnsModel &model,
 		continue;
 	    }
 	    	    
-	    for (size_t j1=i1+minsitesize-1; j1<=std::min(maxsitesize+i1-1,seqA.length()); j1++) {
+	    for (size_t j1=i1+minsitesize-1; j1<=std::min(maxsitesize+i1-1,region_endA); j1++) {
 
 		size_t from_j2 = std::max(i2+minsitesize-1+maxsitesize_diff,j1-i1+i2)-maxsitesize_diff;
 		size_t to_j2   = std::min(maxsitesize+i2-1,seqB.length());
@@ -135,13 +142,13 @@ enumerate_double_sites(const HybEnsModel &model,
 		    
 		    if ( energy_hyb1 > max_hyb_energy ) continue;
 		    
-		    for (size_t k1=j1+minsitedist+1; k1<=seqA.length(); k1++) {
+		    for (size_t k1=j1+minsitedist+1; k1<=region_endA; k1++) {
 			for (size_t k2=j2+minsitedist+1; k2<=seqB.length(); k2++) {
 			    if ( (model.pair_type(k1,k2)==0) ) {
 				continue;
 			    }
 			    
-			    for (size_t l1=k1+minsitesize-1; l1<=std::min(maxsitesize+k1-1,seqA.length()); l1++) {
+			    for (size_t l1=k1+minsitesize-1; l1<=std::min(maxsitesize+k1-1,region_endA); l1++) {
 				
 				size_t from_l2 = std::max(k2+minsitesize-1+maxsitesize_diff,l1-k1+k2)-maxsitesize_diff;
 				size_t to_l2   = std::min(maxsitesize+k2-1,seqB.length());
@@ -246,7 +253,26 @@ main(int argc, char **argv)
 	(args_info.max_hyb_length_diff_arg>=0)
 	? args_info.max_hyb_length_diff_arg
 	: std::max(seqA.length(),seqB.length());
+
+    size_t region_startA=1;
+    size_t region_endA=seqA.length();
     
+    if (args_info.region_arg>0) {
+	region_endA=args_info.region_arg;
+    } else if (args_info.region_arg<0) {
+	region_startA=seqA.length()-args_info.region_arg+1;
+    }	
+    
+    const size_t span = 
+	args_info.span_arg>=0
+	? args_info.span_arg
+	: std::numeric_limits<size_t>::max();
+    
+    const size_t window = 
+	args_info.span_arg>=0
+	? args_info.span_arg*2
+	: std::numeric_limits<size_t>::max();
+
     verbose        = args_info.verbose_given;
     bool enum_double_sites        = ! args_info.no_double_sites_given;
     bool binary        = args_info.binary_given;
@@ -254,20 +280,33 @@ main(int argc, char **argv)
     
     // ------------------------------------------------------------
     // enumerate states
-    stopwatch.start("generate_model");
+    stopwatch.start("init_model");
 
     if (verbose) std::cerr << "Initialize model (precomputing energies for sequences of length "
-			   <<seqA.size()<<" and "<<seqB.size()<<")" << std::endl;
+			   <<seqA.size()<<" and "<<seqB.size()
+			   << "; region A " << region_startA << "-" << region_endA
+			   <<")" << std::endl;
 
-    HybEnsModel model(seqA,seqB,maxsitesize,maxsitesize_diff,enum_double_sites);
+    HybEnsModel model(seqA,seqB,
+		      maxsitesize,
+		      maxsitesize_diff,
+		      region_startA,
+		      region_endA,
+		      span,
+		      window,
+		      enum_double_sites);
 
-    stopwatch.stop("generate_model");
+    stopwatch.stop("init_model");
     
     //if (verbose) stopwatch.print_info(std::cerr);
 
     stopwatch.start("enumerate");
 
-    if (verbose) std::cerr << "Enumerate states ( max hyb length "<<maxsitesize<<", max hyb length diff "<<maxsitesize_diff<<", max ss hyb energy " <<max_hyb_energy <<  ", max total energy " << max_total_energy << " )" << std::endl;
+    if (verbose) std::cerr << "Enumerate states ( max hyb length "<<maxsitesize
+			   << ", max hyb length diff "<<maxsitesize_diff
+			   << ", max ss hyb energy " <<max_hyb_energy
+			   << ", max total energy " << max_total_energy 
+			   << " )" << std::endl;
     
     const size_t minsitesize=model.minsitesize();
 
@@ -299,13 +338,13 @@ main(int argc, char **argv)
     size_t count_single_states=0;
     
     //cout << "Single Hybridisations:" << endl;
-    for (size_t i1=1; i1<=seqA.length(); i1++) {
+    for (size_t i1=region_startA; i1<=region_endA; i1++) {
 	for (size_t i2=1; i2<=seqB.length(); i2++) {
 	    if ( (model.pair_type(i1,i2)==0) ) {
 		continue;
 	    }
 	    // enumerate j1 s.t. site length is between minimum site size and maximum hybridization site length
-	    for (size_t j1=i1+minsitesize-1; j1<=std::min(maxsitesize+i1-1,seqA.length()); j1++) {
+	    for (size_t j1=i1+minsitesize-1; j1<=std::min(maxsitesize+i1-1,region_endA); j1++) {
 
 		// enumerate j2 s.t. site length is between minimum site size and maximum hybridization site length
 		// and, furthermore, the maximum hybridization site length difference is not exceeded
@@ -358,12 +397,14 @@ main(int argc, char **argv)
 	size_t count_double_states=0;
 	if (verbose) {
 	    std::cerr << "Enumerate double hybridization site states"
-		      << std::endl;    
+		      << std::endl;
 	}
 	
 	count_double_states=enumerate_double_sites(model,
 						   maxsitesize,
 						   maxsitesize_diff,
+						   region_startA,
+						   region_endA,
 						   max_hyb_energy,
 						   max_total_energy,
 						   binary);

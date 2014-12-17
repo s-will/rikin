@@ -16,7 +16,7 @@
  * Defines main() of the program rrikin_barriers
  *
  * rrikin_barriers constructs the barrier tree/graph and rate matrix for the
- * macro state process that moves between basins in the energy
+ * macro state process that moves between gradient basins in the energy
  * landscape.
  *
  * @todo check notes
@@ -81,14 +81,14 @@
 #include <LocARNA/stopwatch.hh>
 
 
-#include  <sstream>
+#include <cstdlib>
+#include <cmath>
+#include <cassert>
 
-#include  <stdlib.h>
-#include  <string>
-#include  <math.h>
-#include <assert.h>
-#include  <fstream>
-#include  <iomanip>
+#include <sstream>
+#include <string>
+#include <fstream>
+#include <iomanip>
 
 
 #include  <stack>
@@ -158,8 +158,14 @@ main(int argc, char **argv)
     verbose             = args_info.verbose_given;
     debug_out           = args_info.debug_given;
 
-    std::string outputfile = args_info.output_arg;
+    const std::string inputfile = args_info.input_arg;
+    const std::string outputfile = args_info.output_arg;
 
+
+    bool track = args_info.track_given;
+    std::string track_file;
+    if (track) { track_file = args_info.track_arg; }
+    
     std::string seqA = args_info.inputs[0];
     HybEnsModel::norm_RNA_seq(seqA);
     std::string seqB = "";
@@ -186,6 +192,26 @@ main(int argc, char **argv)
 	: std::max(seqA.length(),seqB.length());
 
     const double max_recover_energy=args_info.max_recover_energy_arg;
+    
+    size_t region_startA=1;
+    size_t region_endA=seqA.length();
+    
+    if (args_info.region_arg>0) {
+	region_endA=args_info.region_arg;
+    } else if (args_info.region_arg<0) {
+	region_startA=seqA.length()+args_info.region_arg+1;
+    }	
+
+    const size_t span = 
+	args_info.span_arg>=0
+	? args_info.span_arg
+	: std::numeric_limits<size_t>::max();
+    
+    const size_t window = 
+	args_info.span_arg>=0
+	? args_info.span_arg*2
+	: std::numeric_limits<size_t>::max();
+
 
     double min_rate     = args_info.min_rate_arg;
 
@@ -210,6 +236,10 @@ main(int argc, char **argv)
 		       maxsitesize,
 		       maxsitesize_diff,
 		       max_recover_energy,
+		       region_startA,
+		       region_endA,
+		       span,
+		       window,
 		       consider_double_sites,
 		       gradient,
 		       verbose,
@@ -217,16 +247,26 @@ main(int argc, char **argv)
     
     stopwatch.stop("initialize");
 
+    if (track) {
+	bg.track_basins();
+    }
 
     if (verbose) {
 	std::cerr << "Construct barrier graph." << std::endl;
     }
     
     stopwatch.start("construct");
-
-    bg.read_states(std::cin,
-		   binary);
     
+    try {
+	std::ifstream in(inputfile.c_str(),std::ios::in); // | std::ios::binary
+	if (!in) {throw std::ifstream::failure("Cannot open file.");}
+	bg.read_states(in,binary);
+	in.close();
+    } catch(std::ifstream::failure &e) {
+	std::cerr << "ERROR: Cannot read input from file "<<inputfile<<". "<<e.what()<<std::endl;
+	exit(-1);
+    }
+
     stopwatch.stop("construct");
     
     size_t num_total_basins = bg.num_basins();
@@ -240,14 +280,28 @@ main(int argc, char **argv)
 	bg.print_stats(std::cerr);
     }
     
-    stopwatch.start("write");
+    //stopwatch.start("write");
     if (verbose) {
 	std::cerr<<"Write output to "<<outputfile<<std::endl;
     }
-    std::ofstream out(outputfile.c_str(),std::ios::out | std::ios::binary);
-    bg.write_binary(out, min_rate);
-    out.close();
-    stopwatch.stop("write");
+    try {
+	std::ofstream out(outputfile.c_str(),std::ios::out | std::ios::binary);
+	bg.write_binary(out, min_rate);
+	out.close();
+    } catch(const std::ofstream::failure &e) {
+	std::cerr << "Cannot write output to file "<<outputfile<<". "<<e.what()<<std::endl;
+    }
+    //stopwatch.stop("write");
+
+    if (track) {
+	try {
+	    std::ofstream out(track_file.c_str());
+	    bg.write_basin_track(out);
+	    out.close();
+	} catch(const std::ofstream::failure &e) {
+	    std::cerr << "Cannot write basin track to file "<<track_file<<". "<<e.what()<<std::endl;
+	}
+    }
 
     if (verbose) {
 	stopwatch.print_info(std::cerr);

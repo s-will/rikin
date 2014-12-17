@@ -7,6 +7,8 @@
 #include <limits>
 #include <tr1/unordered_map>
 
+#include "basin.hh"
+#include "basin_pruning_info.hh"
 #include "basin_transition.hh"
 
 /**
@@ -16,11 +18,10 @@
  * functions.  Supports merge of basins by distributing merged basins
  * to their neighbors proportionally to the flow into each neighbor
  * basin.
- *
- * @todo binary file format of barrier graph and pf-file format are equivalent => merge?!
  */
 class BarrierGraph
 {
+    
 protected:
 
     //! a row of a transition map "matrix"
@@ -60,6 +61,27 @@ protected:
     //! vector storing basins of all local minima
     std::vector<Basin> basins_; // 0-based, note: also basin indices are 0-based
 
+    //! track prunings
+    bool track_pruning_;
+
+    //! number of input states
+    size_t num_input_states_;
+    
+    //! minimum contribution that is recorded in pruning info
+    double min_contribution_;
+    
+    typedef std::vector<BasinPruningInfo> basin_pruning_infos_t;
+
+    //! vector of basin pruning information
+    basin_pruning_infos_t basin_pruning_infos_; 
+    
+    /**
+     * @brief append new basin to basin list
+     */
+    void
+    push_back_basin(size_t index, double pf);
+
+        
 protected:
     
     /**
@@ -72,12 +94,7 @@ protected:
     BarrierGraph( bool special_first_state,
 		  bool verbose,
 		  bool debug_out
-		  )
-	: special_first_state_(special_first_state),
-	  verbose_(verbose),
-	  debug_out_(debug_out)
-    {
-    }
+		  );
     
 public:
 
@@ -89,6 +106,7 @@ public:
      * @param special_first_state never dissolve first state
      * @param verbose turn on verbose output
      * @param debug_out turn on debugging output
+     * @param track_pruning turn on tracking of pruning
      *
      * Read in "pf" format; same as written by write_binary()
      *
@@ -102,9 +120,10 @@ public:
 		 double min_rate,
 		 bool special_first_state,
 		 bool verbose,
-		 bool debug_out
+		 bool debug_out,
+		 bool track_pruning
 		 );
-
+    
     /**
      * @brief write barrier graph to stream in binary "bg" format
      * 
@@ -120,25 +139,7 @@ public:
 	@return sum over transition state partition functions
      */
     double
-    outflow_pf(const Basin &x) const {
-	double total_out=0;
-	
-	transitions_map_t::const_iterator trs_x_it=transitions_.find(x.idx());
-	
-	if (transitions_.end() == trs_x_it) return total_out;
-	
-	const transitions_map_row_t &trs_x = trs_x_it->second;
-	
-	for (transitions_map_row_t::const_iterator it=trs_x.begin();
-	     trs_x.end()!=it; ++it) {
-	    
-	    if (basins_[it->first].merged()) continue;
-	    if (it->first==x.idx()) continue;
-	    
-	    total_out += it->second.get_Z();
-        }
-	return total_out;
-    }
+    outflow_pf(const Basin &x) const;
 
     /** @brief total outflow as rate
 	@param x basin
@@ -146,7 +147,7 @@ public:
      */
     double
     outflow_rate(const Basin &x) const {
-	return outflow_pf(x)/x.get_Z();
+	return outflow_pf(x)/x.Z();
     }
 
     /** @brief maximum outflow rate
@@ -154,27 +155,7 @@ public:
 	@return maximum outflow rate of basin
     */
     double
-    max_outflow(const Basin &x) const {
-	double max_outflow = - std::numeric_limits<double>::infinity();
-
-	transitions_map_t::const_iterator trs_x_it=transitions_.find(x.idx());
-	
-	if (transitions_.end() == trs_x_it) return 0.0;
-	
-	const transitions_map_row_t &trs_x = trs_x_it->second;
-
-	
-	for (transitions_map_row_t::const_iterator it=trs_x.begin();
-	     trs_x.end()!=it; ++it) {
-	    
-	    if (basins_[it->first].merged()) continue;
-	    if (it->first==x.idx()) continue;
-	    
-	    max_outflow = std::max(max_outflow, it->second.get_Z());
-        }
-	
-	return max_outflow/x.get_Z();
-    }
+    max_outflow(const Basin &x) const;
 
     /** 
      * @brief compute partition function of all basins 
@@ -192,11 +173,20 @@ public:
 	
 	bool
 	operator() (size_t a,size_t b) const {
-	    return bg_.basins_[a].get_Z() < bg_.basins_[b].get_Z();
+	    return bg_.basins_[a].Z() < bg_.basins_[b].Z();
 	}
     };
 
-public:
+private:
+    /**
+     * @brief Merge one basin into another
+     *
+     * @param x0 target basin of merge
+     * @param y  basin merged into target 
+     * @param fraction fraction to which y is merged into x0
+     */
+    void
+    merge_in_basin(Basin &x0, Basin &y, double fraction);
     
     /** 
      * @brief select basins to be merged bases on their outflow and minimum probability 
@@ -213,7 +203,7 @@ public:
     bool
     is_to_be_merged(const Basin &x0, double max_outflow, double min_p_equ) const;
 
-
+protected:
     /**
      * @brief merge a single basins to its neighbors
      * @param x0 Basin
@@ -221,6 +211,7 @@ public:
     void
     dissolve_basin(Basin &x0);
 
+public:
     /** @brief Prunes the barrier graph
      *
      * Dissolve small or volatile, high-outflow basins. Remove small
@@ -271,7 +262,7 @@ public:
     filter_basin_transitions(const Basin &x0, double min_rate);
     
     /**
-     * @brief filter transitions by minimum rate, also remove self-transitions
+     * @brief filter transitions by minimum rate for all basins, also remove self-transitions
      * @param min_rate minimum rate; transition with lower rate (in
      * both directions!) are removed
      *
@@ -400,6 +391,28 @@ public:
 	       const std::string &nameA,
 	       const std::string &nameB,
 	       const std::string &nameAB) const;
+
+private:
+    /**
+     * @brief Move basin to new index
+     * @param x         basin
+     * @param new_index new index of basin
+     *
+     * Overwrites information of the basin with index new_index.  If
+     * pruning information is to be tracked, it is updated.
+     */    void 
+    reindex_basin(Basin &x, size_t new_index);
+    
+
+public:
+
+    /** 
+     * Swap two basin indices
+     * 
+     * @param x first index
+     * @param y second index
+     */
+    void swap_indices(size_t x, size_t y);
     
     /** @brief reindex basins, remove merged basins
      */
@@ -411,14 +424,6 @@ public:
     void
     reindex(const std::vector<bool> &keep);
 
-
-    /** 
-     * Swap two basin indices
-     * 
-     * @param x first index
-     * @param y second index
-     */
-    void swap_indices(size_t x, size_t y);
 
 
     /** 
@@ -494,6 +499,22 @@ public:
      */
     double
     min_pequ_by_number(size_t n) const;
+    
+    /**
+     * @brief Write tracking information about pruning 
+     *
+     * @param out output stream
+     *
+     * Writes information about dissolving of basins in the pruning
+     * process. Essentially, this is a table of original states
+     * (columns) and states after pruning (rows). Each entry is the
+     * proportion/contribution of the original state in the resulting
+     * state. We write a sparse representation of each column by
+     * index/value pairs.
+     */
+    std::ostream &
+    write_pruning_track(std::ostream &out) const;
+
     
 };
 

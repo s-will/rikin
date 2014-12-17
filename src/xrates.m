@@ -1,10 +1,11 @@
 #!/usr/bin/octave -qf
+# -*- Octave -*-
 
 tool_name="XRates";
 tool_version="0.2";
 tool_description="Calculate kinetics from weights/pfs of states and transitions by solving the master equation for Arrhenius rates.";
 
-# ## like perl's findbin, get the directory in that the script resides.
+# ## like perls findbin, get the directory in that the script resides.
 # ## e.g., this can be added to the function search path by addpath
 # function ans = findbin()
 #   ans = fileparts(make_absolute_filename(program_invocation_name));
@@ -264,12 +265,15 @@ def_args = struct(
 		  "tinc", 1.2,
 		  "binary", true,
 		  "mode", "expm",
-		  "p0", 2
+		  "p0", 2,
+		  "absorb", -1,
+		  "mfpts", false
 		  );
 
 parser=argparse_parser();
 parser=argparse_addOption(parser,"--verbose","v","",false,"Be verbose.");
 parser=argparse_addOption(parser,"--binary","b","",false,"Binary input");
+parser=argparse_addOption(parser,"--nonbinary","","",false,"Non-binary input");
 parser=argparse_addOption(parser,"--out","","string",true,
 			  "Name of output file. The distributions at each time point until convergence are written as a table to this file.");
 parser=argparse_addOption(parser,"--t0","","double",false,"Start time");
@@ -277,6 +281,10 @@ parser=argparse_addOption(parser,"--t8","","double",false,"End time");
 parser=argparse_addOption(parser,"--tinc","","double",false,"Time increment");
 parser=argparse_addOption(parser,"--mode","","string",false,"Mode (expm or diag)");
 parser=argparse_addOption(parser,"--p0","","int",false,"State with initial probability 1");
+parser=argparse_addOption(parser,"--absorb","","int",false,"Absorbing state");
+
+parser=argparse_addOption(parser,"--mfpts","","",false,"Compute mean first passage times");
+
 parser=argparse_addOption(parser,"in","","string",true,
 			  "Input file. Matrix of transition weights/partition functions; the diagonal contains state weights.");
 
@@ -328,8 +336,12 @@ if ! strcmp(mode,"expm") && ! strcmp(mode,"diag")
     exit(-1);
 endif
 
-binary  = isfield(args,"binary")  && args.binary;    # read pfs in binary format
+#binary  = isfield(args,"binary")  && args.binary;    # whether to read pfs in binary format
+binary  = !( isfield(args,"nonbinary")  && args.nonbinary);    # whether to read pfs in binary format
 
+absorb = args.absorb;
+
+mfpts  = isfield(args,"mfpts")  && args.mfpts;
 
 ############################################################
 ##
@@ -369,8 +381,12 @@ if (verbose)
   printf("Load pfs from file %s\n",pffilename);
 endif
 
+##############################
+# Read and check pfs, preprocess
+
 if (!binary)
-  pfs = load("-ascii",pffilename);
+   printf("Read text input from file %s\n",pffilename);
+  pfs = load("-ascii",pffilename)
   dim=size(pfs,1);
 else
   fh=fopen(pffilename);
@@ -393,8 +409,14 @@ if (size(pfs,2)!=dim)
   exit(1);
 endif
 
+##############################ä
+## get basin pfs (from input pfs matrix)
+#
 basin_pfs = diag(pfs);
 
+##############################
+## calculate R (from input pfs matrix)
+#
 R = pfs ./ repmat(basin_pfs, 1,dim);
 
 ## recalculate diagonal of R (as -rowsum)
@@ -402,11 +424,12 @@ R = R - diag(diag(R)); # set diagonal to 0
 rowsums = R * ones(dim,1);
 R = R - diag(rowsums);
 
-#printf("R: \n");
-#disp(R)
 
-format "short";
+format short e;
 
+##############################
+## initial distribution
+#
 pi0 = zeros(dim,1);
 pi0(startstate,1)=1;
 if (verbose)
@@ -415,13 +438,30 @@ if (verbose)
   printf("\n");
 endif
 
+##############################
+## stationary distribution
+#
 # pi8 = expm(endtime*R)*pi0; ## pi at endtime
-pi8 = basin_pfs / (ones(1,dim)*basin_pfs); ## pi at endtime
+pi8 = basin_pfs / (ones(1,dim)*basin_pfs); ## pi after infinite time
+
+## handle absorbing state (optionally)
+if (absorb>0)
+  pi8=zeros(dim,1);
+  pi8(absorb,1)=1;
+  R(absorb,absorb)=0; ## set outflow of absorbing state to 0
+  for i=1:dim
+      R(absorb,i)=0;
+  endfor
+endif
+
 if (verbose)
   printf("PI_8: ");
-  printvec(pi8)
+  printvec(pi8);
   printf("\n");
 endif
+
+#printf("R: \n");
+#disp(R)
 
 
 if (verbose)
@@ -430,8 +470,83 @@ if (verbose)
 endif
 
 
+## optionally, compute mean first passage times
+if (mfpts)
+  printf("Compute mean first passage times.\n");
+  
+  timescale=1; ## set "unit time": one step in the discrete MP with
+  ## transition probability matrix P
+  
+  ## compute matrix of transition probabilities from rates:
+
+  # P = eye(dim)+timescale*R; # approximation (like treekin): beginning of
+  # Taylor expansion - this is usually good enough (since rates are very small)
+  #
+  P = expm(timescale * R); ## exact, P at unit time is the matrix exponential of timescale*R
+  
+  ## # Weather in the Land of Oz - example
+  ## dim=3
+  ## P = [2,1,1;2,0,2;1,1,2]/4 
+  ## pi8 = P^100;
+  ## pi8 = transpose(pi8(1,1:dim)) 
+  
+  if (absorb>0)
+    # case: compute mfpt for the single state <absorb>, i.e. absorption times
+    
+    ## Q is the matrix P without the row and column of the absorbing state 
+    Q = P;
+    Q(:,absorb)=[]; # remove column absorb
+    Q(absorb,:)=[]; # remove row absorb
+    
+    # fundamental matrix N
+    
+    N = inv(eye(dim-1)-Q);
+        
+    # row sums to get absorbtion times from each state i
+    t = N * ones(dim-1,1);
+    
+    # insert absorbtion time 0 for absorb state
+    t = [t(1:(absorb-1),1);0;t(absorb:(dim-1),1)];
+    
+    t=t*timescale;
+
+    printf("Absorption times (to state %d): ",absorb);
+    printvec(t);
+    printf("\n");
+    
+  else
+    # case: compute all mfpts
+      
+    # stationary matrix W
+    W=repmat(transpose(pi8),dim,1);
+
+
+    # compute fundamental matrix Z
+    Z = inv( eye(dim) - P + W );
+    # INV_TEST = sum( diag(Z*(eye(dim)-P+W)) ) / dim;
+
+
+    # calculate mean first passage times
+    # m_ij = (z_jj - z_ij) / w_j
+    # m_ij is the mean first passage time from i to j
+    M = ( repmat(transpose(diag(Z)),dim,1) - Z ) ./ W;
+    
+    M = M * timescale;
+    
+    disp(M);
+
+    printf("MFPTs starting from state %d: ",startstate);
+    printvec( M(startstate,:) )
+    printf("\n");
+
+  endif
+endif
+
+
 R=transpose(R); # we need R_ij = rate from j to i
 
+
+## if we use diagonalization to exponentiate do some precomputation 
 if (mode=="diag")
   ## make symmetric (works for rate matrices in detailed balance)
   ## ATTENTION: this requires to know the correct pi8
@@ -496,20 +611,22 @@ endif
 ## open the output file to write distributions pi_t
 fout = fopen (outfilename, "w");
 
-
 step=0;
 time=starttime;
 
+
 while(time<endtime)
   if (mode=="diag")
+    ## diagonalization mode
     pi = pre_left * expdiag(time*eigvals) * pre_right;
   else
+    ## direct exponentiation mode
     pi = expm(time*R)*pi0;
   endif
   fprintf(fout,"%e",time);
   fprintvec(fout,pi)
   fprintf(fout,"\n");
-  
+
   pi_sum=ones(1,dim)*pi;
   #if (pi_sum > 1.05)
   #  printf("Probability sum greater 1 at time %g (sum=%g).\n",time,pi_sum);

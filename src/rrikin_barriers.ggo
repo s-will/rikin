@@ -27,11 +27,19 @@ option "no-gradient" - "Don't combine into basins by gradient walk" optional
 option "homodimer" - "Compute rates for homodimer (only one sequence accepted)" optional
 option "antisense" - "Computes rates for sense/antisense pair (only one sequence accepted)" optional
 
-option "verbose" - "Turn on verbose output" optional
-option "debug" - "Turn on debugging output" optional
+option "track" - "Turn on basin tracking, providing output filename" string optional
+
+option "region" - "Restrict region for interaction <n> bases at head (>0) or tail (-1) of sequence 1 (default: 0=no restriction)." int default="0" optional
+
+option "span" - "Base pair span for local folding. Set this to turn on local folding." int default="-1" optional
 
 
 option "output" o "Output filename" string
+option "input" i "Input filename" string
+
+option "verbose" - "Turn on verbose output" optional
+option "debug" - "Turn on debugging output" optional
+
 
 text "\nInput sequences:\n"
 text "  seq1 first sequence in forward orientation\n"

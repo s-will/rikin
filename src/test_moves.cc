@@ -1,8 +1,10 @@
-#include  <stdlib.h>
-#include  <string.h>
-#include  <stdio.h>
-#include  <math.h>
-#include <assert.h>
+#include  <cstdlib>
+#include  <string>
+#include  <cstdio>
+#include  <cmath>
+#include  <limits>
+
+#include <cassert>
 
 extern "C" {
 #include "ViennaRNA/fold_vars.h" // defines global variables
@@ -46,7 +48,12 @@ main()
     const std::string seqB="GCUGCGAUGCAUGCCUCGAU";
     
     //const std::string seqB="GGGGGCCCCC";
-        
+    
+    size_t region_startA=1;
+    size_t region_endA=seqA.length();
+    size_t span = std::numeric_limits<size_t>::max();
+    size_t window = std::numeric_limits<size_t>::max();
+
     // ------------------------------------------------------------
     // enumerate moves
 
@@ -54,6 +61,10 @@ main()
     HybEnsModel model(seqA,seqB,
 		      std::max(seqA.length(),seqB.length()),
 		      std::max(seqA.length(),seqB.length()),
+		      region_startA,
+		      region_endA,
+		      span,
+		      window,
 		      true);
     std::cout << "    DONE." << std::endl;
     

@@ -31,13 +31,17 @@ public:
      * @param seqB sequence B (3' -> 5')
      * @param maxsitesize maximum sequence length in a site
      * @param maxsitesize_diff maximum sequence length difference in a site
+     * @param region_start smallest left end of interaction site
+     * @param region_end largest right end of interaction site
      *
      * @note sequence B is in reverse orientation
      */
     HybridPF(const std::string &seqA,
 	     const std::string &seqB,
 	     size_t maxsitesize,
-	     size_t maxsitesize_diff
+	     size_t maxsitesize_diff,
+	     size_t region_startA,
+	     size_t region_endA
 	     );
     
     //! Destructor frees librna arrays
@@ -87,7 +91,7 @@ private:
     
     
     //! 4D matrix for holding partition functions.
-    typedef LocARNA::Matrix<LocARNA::Matrix<FLT_OR_DBL> > PFMatrix4D;
+    typedef LocARNA::OMatrix<LocARNA::OMatrix<FLT_OR_DBL> > PFOffsetMatrix4D;
 
 
     /**
@@ -110,8 +114,11 @@ private:
     const size_t maxsitesize_;
     const size_t maxsitesize_diff_;
 
-    const size_t lenA; //!< length of seqA
-    const size_t lenB; //!< length of seqB
+    size_t region_startA_;
+    size_t region_endA_;
+    
+    const size_t lenA_; //!< length of seqA
+    const size_t lenB_; //!< length of seqB
     
     /**
      * @brief scaling factor for partition functions/boltzmann weights
@@ -127,9 +134,9 @@ private:
     /**
      * 4-dim matrix that holds all partition functions 
      * Q[i1][i2][j1][j2] is the hybrid partition function 
-     * for subsequences seqA[i1..j1] and reverse(seqB)[j1..j2].
+     * for subsequences seqA[i1..j1] and reverse(seqB)[i2..j2].
      */
-    PFMatrix4D Q;
+    PFOffsetMatrix4D Q;
     
     
     //! \brief Compute table Q.
