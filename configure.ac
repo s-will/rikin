@@ -140,11 +140,11 @@ fi
 
 
 # configure for use of LocARNA library
-PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.2 >= 1.7.15])
+PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.3 >= 1.7.15])
 
 CPPFLAGS="$LOCARNA_CFLAGS $CPPFLAGS"
 LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
-LIBS="-lLocARNA-1.2 $LIBS"
+LIBS="-lLocARNA-1.3 $LIBS"
 
 
 ## ========================================
