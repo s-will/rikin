@@ -43,6 +43,12 @@ private:
     //! end of region of interaction sites in A
     size_t region_endA_;
 
+    //! start of region of interaction sites in B
+    size_t region_startB_;
+    
+    //! end of region of interaction sites in B
+    size_t region_endB_;
+
     //! whether double sites are supported
     bool consider_double_sites_;
 
@@ -103,6 +109,8 @@ public:
 		    double max_recover_energy,
 		    size_t region_startA,
 		    size_t region_endA,
+		    size_t region_startB,
+		    size_t region_endB,
 		    size_t span,
 		    size_t window,
 		    bool consider_double_sites,

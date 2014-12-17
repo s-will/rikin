@@ -41,7 +41,9 @@ public:
 	     size_t maxsitesize,
 	     size_t maxsitesize_diff,
 	     size_t region_startA,
-	     size_t region_endA
+	     size_t region_endA,
+	     size_t region_startB,
+	     size_t region_endB
 	     );
     
     //! Destructor frees librna arrays
@@ -116,6 +118,8 @@ private:
 
     size_t region_startA_;
     size_t region_endA_;
+    size_t region_startB_;
+    size_t region_endB_;
     
     const size_t lenA_; //!< length of seqA
     const size_t lenB_; //!< length of seqB

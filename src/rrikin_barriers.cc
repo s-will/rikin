@@ -195,11 +195,19 @@ main(int argc, char **argv)
     
     size_t region_startA=1;
     size_t region_endA=seqA.length();
+    size_t region_startB=1;
+    size_t region_endB=seqB.length();
     
-    if (args_info.region_arg>0) {
-	region_endA=args_info.region_arg;
-    } else if (args_info.region_arg<0) {
-	region_startA=seqA.length()+args_info.region_arg+1;
+    if (args_info.regionA_arg>0) {
+	region_endA=args_info.regionA_arg;
+    } else if (args_info.regionA_arg<0) {
+	region_startA=seqA.length()+args_info.regionA_arg+1;
+    }	
+
+    if (args_info.regionB_arg>0) {
+	region_endB=args_info.regionB_arg;
+    } else if (args_info.regionB_arg<0) {
+	region_startB=seqB.length()+args_info.regionB_arg+1;
     }	
 
     const size_t span = 
@@ -238,6 +246,8 @@ main(int argc, char **argv)
 		       max_recover_energy,
 		       region_startA,
 		       region_endA,
+		       region_startB,
+		       region_endB,
 		       span,
 		       window,
 		       consider_double_sites,

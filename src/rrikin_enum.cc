@@ -95,6 +95,8 @@ enumerate_double_sites(const HybEnsModel &model,
 		       size_t maxsitesize_diff,
 		       size_t region_startA,
 		       size_t region_endA,
+		       size_t region_startB,
+		       size_t region_endB,
 		       double max_hyb_energy,
 		       double max_total_energy,
 		       bool binary) {
@@ -119,7 +121,7 @@ enumerate_double_sites(const HybEnsModel &model,
 	double progress = (i1/(double)(region_endA-region_startA+1));
 	if (verbose) std::cerr << "\r" << (int(progress*10000)/100.0) << " %   ";
 
-	for (size_t i2=1; i2<=seqB.length(); i2++) {
+	for (size_t i2=region_startB; i2<=region_endB; i2++) {
 	    if ( (model.pair_type(i1,i2)==0) ) {
 		continue;
 	    }
@@ -127,7 +129,7 @@ enumerate_double_sites(const HybEnsModel &model,
 	    for (size_t j1=i1+minsitesize-1; j1<=std::min(maxsitesize+i1-1,region_endA); j1++) {
 
 		size_t from_j2 = std::max(i2+minsitesize-1+maxsitesize_diff,j1-i1+i2)-maxsitesize_diff;
-		size_t to_j2   = std::min(maxsitesize+i2-1,seqB.length());
+		size_t to_j2   = std::min(maxsitesize+i2-1,region_endB);
 		to_j2 = std::min(to_j2,j1-i1+i2+maxsitesize_diff);
 		
 		for (size_t j2=from_j2; j2<=to_j2; j2++) {
@@ -143,7 +145,7 @@ enumerate_double_sites(const HybEnsModel &model,
 		    if ( energy_hyb1 > max_hyb_energy ) continue;
 		    
 		    for (size_t k1=j1+minsitedist+1; k1<=region_endA; k1++) {
-			for (size_t k2=j2+minsitedist+1; k2<=seqB.length(); k2++) {
+			for (size_t k2=j2+minsitedist+1; k2<=region_endB; k2++) {
 			    if ( (model.pair_type(k1,k2)==0) ) {
 				continue;
 			    }
@@ -151,7 +153,7 @@ enumerate_double_sites(const HybEnsModel &model,
 			    for (size_t l1=k1+minsitesize-1; l1<=std::min(maxsitesize+k1-1,region_endA); l1++) {
 				
 				size_t from_l2 = std::max(k2+minsitesize-1+maxsitesize_diff,l1-k1+k2)-maxsitesize_diff;
-				size_t to_l2   = std::min(maxsitesize+k2-1,seqB.length());
+				size_t to_l2   = std::min(maxsitesize+k2-1,region_endB);
 				to_l2 = std::min(to_l2,l1-k1+k2+maxsitesize_diff);
 		
 				for (size_t l2=from_l2; l2<=to_l2; l2++) {
@@ -256,13 +258,21 @@ main(int argc, char **argv)
 
     size_t region_startA=1;
     size_t region_endA=seqA.length();
-    
-    if (args_info.region_arg>0) {
-	region_endA=args_info.region_arg;
-    } else if (args_info.region_arg<0) {
-	region_startA=seqA.length()-args_info.region_arg+1;
+    size_t region_startB=1;
+    size_t region_endB=seqB.length();
+
+    if (args_info.regionA_arg>0) {
+	region_endA=args_info.regionA_arg;
+    } else if (args_info.regionA_arg<0) {
+	region_startA=seqA.length()+args_info.regionA_arg+1;
     }	
-    
+
+    if (args_info.regionB_arg>0) {
+	region_endB=args_info.regionB_arg;
+    } else if (args_info.regionB_arg<0) {
+	region_startB=seqB.length()+args_info.regionB_arg+1;
+    }	
+
     const size_t span = 
 	args_info.span_arg>=0
 	? args_info.span_arg
@@ -285,6 +295,7 @@ main(int argc, char **argv)
     if (verbose) std::cerr << "Initialize model (precomputing energies for sequences of length "
 			   <<seqA.size()<<" and "<<seqB.size()
 			   << "; region A " << region_startA << "-" << region_endA
+			   << "; region B " << region_startB << "-" << region_endB
 			   <<")" << std::endl;
 
     HybEnsModel model(seqA,seqB,
@@ -292,6 +303,8 @@ main(int argc, char **argv)
 		      maxsitesize_diff,
 		      region_startA,
 		      region_endA,
+		      region_startB,
+		      region_endB,
 		      span,
 		      window,
 		      enum_double_sites);
@@ -339,7 +352,7 @@ main(int argc, char **argv)
     
     //cout << "Single Hybridisations:" << endl;
     for (size_t i1=region_startA; i1<=region_endA; i1++) {
-	for (size_t i2=1; i2<=seqB.length(); i2++) {
+	for (size_t i2=region_startB; i2<=region_endB; i2++) {
 	    if ( (model.pair_type(i1,i2)==0) ) {
 		continue;
 	    }
@@ -349,7 +362,7 @@ main(int argc, char **argv)
 		// enumerate j2 s.t. site length is between minimum site size and maximum hybridization site length
 		// and, furthermore, the maximum hybridization site length difference is not exceeded
 		size_t from_j2 = std::max(i2+minsitesize-1+maxsitesize_diff,j1-i1+i2)-maxsitesize_diff;
-		size_t to_j2   = std::min(maxsitesize+i2-1,seqB.length());
+		size_t to_j2   = std::min(maxsitesize+i2-1,region_endB);
 		to_j2 = std::min(to_j2,j1-i1+i2+maxsitesize_diff);
 		for (size_t j2=from_j2; j2<=to_j2; j2++) {
 		    if ( (model.pair_type(j1,j2))==0 ) {
@@ -405,6 +418,8 @@ main(int argc, char **argv)
 						   maxsitesize_diff,
 						   region_startA,
 						   region_endA,
+						   region_startB,
+						   region_endB,
 						   max_hyb_energy,
 						   max_total_energy,
 						   binary);

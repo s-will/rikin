@@ -51,6 +51,8 @@ main()
     
     size_t region_startA=1;
     size_t region_endA=seqA.length();
+    size_t region_startB=1;
+    size_t region_endB=seqB.length();
     size_t span = std::numeric_limits<size_t>::max();
     size_t window = std::numeric_limits<size_t>::max();
 
@@ -63,6 +65,8 @@ main()
 		      std::max(seqA.length(),seqB.length()),
 		      region_startA,
 		      region_endA,
+		      region_startB,
+		      region_endB,
 		      span,
 		      window,
 		      true);

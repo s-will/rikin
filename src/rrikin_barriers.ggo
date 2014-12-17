@@ -29,7 +29,9 @@ option "antisense" - "Computes rates for sense/antisense pair (only one sequence
 
 option "track" - "Turn on basin tracking, providing output filename" string optional
 
-option "region" - "Restrict region for interaction <n> bases at head (>0) or tail (-1) of sequence 1 (default: 0=no restriction)." int default="0" optional
+option "regionA" - "Restrict region for interaction <n> bases at head (>0) or tail (-1) of sequence A (default: 0=no restriction)." int default="0" optional
+
+option "regionB" - "Restrict region for interaction <n> bases at head (>0) or tail (-1) of sequence B (default: 0=no restriction)." int default="0" optional
 
 option "span" - "Base pair span for local folding. Set this to turn on local folding." int default="-1" optional
 

@@ -26,7 +26,9 @@ option "binary" - "Binary encoding of states in output" optional
 option "homodimer" - "Enumerate conformations of homodimer (only one sequence accepted)" optional
 option "antisense" - "Enumerate conformations of sense/antisense pair (only one sequence accepted)" optional
 
-option "region" - "Restrict region for interaction <n> bases at head (>0) or tail (-1) of sequence 1 (default: 0=no restriction)." int default="0" optional
+option "regionA" - "Restrict region for interaction <n> bases at head (>0) or tail (-1) of sequence A (default: 0=no restriction)." int default="0" optional
+
+option "regionB" - "Restrict region for interaction <n> bases at head (>0) or tail (-1) of sequence B (default: 0=no restriction)." int default="0" optional
 
 option "span" - "Base pair span for local folding. Set this to turn on local folding." int default="-1" optional
 

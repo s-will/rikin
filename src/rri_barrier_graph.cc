@@ -15,6 +15,8 @@ RRIBarrierGraph::RRIBarrierGraph(const std::string &seqA,
 				 double max_recover_energy,
 				 size_t region_startA,
 				 size_t region_endA,
+				 size_t region_startB,
+				 size_t region_endB,
 				 size_t span,
 				 size_t window,
 				 bool consider_double_sites,
@@ -27,12 +29,16 @@ RRIBarrierGraph::RRIBarrierGraph(const std::string &seqA,
 	    maxsitesizediff,
 	    region_startA,
 	    region_endA,
+	    region_startB,
+	    region_endB,
 	    span,
 	    window,
 	    consider_double_sites),
     max_recover_energy_(max_recover_energy),
     region_startA_(region_startA),
     region_endA_(region_endA),
+    region_startB_(region_startB),
+    region_endB_(region_endB),
     consider_double_sites_(consider_double_sites),
     gradient_(gradient),
     track_basins_(false)
@@ -144,7 +150,6 @@ RRIBarrierGraph::process_move(const HybEnsModel::Move *move,
     move->apply(neigh_state);
     
     if (state_outside_region(neigh_state)) {
-	std::cerr <<"Invalid move skipped: "<<neigh_state<<" region: "<<region_startA_<<"-"<<region_endA_<<std::endl;
 	return false;
     }
     if (!consider_double_sites_ && neigh_state.size()==2) {
@@ -295,9 +300,20 @@ RRIBarrierGraph::register_transitions(size_t source_basin_index,
 
 bool
 RRIBarrierGraph::state_outside_region(const HybEnsModel::StateDescription &state) const {
-    return (state.size()==1 && (state[0].i1<region_startA_ || state[0].j1>region_endA_))
+    return
+	(state.size()==1 && 
+	 (state[0].i1<region_startA_ 
+	  || state[0].j1>region_endA_
+	  || state[0].i2<region_startB_ 
+	  || state[0].j2>region_endB_
+	  ))
 	||
-	(state.size()==2 && (state[1].i1<region_startA_ || state[1].j1>region_endA_));
+	(state.size()==2 && 
+	 (state[1].i1<region_startA_ 
+	  || state[1].j1>region_endA_
+	  || state[1].i2<region_startB_ 
+	  || state[1].j2>region_endB_
+	  ));
 }   
 
 void

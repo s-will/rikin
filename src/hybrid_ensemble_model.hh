@@ -393,6 +393,8 @@ public:
 		size_t maxsitesize_diff,
 		size_t region_startA,
 		size_t region_endA,
+		size_t region_startB,
+		size_t region_endB,
 		size_t span,
 		size_t window,
 		bool cond
