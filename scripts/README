@@ -1,0 +1,5 @@
+run_all:        perform a series of kinetic calculations of anti-sense pairs
+
+evaluate_all:   evaluate the kinetics calculated by run_all
+
+RRIkin.pm:      perl module for run_all and evaluate_all scripts

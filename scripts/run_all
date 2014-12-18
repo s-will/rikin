@@ -1,0 +1,266 @@
+#!/usr/bin/env perl
+
+=head1 run_all
+
+run_all
+
+=head1 SYNOPSIS
+
+run_all [options]
+
+=head1 DESCRIPTION
+
+Run kinetics calculations for pairs in table SI_Tab4.txt subject to
+filter criteria (see constants in code.)
+
+=head1 OPTIONS
+
+=over 8
+
+=item  B<--help>
+
+Brief help message
+
+=item  B<--man>                         
+
+Full documentation
+
+=item B<--dry>
+
+Dry run. Test only.
+
+=back
+
+=cut
+
+
+# =item  B<-v, --verbose>
+
+# Verbose
+
+# =item  B<-q, --quiet>
+
+# Quiet
+
+
+use strict;
+use warnings;
+
+use FindBin;
+use lib $FindBin::Bin;
+
+use RRIkin;
+
+##------------------------------------------------------------
+## constants
+
+
+my $maxovsize=130; ## filter instances by maximum overlap size
+my $seqlength=130; ## sequence length
+
+my $datadir="/home/will/Research/Projects/RRIkinetics/YeastAntisense";
+
+my $pairtab_filename="$datadir/SI_Tab4.txt";
+my $seqtab_filename="$datadir/SI_Tab2.txt";
+my $sequences_filename="$datadir/SI_Tab2-seqs.fa"; ## simple fasta of sequences
+
+my $outdir="results";
+
+my $skip_enum=1; ## whether to skip state enumeration
+my $skip_barriers=1; ## whether to skip basin constructions (barriers) 
+my $skip_pruning=1; ## whether to skip pruning and rest of computation if files exist 
+
+my $RRIKDIR="/home/will/Research/Projects/RRIkinetics/RRIKin";
+my $COMMON_OPTS="--max-hyb-length-diff 7"; ##  --max-hyb-length 50 (use only with state recovery!)
+my $ENUM_OPTS="--max-hyb-energy 7 --max-total-energy 12";
+my $MIN_RATE=1e-11;
+my $NUM_OUT=1000;
+my $NUM_PEQU=4000;
+my $QU_PEQU=30;
+my $QU_OUT=6;
+
+my $num_threads=4;
+my $dry=0;
+
+##------------------------------------------------------------
+## options
+
+use Getopt::Long;
+use Pod::Usage;
+
+my $help;
+my $man;
+my $quiet;
+my $verbose;
+
+
+GetOptions(
+    "dry" => \$dry,
+    "verbose" => \$verbose,
+    "quiet" => \$quiet,   
+    "help"=> \$help,
+    "man" => \$man
+    ) || pod2usage(2);
+
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+
+## ------------------------------------------------------------
+## main part
+
+my %sequences; ## hash of sequences by name
+
+## read sequences (simple fasta format)
+open(IN,$sequences_filename) || die "Cannot read input file $sequences_filename.\n";
+while(<IN>) {
+    if (/^>\s*(.*)/) {
+	$sequences{$1}=<IN>;
+    }
+}
+close IN;
+
+mkdir "$outdir" unless $dry;
+print "mkdir \"$outdir\"\n" if $dry;
+
+## read pairs table
+my $pairtab=read_table("$pairtab_filename");
+
+## read sequence table
+my $seqtab=read_table("$seqtab_filename");
+
+my $joblistfh;
+if (!$dry) {
+    open($joblistfh,">$outdir/joblist") || die "Cannot open job file $outdir/joblist for output.";
+} else {
+    $joblistfh=*STDOUT;
+}
+
+my @jobs=();
+
+## iterate over pairtab
+for my $row (@$pairtab) {
+    my $name1=$row->{"seg1.id"};
+    my $name2=$row->{"seg2.id"};
+
+    my $jobname="$name1-$name2";
+
+    my $seqrow1 = lookup_table($seqtab,"tx_ID",$name1);
+    my $seqrow2 = lookup_table($seqtab,"tx_ID",$name2);
+
+    my $overlap = $seqrow1->{"last"} - $seqrow2->{"first"};
+    
+    my $cor = sprintf "%0.2f", $row->{"cor"};
+
+    ## filter instances
+    next if ($overlap > $maxovsize); 
+    
+    my $header = ">$name1 $name2 $cor; ";
+    #print "\t".$sequences{$name1}."\n";
+    #print "\t".$sequences{$name2}."\n";
+    
+    $header.= "pos1: ".$seqrow1->{"first"}."-".$seqrow1->{"last"}.
+	" ".$seqrow1->{"strand"}.
+	"; pos2: ".$seqrow2->{"first"}."-".$seqrow2->{"last"}.
+	" ".$seqrow2->{"strand"}."; ";
+
+    $header.= "len1=".($seqrow1->{"last"} - $seqrow1->{"first"}).
+	   "; len2=".($seqrow2->{"last"} - $seqrow2->{"first"}).
+	   "; overlap=".$overlap.
+	   "\n";
+
+    my $seqA;
+    my $seqB;
+
+    # distinguish cases: "left" sequence on + strand and "right" on - strand, or vice versa.
+    if ($seqrow1->{"strand"} eq "+") {
+	$seqA=substr($sequences{$name1},-$seqlength-1);
+	$seqB=substr($sequences{$name2},-$seqlength-1);
+	chomp $seqA;
+	chomp $seqB;
+	$seqB=reverse $seqB;
+    } else {
+	$seqA=substr($sequences{$name1},0,$seqlength);
+	$seqB=substr($sequences{$name2},0,$seqlength);
+	chomp $seqA;
+	chomp $seqB;
+	$seqA=reverse $seqA;
+    }
+
+    my $rc_seqB=rev_compl($seqB);
+
+    #print $sequences{$name1};
+    #print $sequences{$name2};
+    
+
+    $header.= $seqA."\n";
+    $header.= (" "x($seqlength-$overlap)).$seqB."\n";
+    #print $rc_seqB."\n";
+    
+    print $header unless $dry;
+
+    my $outfn="$outdir/$jobname";
+    
+    my $jobfh;
+    if (!$dry) {
+	open($jobfh,">$outfn.job") || die "Cannot open job file $outfn.job for output."; 
+    } else {
+	$jobfh=*STDOUT;
+	
+	print "\n-------------------------------------------------- file: $outfn.job\n";
+    }
+
+    print $jobfh "echo \'$header\'\n\n";
+    
+    if (!$skip_enum || (! -e "$outfn.senum")) {
+	print $jobfh "$RRIKDIR/src/rrikin_enum $seqA $seqB --no-double ".
+	    "--verbose $ENUM_OPTS $COMMON_OPTS > $outfn.enum\n\n";
+    
+	print $jobfh "sort -g -k1 $outfn.enum > $outfn.senum\n\n";
+    }
+    
+    if (!$skip_barriers || (! -e "$outfn.bar")) {
+	print $jobfh "$RRIKDIR/src/rrikin_barriers $seqA $seqB -i $outfn.senum ".
+	    "-o $outfn.bar --track $outfn.bartrack --no-double ".
+	    "--verbose $COMMON_OPTS\n\n";
+    }
+
+    if (!$skip_pruning || (! -e "$outfn.pf")) {
+	print $jobfh "$RRIKDIR/src/rrikin_prune $outfn.bar --pffile $outfn.pf  --min-rate $MIN_RATE --num-out $NUM_OUT --num-pequ $NUM_PEQU --qu-out $QU_OUT --qu-pequ $QU_PEQU --track $outfn.prunetrack --verbose --barfile $outfn.bar_prune --ratesfile $outfn.rates > $outfn.out\n\n";
+    }
+    
+    if (!$skip_pruning || (! -e "$outfn.kin")) {
+	print $jobfh "$RRIKDIR/src/xrates.m $outfn.pf --out $outfn.kin --t8 1e16 --mfpts\n\n";
+    }
+    
+    if (!$skip_pruning || (! -e "$outfn.pdf")) {
+	print $jobfh "Rscript $RRIKDIR/src/kinetics.R $outfn.kin $outfn.pdf\n";
+    }
+
+    close $jobfh unless $dry;
+    print "-------------------------------------------------- eof\n\n" 
+	if $dry;
+    
+    print "Write to joblist: " if ($dry);
+
+    print $joblistfh "$outfn.job\n";
+    
+    system("chmod +x $outfn.job") unless $dry;
+    
+    push @jobs,"$outfn.job"; 
+}
+
+print "\nGenerated ".int(@jobs)." jobs.\n";
+
+if (!$dry) { 
+    close $joblistfh;
+    system("chmod +x $outdir/joblist");
+    
+## again iterate over pairtab and call job scripts 
+    system "parallel -j $num_threads < $outdir/joblist  2>&1 | tee $outdir/protocol";
+} else {
+    print "\n";
+    print "parallel -j $num_threads < $outdir/joblist  2>&1 | tee $outdir/protocol"."\n";
+}
+
+## ------------------------------------------------------------

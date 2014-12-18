@@ -1,0 +1,112 @@
+#!/usr/bin/env perl
+
+=head1 evaluate_all
+
+evaluate_all
+
+=head1 SYNOPSIS
+
+evaluate_all [options]
+
+=head1 DESCRIPTION
+
+Evaluate kinetics calculations found in the results directory (see
+constants in code.)
+
+=head1 OPTIONS
+
+=over 8
+
+=item  B<--help>
+
+Brief help message
+
+=item  B<--man>                         
+
+Full documentation
+
+=back
+
+=cut
+
+
+# =item  B<-v, --verbose>
+
+# Verbose
+
+# =item  B<-q, --quiet>
+
+# Quiet
+
+
+use strict;
+use warnings;
+
+use FindBin;
+use lib $FindBin::Bin;
+
+use RRIKin;
+
+##------------------------------------------------------------
+## constants
+
+
+my $datadir="/home/will/Research/Projects/RRIkinetics/YeastAntisense";
+
+my $pairtab_filename="$datadir/SI_Tab4.txt";
+my $seqtab_filename="$datadir/SI_Tab2.txt";
+my $sequences_filename="$datadir/SI_Tab2-seqs.fa"; ## simple fasta of sequences
+
+my $outdir="results";
+
+my $RRIKDIR="/home/will/Research/Projects/RRIkinetics/RRIKin";
+
+##------------------------------------------------------------
+## options
+
+use Getopt::Long;
+use Pod::Usage;
+
+my $help;
+my $man;
+my $quiet;
+my $verbose;
+
+
+GetOptions(	   
+    "verbose" => \$verbose,
+    "quiet" => \$quiet,   
+    "help"=> \$help,
+    "man" => \$man
+    ) || pod2usage(2);
+
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+
+
+
+## ------------------------------------------------------------
+## main part
+
+my %sequences; ## hash of sequences by name
+
+## read sequences (simple fasta format)
+open(IN,$sequences_filename) || die "Cannot read input file $sequences_filename.\n";
+while(<IN>) {
+    if (/^>\s*(.*)/) {
+	$sequences{$1}=<IN>;
+    }
+}
+close IN;
+
+mkdir "$outdir";
+
+## read pairs table
+my $pairtab=read_table("$pairtab_filename");
+
+## read sequence table
+my $seqtab=read_table("$seqtab_filename");
+
+
+
+## ------------------------------------------------------------
