@@ -199,16 +199,20 @@ main(int argc, char **argv)
     size_t region_endB=seqB.length();
     
     if (args_info.regionA_arg>0) {
-	region_endA=args_info.regionA_arg;
+	region_endA=std::min(seqA.length(),(size_t)args_info.regionA_arg);
     } else if (args_info.regionA_arg<0) {
-	region_startA=seqA.length()+args_info.regionA_arg+1;
-    }	
+	if ((size_t)(-args_info.regionA_arg)<seqA.length()) {
+	    region_startA=seqA.length()+args_info.regionA_arg+1;
+	}
+    }
 
     if (args_info.regionB_arg>0) {
-	region_endB=args_info.regionB_arg;
+	region_endB=std::min(seqB.length(),(size_t)args_info.regionB_arg);
     } else if (args_info.regionB_arg<0) {
-	region_startB=seqB.length()+args_info.regionB_arg+1;
-    }	
+	if ((size_t)(-args_info.regionB_arg)<seqB.length()) {
+	    region_startB=seqB.length()+args_info.regionB_arg+1;
+	}
+    }
 
     const size_t span = 
 	args_info.span_arg>=0
