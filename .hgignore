@@ -1,11 +1,17 @@
 syntax: glob
 
+Examples/
+tmp/
+Test/
+Results/
+.RData
+.Rhistory
 aclocal.m4
 COPYING
-depcomp
+config/depcomp
 INSTALL
-install-sh
-missing
+config/install-sh
+config/missing
 configure
 config.h.in
 Makefile.in
@@ -15,6 +21,7 @@ autom4te.cache
 config.log
 config.status
 config.h
+config/compile
 stamp-h1
 TAGS
 src/TAGS
