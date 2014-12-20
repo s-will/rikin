@@ -29,18 +29,17 @@ Full documentation
 
 Dry run. Test only.
 
+=item  B<-q, --quiet>
+
+Quiet
+
+=item  B<-v, --verbose>
+
+Verbose
+
 =back
 
 =cut
-
-
-# =item  B<-v, --verbose>
-
-# Verbose
-
-# =item  B<-q, --quiet>
-
-# Quiet
 
 
 use strict;
@@ -51,36 +50,73 @@ use lib $FindBin::Bin;
 
 use RRIkin;
 
+
 ##------------------------------------------------------------
 ## constants
 
 
-my $maxovsize=130; ## filter instances by maximum overlap size
-my $seqlength=130; ## sequence length
+my $maxovsize=160;   ## filter instances by maximum overlap size
+my $seqlength=100000; ## crop sequences to this length (use something
+		     ## large to use full sequences)
 
-my $datadir="/home/will/Research/Projects/RRIkinetics/YeastAntisense";
+## parameters of rrikin_enum/barriers
+my $max_hyb_length_diff = 7;
+my $region              = 180;
+my $span                = 200;
+
+
+my $datadir=$ENV{HOME}."/Research/Projects/RRIkinetics/YeastAntisense";
 
 my $pairtab_filename="$datadir/SI_Tab4.txt";
 my $seqtab_filename="$datadir/SI_Tab2.txt";
 my $sequences_filename="$datadir/SI_Tab2-seqs.fa"; ## simple fasta of sequences
 
-my $outdir="results";
-
+## whether to skip certain stages, if files exist
 my $skip_enum=1; ## whether to skip state enumeration
 my $skip_barriers=1; ## whether to skip basin constructions (barriers) 
-my $skip_pruning=1; ## whether to skip pruning and rest of computation if files exist 
+my $skip_pruning=0; ## whether to skip pruning
+my $skip_kin=0;  ## whether to skip kinetics calculation by call to xrates
+my $skip_pdf=0;  ## whether to skip call to R and pdf generation
 
-my $RRIKDIR="/home/will/Research/Projects/RRIkinetics/RRIKin";
-my $COMMON_OPTS="--max-hyb-length-diff 7"; ##  --max-hyb-length 50 (use only with state recovery!)
+my $RRIKDIR=$ENV{HOME}."/Research/Projects/RRIkinetics/RRIKin";
+my $outdir="/scr/k61san/will/RRIKin/Results/results";
+
+
+my $COMMON_OPTS=
+    "--max-hyb-length-diff $max_hyb_length_diff "
+    ."--regionA -$region --regionB $region "
+    ."--span $span ";
+  ##  --max-hyb-length 50 (use only with state recovery!)
+
 my $ENUM_OPTS="--max-hyb-energy 7 --max-total-energy 12";
-my $MIN_RATE=1e-11;
-my $NUM_OUT=1000;
-my $NUM_PEQU=4000;
-my $QU_PEQU=30;
-my $QU_OUT=6;
+my $MIN_RATE=5e-12;
+my $NUM_OUT=2000;
+my $NUM_PEQU=8000;
+my $QU_PEQU=40;
+my $QU_OUT=10;
 
-my $num_threads=4;
+my $num_threads=48;
 my $dry=0;
+
+##----------------------------------------
+## subs
+sub min($$) {
+    my ($x,$y)=@_;
+    return ($x<=$y)?$x:$y;
+}
+sub max($$) {
+    my ($x,$y)=@_;
+    return ($x>=$y)?$x:$y;
+}
+
+sub writecmd($$$) {
+    my ($fh,$cmd,$active)=@_;
+    
+    if (!$active) {
+	print $fh "# ";
+    }
+    print $fh $cmd;
+}
 
 ##------------------------------------------------------------
 ## options
@@ -123,6 +159,19 @@ close IN;
 mkdir "$outdir" unless $dry;
 print "mkdir \"$outdir\"\n" if $dry;
 
+system "cp $0 $outdir" unless $dry;
+
+my $logfile="$outdir/README";
+my $logfh;
+$logfh=*STDOUT if $dry;
+open($logfh,">>$logfile") unless $dry;
+
+print $logfh "run_all: RRIkinetics calculations for RNA antisense pairs .\n";
+print $logfh "START ".readpipe("date")."\n";
+print $logfh "Saved copy of script 'run_all' in $outdir.\n";
+
+close $logfh unless $dry;
+
 ## read pairs table
 my $pairtab=read_table("$pairtab_filename");
 
@@ -155,7 +204,7 @@ for my $row (@$pairtab) {
     ## filter instances
     next if ($overlap > $maxovsize); 
     
-    my $header = ">$name1 $name2 $cor; ";
+    my $header = "$name1 $name2 $cor; ";
     #print "\t".$sequences{$name1}."\n";
     #print "\t".$sequences{$name2}."\n";
     
@@ -174,14 +223,18 @@ for my $row (@$pairtab) {
 
     # distinguish cases: "left" sequence on + strand and "right" on - strand, or vice versa.
     if ($seqrow1->{"strand"} eq "+") {
-	$seqA=substr($sequences{$name1},-$seqlength-1);
-	$seqB=substr($sequences{$name2},-$seqlength-1);
+	$seqA=$sequences{$name1};
+	$seqA=substr($seqA,-min(length($seqA),$seqlength));
+	$seqB=$sequences{$name2};
+	$seqB=substr($seqB,-min(length($seqB),$seqlength));
 	chomp $seqA;
 	chomp $seqB;
 	$seqB=reverse $seqB;
     } else {
-	$seqA=substr($sequences{$name1},0,$seqlength);
-	$seqB=substr($sequences{$name2},0,$seqlength);
+	$seqA=$sequences{$name1};
+	$seqA=substr($seqA,0,min(length($seqA),$seqlength));
+	$seqB=$sequences{$name2};
+	$seqB=substr($seqB,0,min(length($seqB),$seqlength));
 	chomp $seqA;
 	chomp $seqB;
 	$seqA=reverse $seqA;
@@ -194,10 +247,10 @@ for my $row (@$pairtab) {
     
 
     $header.= $seqA."\n";
-    $header.= (" "x($seqlength-$overlap)).$seqB."\n";
+    $header.= (" "x(length($seqA)-$overlap)).$seqB."\n";
     #print $rc_seqB."\n";
     
-    print $header unless $dry;
+    print $header if ($verbose && !$dry);
 
     my $outfn="$outdir/$jobname";
     
@@ -210,33 +263,44 @@ for my $row (@$pairtab) {
 	print "\n-------------------------------------------------- file: $outfn.job\n";
     }
 
-    print $jobfh "echo \'$header\'\n\n";
-    
-    if (!$skip_enum || (! -e "$outfn.senum")) {
-	print $jobfh "$RRIKDIR/src/rrikin_enum $seqA $seqB --no-double ".
-	    "--verbose $ENUM_OPTS $COMMON_OPTS > $outfn.enum\n\n";
-    
-	print $jobfh "sort -g -k1 $outfn.enum > $outfn.senum\n\n";
-    }
-    
-    if (!$skip_barriers || (! -e "$outfn.bar")) {
-	print $jobfh "$RRIKDIR/src/rrikin_barriers $seqA $seqB -i $outfn.senum ".
-	    "-o $outfn.bar --track $outfn.bartrack --no-double ".
-	    "--verbose $COMMON_OPTS\n\n";
-    }
+    my $comment_header;
+    ($comment_header = $header) =~ s/\n/\n## /g;
 
-    if (!$skip_pruning || (! -e "$outfn.pf")) {
-	print $jobfh "$RRIKDIR/src/rrikin_prune $outfn.bar --pffile $outfn.pf  --min-rate $MIN_RATE --num-out $NUM_OUT --num-pequ $NUM_PEQU --qu-out $QU_OUT --qu-pequ $QU_PEQU --track $outfn.prunetrack --verbose --barfile $outfn.bar_prune --ratesfile $outfn.rates > $outfn.out\n\n";
-    }
+    print $jobfh "## $comment_header\n\n";
     
-    if (!$skip_pruning || (! -e "$outfn.kin")) {
-	print $jobfh "$RRIKDIR/src/xrates.m $outfn.pf --out $outfn.kin --t8 1e16 --mfpts\n\n";
-    }
-    
-    if (!$skip_pruning || (! -e "$outfn.pdf")) {
-	print $jobfh "Rscript $RRIKDIR/src/kinetics.R $outfn.kin $outfn.pdf\n";
-    }
+    print $jobfh "echo '==================== $name1 $name2 ====================' \n\n";
 
+    print $jobfh "seqA=$seqA\n\n";
+    print $jobfh "seqB=$seqB\n\n";
+
+    my $active;
+
+    $active=!($skip_enum && (-e "$outfn.senum.gz" || -e "$outfn.senum"));
+    writecmd $jobfh,"$RRIKDIR/src/rrikin_enum \$seqA \$seqB --no-double ".
+	"--verbose $ENUM_OPTS $COMMON_OPTS > $outfn.enum\n\n",$active;
+    writecmd $jobfh,"sort -g -k1 $outfn.enum > $outfn.senum\n",$active;
+    writecmd $jobfh,"rm $outfn.enum\n\n",$active;
+
+    $active=(!$skip_barriers || (! -e "$outfn.bar.gz" && ! -e "$outfn.bar"));
+    writecmd $jobfh,"gunzip $outfn.senum.gz\n",$active;
+    writecmd $jobfh,"$RRIKDIR/src/rrikin_barriers \$seqA \$seqB -i $outfn.senum ".
+	"-o $outfn.bar --track $outfn.bartrack --no-double ".
+	"--verbose $COMMON_OPTS\n\n",$active;
+    writecmd $jobfh,"gzip $outfn.senum\n",$active;
+    writecmd $jobfh,"gzip $outfn.bartrack\n\n",$active;
+
+    $active=(!$skip_pruning || (! -e "$outfn.pf"));
+    writecmd $jobfh,"gunzip $outfn.bar.gz\n",$active;
+    writecmd $jobfh,"$RRIKDIR/src/rrikin_prune $outfn.bar --pffile $outfn.pf  --min-rate $MIN_RATE --num-out $NUM_OUT --num-pequ $NUM_PEQU --qu-out $QU_OUT --qu-pequ $QU_PEQU --track $outfn.prunetrack --verbose --barfile $outfn.bar_prune --ratesfile $outfn.rates > $outfn.out\n\n",$active;
+    writecmd $jobfh,"gzip $outfn.bar\n",$active;
+    writecmd $jobfh,"gzip $outfn.prunetrack\n\n",$active;
+
+    $active=(!$skip_kin || (! -e "$outfn.kin"));
+    writecmd $jobfh,"$RRIKDIR/src/xrates.m $outfn.pf --out $outfn.kin --t8 1e16\n\n",$active;
+    
+    $active=(!$skip_pdf || (! -e "$outfn.pdf"));
+    writecmd $jobfh,"Rscript $RRIKDIR/src/kinetics.R $outfn.kin $outfn.pdf 'cor=$cor; ol=$overlap'\n",$active;
+    
     close $jobfh unless $dry;
     print "-------------------------------------------------- eof\n\n" 
 	if $dry;
@@ -250,17 +314,25 @@ for my $row (@$pairtab) {
     push @jobs,"$outfn.job"; 
 }
 
-print "\nGenerated ".int(@jobs)." jobs.\n";
+print "\nGenerated ".int(@jobs)." jobs.\n" unless $quiet;
+
+my $cmd="parallel -j $num_threads < $outdir/joblist";
+$cmd.=" | gzip -c >> $outdir/protocol.gz  2>&1";
+
+open($logfh,">>$logfile") unless $dry;
+print $logfh "\nCALL: $cmd\n";
+close $logfh unless $dry;
 
 if (!$dry) { 
     close $joblistfh;
     system("chmod +x $outdir/joblist");
     
-## again iterate over pairtab and call job scripts 
-    system "parallel -j $num_threads < $outdir/joblist  2>&1 | tee $outdir/protocol";
-} else {
-    print "\n";
-    print "parallel -j $num_threads < $outdir/joblist  2>&1 | tee $outdir/protocol"."\n";
+    system $cmd;
 }
+
+open($logfh,">>$logfile") unless $dry;
+print $logfh "FINISHED ".readpipe("date")."\n";
+close $logfh unless $dry;
+
 
 ## ------------------------------------------------------------
