@@ -61,7 +61,8 @@ my $seqlength=100000; ## crop sequences to this length (use something
 
 ## parameters of rrikin_enum/barriers
 my $max_hyb_length_diff = 7;
-my $region              = 180;
+my $region              = 180; ## if region_factor is defined then the region is computed!
+my $region_factor       = 1.2; ## region=overlap*region_factor 
 my $span                = 200;
 
 
@@ -84,16 +85,15 @@ my $outdir="/scr/k61san/will/RRIKin/Results/results";
 
 my $COMMON_OPTS=
     "--max-hyb-length-diff $max_hyb_length_diff "
-    ."--regionA -$region --regionB $region "
     ."--span $span ";
   ##  --max-hyb-length 50 (use only with state recovery!)
 
 my $ENUM_OPTS="--max-hyb-energy 7 --max-total-energy 12";
 my $MIN_RATE=5e-12;
-my $NUM_OUT=2000;
-my $NUM_PEQU=8000;
-my $QU_PEQU=40;
-my $QU_OUT=10;
+my $NUM_OUT=1500;
+my $NUM_PEQU=6000;
+my $QU_PEQU=35;
+my $QU_OUT=8;
 
 my $num_threads=48;
 my $dry=0;
@@ -199,10 +199,17 @@ for my $row (@$pairtab) {
 
     my $overlap = $seqrow1->{"last"} - $seqrow2->{"first"};
     
+    # filter instances
+    next if ($overlap > $maxovsize); 
+    
+    # compute region
+    if (defined($region_factor)) {
+	$region=int($region_factor*$overlap);
+    }
+    my $local_common_opts=$COMMON_OPTS." --regionA -$region --regionB $region ";
+    
     my $cor = sprintf "%0.2f", $row->{"cor"};
 
-    ## filter instances
-    next if ($overlap > $maxovsize); 
     
     my $header = "$name1 $name2 $cor; ";
     #print "\t".$sequences{$name1}."\n";
@@ -277,7 +284,7 @@ for my $row (@$pairtab) {
 
     $active=!($skip_enum && (-e "$outfn.senum.gz" || -e "$outfn.senum"));
     writecmd $jobfh,"$RRIKDIR/src/rrikin_enum \$seqA \$seqB --no-double ".
-	"--verbose $ENUM_OPTS $COMMON_OPTS > $outfn.enum\n\n",$active;
+	"--verbose $ENUM_OPTS $local_common_opts > $outfn.enum\n\n",$active;
     writecmd $jobfh,"sort -g -k1 $outfn.enum > $outfn.senum\n",$active;
     writecmd $jobfh,"rm $outfn.enum\n\n",$active;
 
@@ -285,7 +292,7 @@ for my $row (@$pairtab) {
     writecmd $jobfh,"gunzip $outfn.senum.gz\n",$active;
     writecmd $jobfh,"$RRIKDIR/src/rrikin_barriers \$seqA \$seqB -i $outfn.senum ".
 	"-o $outfn.bar --track $outfn.bartrack --no-double ".
-	"--verbose $COMMON_OPTS\n\n",$active;
+	"--verbose $local_common_opts\n\n",$active;
     writecmd $jobfh,"gzip $outfn.senum\n",$active;
     writecmd $jobfh,"gzip $outfn.bartrack\n\n",$active;
 
