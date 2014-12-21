@@ -157,8 +157,15 @@ while(<$paramfh>) {
     $paramfilecontent.=$_;
 }
 close $paramfh;
-eval("$paramfilecontent");
 
+eval $paramfilecontent;
+
+if ($@) {
+    print STDERR "$@";
+    exit -1;
+} else {
+    print "Read parameters from $paramfile.\n";
+}
 
 ## ------------------------------------------------------------
 my $COMMON_OPTS=

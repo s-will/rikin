@@ -1,10 +1,10 @@
-$maxovsize=160;   ## filter instances by maximum overlap size
+$maxovsize=200;   ## filter instances by maximum overlap size
 $seqlength=100000; ## crop sequences to this length (use something
 		     ## large to use full sequences)
 
 ## parameters of rrikin_enum/barriers
 $max_hyb_length_diff = 7;
-$region              = 180; ## if region_factor is defined then the region is computed!
+$region              = 0; ## if region_factor is defined then the region is computed!
 $region_factor       = 1.2; ## region=overlap*region_factor 
 $span                = 200;
 
@@ -25,17 +25,11 @@ $skip_pdf=1;  ## whether to skip call to R and pdf generation
 $RRIKDIR=$ENV{HOME}."/Research/Projects/RRIkinetics/RRIKin";
 $outdir="/scr/k61san/will/RRIKin/Results/results";
 
-
-$COMMON_OPTS=
-    "--max-hyb-length-diff $max_hyb_length_diff "
-    ."--span $span ";
-  ##  --max-hyb-length 50 (use only with state recovery!)
-
 $ENUM_OPTS="--max-hyb-energy 7 --max-total-energy 12";
 $MIN_RATE=5e-12;
 $NUM_OUT=1500;
-$NUM_PEQU=6000;
-$QU_PEQU=35;
+$NUM_PEQU=10000;
+$QU_PEQU=50;
 $QU_OUT=8;
 
 $num_threads=48;
