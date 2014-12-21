@@ -554,9 +554,9 @@ RRIBarrierGraph::read_states(std::istream &in,
 
     while (read_state(in,source_state,energy,line,binary)) {
     	
-	if (verbose_ && (state_counter%5000==0)) {
+	/*	if (verbose_ && (state_counter%5000==0)) {
 	    std::cerr << "\r" << state_counter<< "    b:"<<basins_.size()<<"    h:"<<state_hash_.size()<<"        ";
-	}
+	    }*/
 	if (energy < last_energy) {
 	    std::cerr << "ERROR: input states have to be sorted by increasing energy (at line "
 		      <<line<<": "<<energy<<"<"<<last_energy << " ).\n";

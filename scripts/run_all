@@ -48,55 +48,6 @@ use warnings;
 use FindBin;
 use lib $FindBin::Bin;
 
-use RRIkin;
-
-
-##------------------------------------------------------------
-## constants
-
-
-my $maxovsize=160;   ## filter instances by maximum overlap size
-my $seqlength=100000; ## crop sequences to this length (use something
-		     ## large to use full sequences)
-
-## parameters of rrikin_enum/barriers
-my $max_hyb_length_diff = 7;
-my $region              = 180; ## if region_factor is defined then the region is computed!
-my $region_factor       = 1.2; ## region=overlap*region_factor 
-my $span                = 200;
-
-
-my $datadir=$ENV{HOME}."/Research/Projects/RRIkinetics/YeastAntisense";
-
-my $pairtab_filename="$datadir/SI_Tab4.txt";
-my $seqtab_filename="$datadir/SI_Tab2.txt";
-my $sequences_filename="$datadir/SI_Tab2-seqs.fa"; ## simple fasta of sequences
-
-## whether to skip certain stages, if files exist
-my $skip_enum=1; ## whether to skip state enumeration
-my $skip_barriers=1; ## whether to skip basin constructions (barriers) 
-my $skip_pruning=0; ## whether to skip pruning
-my $skip_kin=0;  ## whether to skip kinetics calculation by call to xrates
-my $skip_pdf=0;  ## whether to skip call to R and pdf generation
-
-my $RRIKDIR=$ENV{HOME}."/Research/Projects/RRIkinetics/RRIKin";
-my $outdir="/scr/k61san/will/RRIKin/Results/results";
-
-
-my $COMMON_OPTS=
-    "--max-hyb-length-diff $max_hyb_length_diff "
-    ."--span $span ";
-  ##  --max-hyb-length 50 (use only with state recovery!)
-
-my $ENUM_OPTS="--max-hyb-energy 7 --max-total-energy 12";
-my $MIN_RATE=5e-12;
-my $NUM_OUT=1500;
-my $NUM_PEQU=6000;
-my $QU_PEQU=35;
-my $QU_OUT=8;
-
-my $num_threads=48;
-my $dry=0;
 
 ##----------------------------------------
 ## subs
@@ -129,6 +80,7 @@ my $man;
 my $quiet;
 my $verbose;
 
+my $dry=0;
 
 GetOptions(
     "dry" => \$dry,
@@ -141,9 +93,86 @@ GetOptions(
 pod2usage(1) if $help;
 pod2usage(-exitstatus => 0, -verbose => 2) if $man;
 
+if (@ARGV!=1) {
+    print "Name of parameter file is missing.\n";
+    exit -1;
+}
+
+my $paramfile=$ARGV[0];
+
+## ------------------------------------------------------------
+## parameter default values
+
+my $maxovsize=160;   ## filter instances by maximum overlap size
+my $seqlength=100000; ## crop sequences to this length (use something
+		     ## large to use full sequences)
+
+## parameters of rrikin_enum/barriers
+my $max_hyb_length_diff = 7;
+my $region              = 180; ## if region_factor is defined then the region is computed!
+my $region_factor       = 1.2; ## region=overlap*region_factor 
+my $span                = 200;
+
+
+my $datadir=$ENV{HOME}."/Research/Projects/RRIkinetics/YeastAntisense";
+
+my $pairtab_filename="$datadir/SI_Tab4.txt";
+my $seqtab_filename="$datadir/SI_Tab2.txt";
+my $sequences_filename="$datadir/SI_Tab2-seqs.fa"; ## simple fasta of sequences
+
+## whether to skip certain stages, if files exist
+my $skip_enum=1; ## whether to skip state enumeration
+my $skip_barriers=1; ## whether to skip basin constructions (barriers) 
+my $skip_pruning=1; ## whether to skip pruning
+my $skip_kin=1;  ## whether to skip kinetics calculation by call to xrates
+my $skip_pdf=1;  ## whether to skip call to R and pdf generation
+
+my $RRIKDIR;
+BEGIN {
+    $RRIKDIR=$ENV{HOME}."/Research/Projects/RRIkinetics/RRIKin";
+}
+use lib "$RRIKDIR/scripts";
+
+my $outdir="/scr/k61san/will/RRIKin/Results/results";
+
+my $ENUM_OPTS="--max-hyb-energy 7 --max-total-energy 12";
+my $MIN_RATE=5e-12;
+my $NUM_OUT=1500;
+my $NUM_PEQU=6000;
+my $QU_PEQU=35;
+my $QU_OUT=8;
+
+my $num_threads=48;
+
+## ------------------------------------------------------------
+## read in parameter file and evaluate;
+## this allows to overwrite the default parameters
+## ATTENTION: the paramfile is evaluated as perl code. Thus it could
+## run anything, not only set parameters.
+##
+my $paramfilecontent="";
+my $paramfh;
+open($paramfh,$paramfile) || die "Cannot read parameter file $paramfile.\n";
+while(<$paramfh>) {
+    $paramfilecontent.=$_;
+}
+close $paramfh;
+eval("$paramfilecontent");
+
+
+## ------------------------------------------------------------
+my $COMMON_OPTS=
+    "--max-hyb-length-diff $max_hyb_length_diff "
+    ."--span $span ";
+  ##  --max-hyb-length 50 (use only with state recovery!)
+
 
 ## ------------------------------------------------------------
 ## main part
+
+use RRIkin;
+
+
 
 my %sequences; ## hash of sequences by name
 
@@ -160,6 +189,7 @@ mkdir "$outdir" unless $dry;
 print "mkdir \"$outdir\"\n" if $dry;
 
 system "cp $0 $outdir" unless $dry;
+system "cp $paramfile $outdir/$0.params" unless $dry;
 
 my $logfile="$outdir/README";
 my $logfh;
@@ -168,7 +198,7 @@ open($logfh,">>$logfile") unless $dry;
 
 print $logfh "run_all: RRIkinetics calculations for RNA antisense pairs .\n";
 print $logfh "START ".readpipe("date")."\n";
-print $logfh "Saved copy of script 'run_all' in $outdir.\n";
+print $logfh "Saved copy of script 'run_all' and parameter file '$paramfile' in $outdir.\n";
 
 close $logfh unless $dry;
 
@@ -274,40 +304,46 @@ for my $row (@$pairtab) {
     ($comment_header = $header) =~ s/\n/\n## /g;
 
     print $jobfh "## $comment_header\n\n";
-    
-    print $jobfh "echo '==================== $name1 $name2 ====================' \n\n";
 
     print $jobfh "seqA=$seqA\n\n";
     print $jobfh "seqB=$seqB\n\n";
 
     my $active;
-
+    writecmd $jobfh,"echo START: `date` >>$outfn.prt\n\n",1;
+    
     $active=!($skip_enum && (-e "$outfn.senum.gz" || -e "$outfn.senum"));
+    writecmd $jobfh,"echo ENUM >>$outfn.prt\n\n",$active;
     writecmd $jobfh,"$RRIKDIR/src/rrikin_enum \$seqA \$seqB --no-double ".
-	"--verbose $ENUM_OPTS $local_common_opts > $outfn.enum\n\n",$active;
+	"--verbose $ENUM_OPTS $local_common_opts > $outfn.enum 2>>$outfn.prt\n\n",$active;
     writecmd $jobfh,"sort -g -k1 $outfn.enum > $outfn.senum\n",$active;
     writecmd $jobfh,"rm $outfn.enum\n\n",$active;
 
     $active=(!$skip_barriers || (! -e "$outfn.bar.gz" && ! -e "$outfn.bar"));
-    writecmd $jobfh,"gunzip $outfn.senum.gz\n",$active;
+    writecmd $jobfh,"echo BARRIERS >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"if [ ! -e \"$outfn.senum\" ]; then gunzip -f $outfn.senum.gz; fi\n",$active;
     writecmd $jobfh,"$RRIKDIR/src/rrikin_barriers \$seqA \$seqB -i $outfn.senum ".
 	"-o $outfn.bar --track $outfn.bartrack --no-double ".
-	"--verbose $local_common_opts\n\n",$active;
-    writecmd $jobfh,"gzip $outfn.senum\n",$active;
-    writecmd $jobfh,"gzip $outfn.bartrack\n\n",$active;
+	"--verbose $local_common_opts &>>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"gzip -f $outfn.senum\n",$active;
+    writecmd $jobfh,"gzip -f $outfn.bartrack\n\n",$active;
 
     $active=(!$skip_pruning || (! -e "$outfn.pf"));
-    writecmd $jobfh,"gunzip $outfn.bar.gz\n",$active;
-    writecmd $jobfh,"$RRIKDIR/src/rrikin_prune $outfn.bar --pffile $outfn.pf  --min-rate $MIN_RATE --num-out $NUM_OUT --num-pequ $NUM_PEQU --qu-out $QU_OUT --qu-pequ $QU_PEQU --track $outfn.prunetrack --verbose --barfile $outfn.bar_prune --ratesfile $outfn.rates > $outfn.out\n\n",$active;
-    writecmd $jobfh,"gzip $outfn.bar\n",$active;
-    writecmd $jobfh,"gzip $outfn.prunetrack\n\n",$active;
+    writecmd $jobfh,"echo PRUNE >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"if [ ! -e \"$outfn.bar\" ]; then gunzip -f $outfn.bar.gz; fi\n",$active;
+    writecmd $jobfh,"$RRIKDIR/src/rrikin_prune $outfn.bar --pffile $outfn.pf  --min-rate $MIN_RATE --num-out $NUM_OUT --num-pequ $NUM_PEQU --qu-out $QU_OUT --qu-pequ $QU_PEQU --track $outfn.prunetrack --verbose --barfile $outfn.bar_prune --ratesfile $outfn.rates > $outfn.prune_out 2>>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"gzip -f $outfn.bar\n",$active;
+    writecmd $jobfh,"gzip -f $outfn.prunetrack\n\n",$active;
 
     $active=(!$skip_kin || (! -e "$outfn.kin"));
-    writecmd $jobfh,"$RRIKDIR/src/xrates.m $outfn.pf --out $outfn.kin --t8 1e16\n\n",$active;
+    writecmd $jobfh,"echo XRATES >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"$RRIKDIR/src/xrates.m $outfn.pf --out $outfn.kin --t8 1e16 &>>$outfn.prt\n\n",$active;
     
     $active=(!$skip_pdf || (! -e "$outfn.pdf"));
-    writecmd $jobfh,"Rscript $RRIKDIR/src/kinetics.R $outfn.kin $outfn.pdf 'cor=$cor; ol=$overlap'\n",$active;
+    writecmd $jobfh,"echo KINETICS >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"Rscript $RRIKDIR/src/kinetics.R $outfn.kin $outfn.pdf 'cor=$cor; ol=$overlap' >$outfn.scores 2>>$outfn.prt\n",$active;
     
+    writecmd $jobfh,"echo FINISH: `date` >>$outfn.prt\n\n",1;
+
     close $jobfh unless $dry;
     print "-------------------------------------------------- eof\n\n" 
 	if $dry;
@@ -324,7 +360,6 @@ for my $row (@$pairtab) {
 print "\nGenerated ".int(@jobs)." jobs.\n" unless $quiet;
 
 my $cmd="parallel -j $num_threads < $outdir/joblist";
-$cmd.=" | gzip -c >> $outdir/protocol.gz  2>&1";
 
 open($logfh,">>$logfile") unless $dry;
 print $logfh "\nCALL: $cmd\n";
