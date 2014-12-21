@@ -211,7 +211,7 @@ BarrierGraph::merge_in_basin(Basin &x0, Basin &y, double fraction) {
 
 
 void
-BarrierGraph::dissolve_basin(Basin &x0) {
+BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 
     // compute total outflow
     double total_out = outflow_pf(x0);
@@ -258,8 +258,13 @@ BarrierGraph::dissolve_basin(Basin &x0) {
 			  << x.idx() <<"->"<< x0.idx() << " to " << x.idx() 
 			  << "->"<< y.idx()<<std::endl;
 	    }
-		    
-	    transitions_[x.idx()][y.idx()].update(Z_xx0 * fraction);		    
+	    
+	    // SPARSIFICATION; IMPORTANT FOR EFFICIENCY: update rate
+	    // only if the /increment/ is larger than min_rate
+	    // (otherwise this creates a lot of additional very small transitions)
+	    if ( Z_xx0 * fraction>min_rate ) {
+		transitions_[x.idx()][y.idx()].update(Z_xx0 * fraction);
+	    }
 	} // end for it2 (over neighbors of x0)
 		
     } // end for it (over neighbors of x0)
@@ -270,7 +275,8 @@ BarrierGraph::dissolve_basin(Basin &x0) {
 	std::cerr << "Mark "<<x0.idx()<<" as merged."<<std::endl;
     }
     x0.mark_merged();
-	    
+
+    
     // and release all transitions from and to the merged basin
     for (transitions_map_row_t::iterator it=trs_x0.begin();
 	 trs_x0.end()!=it; ++it) {
@@ -352,7 +358,7 @@ BarrierGraph::prune(double max_outflow,double min_p_equ, double min_rate) {
 		std::cerr << "Dissolve basin "<< x0.idx() << " with outflow "<< outflow_pf(x0)/x0.Z() << std::endl;
 	    }
 	    
-	    dissolve_basin(x0);
+	    dissolve_basin(x0, min_rate);
 	
 	}
     }
@@ -392,7 +398,7 @@ BarrierGraph::reduce_basin_set(const std::set<size_t> &to_keep, double min_rate)
 		std::cerr << "Dissolve basin "<< x0.idx() << std::endl;
 	    }
 	    
-	    dissolve_basin(x0);
+	    dissolve_basin(x0,min_rate);
 	
 	}
     }

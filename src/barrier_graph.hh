@@ -209,7 +209,7 @@ protected:
      * @param x0 Basin
      */
     void
-    dissolve_basin(Basin &x0);
+    dissolve_basin(Basin &x0, double min_rate);
 
 public:
     /** @brief Prunes the barrier graph
