@@ -1,6 +1,16 @@
 #!/usr/bin/octave -qf
 # -*- Octave -*-
 
+#
+# INPUT: file with square matrix of partition functions of 1)
+# transitions and 2) basins (given in diagonal).
+#
+# OUTPUT: probabilities of states at requested times according to
+# Arrhenius rates form partitition functions; time is increased
+# exponentially
+#
+
+
 tool_name="XRates";
 tool_version="0.2";
 tool_description="Calculate kinetics from weights/pfs of states and transitions by solving the master equation for Arrhenius rates.";
@@ -395,24 +405,41 @@ else
   fclose(fh);
 endif
 
-dev_symm = norm( pfs-transpose(pfs),2);
-if (dev_symm>0.01)
-  printf("Check input symmetry: %g (value should be almost 0)\n",dev_symm);
+##############################ä
+## get basin pfs (from input pfs matrix)
+#
+basin_pfs = diag(pfs);
+
+##############################
+## symmetry check
+## calculate rates from the original and the transposed pf matrix
+## If the input is symmetric, then the two matrices are equal.
+## Check the similarity of the matrices by norm(R1-R2,2).
+## 
+R1 = pfs ./ repmat(basin_pfs, 1,dim);
+R1 = R1 - diag(diag(R1)); # set diagonal to 0
+
+R2 = transpose(pfs) ./ repmat(basin_pfs, 1,dim);
+R2 = R2 - diag(diag(R2)); # set diagonal to 0
+
+dev_symm = norm( R1-R2,2);
+if (dev_symm>0.001)
+  printf("WARNING: questionable input symmetry of input pfs: norm_2(R(pfs)-R(t(pfs)))=%g (This value should be almost 0.)\n",dev_symm);
 endif
+## end symmetry check
+##############################
 
-pfs = symmetrize(pfs); # input has to be symmetric! Everything else is wrong input
-
-# disp(pfs)
+##############################
+## The input has to be symmetric; everything else is wrong input.
+## Thus, in any case, calculate perfectly symmetric pfs.
+## Symmetrize!
+pfs = symmetrize(pfs);
 
 if (size(pfs,2)!=dim)
   printf("ERROR: pf file has to contain a square matrix.\n");
   exit(1);
 endif
 
-##############################ä
-## get basin pfs (from input pfs matrix)
-#
-basin_pfs = diag(pfs);
 
 ##############################
 ## calculate R (from input pfs matrix)
