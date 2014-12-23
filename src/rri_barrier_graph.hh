@@ -4,6 +4,7 @@
 #include "hybrid_ensemble_model.hh"
 #include "barrier_graph.hh"
 #include "basin_info.hh"
+#include <zlib.h>
 
 /**
  * @brief Generation of RRI barrier graph
@@ -369,6 +370,14 @@ public:
      */
     std::ostream &
     write_basin_track(std::ostream &out) const;
+
+    /**
+     * @brief write basin information
+     * @param file gz file handle opened for write 
+     * @return file handle; NULL on error
+     */
+    gzFile
+    gzwrite_basin_track(gzFile file) const;
 
 };
 

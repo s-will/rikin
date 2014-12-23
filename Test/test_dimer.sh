@@ -53,11 +53,11 @@ call_redirect $TFILE $RRIKDIR/src/rrikin_enum $seqA $seqB --no-double --verbose 
 
 sort -g -k1 $TFILE > $TFILE.s
 
-call $RRIKDIR/src/rrikin_barriers $seqA $seqB -i $TFILE.s -o $TFILE.bg --track $TFILE.barriers_track --no-double --verbose $COMMON_OPTS
+call $RRIKDIR/src/rrikin_barriers $seqA $seqB -i $TFILE.s -o $TFILE.bg --track $TFILE.barriers_track.gz --no-double --verbose $COMMON_OPTS
 
-# call_redirect $TFILE.out $RRIKDIR/src/rrikin_prune $TFILE.bg --pffile $TFILE.pf  --min-rate 1e-10 --num-out 50 --num-pequ 100 --track $TFILE.prune_track --verbose --barfile $TFILE.bar --ratesfile $TFILE.rates
+# call_redirect $TFILE.out $RRIKDIR/src/rrikin_prune $TFILE.bg --pffile $TFILE.pf  --min-rate 1e-10 --num-out 50 --num-pequ 100 --track $TFILE.prune_track.gz --verbose --barfile $TFILE.bar --ratesfile $TFILE.rates
 
-call_redirect $TFILE.out $RRIKDIR/src/rrikin_prune $TFILE.bg --pffile $TFILE.pf  --min-rate 1e-7 --num-out 10 --num-pequ 60 --track $TFILE.prune_track --verbose --barfile $TFILE.bar --ratesfile $TFILE.rates
+call_redirect $TFILE.out $RRIKDIR/src/rrikin_prune $TFILE.bg --pffile $TFILE.pf  --min-rate 1e-7 --num-out 10 --num-pequ 60 --track $TFILE.prune_track.gz --verbose --barfile $TFILE.bar --ratesfile $TFILE.rates.gz
 
 
 tcall src/xrates.m $TFILE.pf --out $TFILE.kin --t8 1e15 --mfpts

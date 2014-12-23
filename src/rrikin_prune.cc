@@ -20,6 +20,8 @@
 #include  <iomanip>
 #include  <stack>
 
+#include <zlib.h>
+
 extern "C" {
 #include "ViennaRNA/fold_vars.h" // defines global variables
 }
@@ -298,15 +300,25 @@ main(int argc, char **argv)
 	if (verbose) {
 	    std::cerr << "Write rates matrix to file '"<<ratesfile<<"'."<<std::endl;
 	}
-	
-	std::ofstream fout(ratesfile.c_str());
-	if (fout.good()) {
-	    bg.print_treekin_ratesmatrix(fout);
+	if (track_file.substr(ratesfile.length()-3,3)==".gz") {
+	    // write gzip'd
+	    gzFile fh=gzopen(ratesfile.c_str(),"wb");
+	    if (fh==NULL) {
+		std::cerr << "Cannot write rates matrix to file "<<ratesfile<<"."<<std::endl;
+	    } else {
+		bg.gzwrite_treekin_ratesmatrix(fh);
+	    }
+	    gzclose(fh);
 	} else {
-	    std::cerr << "Cannot write rates file."<<std::endl;
+	    // write uncompressed
+	    std::ofstream fout(ratesfile.c_str());
+	    if (fout.good()) {
+		bg.write_treekin_ratesmatrix(fout);
+	    } else {
+		std::cerr << "Cannot write rates file."<<std::endl;
+	    }
+	    fout.close();
 	}
-	fout.close();
-	
     }
 
     if (pffile != "") {
@@ -361,14 +373,28 @@ main(int argc, char **argv)
 
 
     if (track) {
+	bool sparse_prune_track=true;
 	stopwatch.start("write_pruning_info");
-	try {
-	    std::ofstream out(track_file.c_str());
-	    bg.write_pruning_track(out,true);
-	    out.close();
-	} catch(const std::ofstream::failure &e) {
-	    std::cerr << "Cannot write pruning track to file "<<track_file<<". "<<e.what()<<std::endl;
+	if (track_file.substr(track_file.length()-3,3)==".gz") {
+	    // write gzip'd
+	    gzFile fh=gzopen(track_file.c_str(),"wb");
+	    if (fh==NULL) {
+		std::cerr << "Cannot write prune track to file "<<track_file<<"."<<std::endl;
+	    } else {
+		bg.gzwrite_pruning_track(fh,sparse_prune_track);
+	    }
+	    gzclose(fh);
+	} else {
+	    // write uncompressed
+	    try {
+		std::ofstream out(track_file.c_str());
+		bg.write_pruning_track(out,sparse_prune_track);
+		out.close();
+	    } catch(const std::ofstream::failure &e) {
+		std::cerr << "Cannot write pruning track to file "<<track_file<<". "<<e.what()<<std::endl;
+	    }
 	}
+	
 	stopwatch.stop("write_pruning_info");
     }
     

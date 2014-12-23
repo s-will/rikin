@@ -329,17 +329,14 @@ for my $row (@$pairtab) {
     writecmd $jobfh,"echo BARRIERS >>$outfn.prt\n\n",$active;
     writecmd $jobfh,"if [ ! -e \"$outfn.senum\" ]; then gunzip -f $outfn.senum.gz; fi\n",$active;
     writecmd $jobfh,"$RRIKDIR/src/rrikin_barriers \$seqA \$seqB -i $outfn.senum ".
-	"-o $outfn.bar --track $outfn.bartrack --no-double ".
+	"-o $outfn.bar --track $outfn.bartrack.gz --no-double ".
 	"--verbose $local_common_opts &>>$outfn.prt\n\n",$active;
     writecmd $jobfh,"gzip -f $outfn.senum\n",$active;
-    writecmd $jobfh,"gzip -f $outfn.bartrack\n\n",$active;
 
     $active=(!$skip_pruning || (! -e "$outfn.pf"));
     writecmd $jobfh,"echo PRUNE >>$outfn.prt\n\n",$active;
     writecmd $jobfh,"if [ ! -e \"$outfn.bar\" ]; then gunzip -f $outfn.bar.gz; fi\n",$active;
-    writecmd $jobfh,"$RRIKDIR/src/rrikin_prune $outfn.bar --pffile $outfn.pf  --min-rate $MIN_RATE --num-out $NUM_OUT --num-pequ $NUM_PEQU --qu-out $QU_OUT --qu-pequ $QU_PEQU --track $outfn.prunetrack --verbose --barfile $outfn.bar_prune --ratesfile $outfn.rates > $outfn.prune_out 2>>$outfn.prt\n\n",$active;
-    writecmd $jobfh,"gzip -f $outfn.bar\n",$active;
-    writecmd $jobfh,"gzip -f $outfn.prunetrack\n\n",$active;
+    writecmd $jobfh,"$RRIKDIR/src/rrikin_prune $outfn.bar --pffile $outfn.pf  --min-rate $MIN_RATE --num-out $NUM_OUT --num-pequ $NUM_PEQU --qu-out $QU_OUT --qu-pequ $QU_PEQU --track $outfn.prunetrack.gz --verbose --barfile $outfn.bar_prune --ratesfile $outfn.rates.gz > $outfn.prune_out 2>>$outfn.prt\n\n",$active;
 
     $active=(!$skip_kin || (! -e "$outfn.kin"));
     writecmd $jobfh,"echo XRATES >>$outfn.prt\n\n",$active;

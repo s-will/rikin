@@ -14,6 +14,7 @@
 
 #include <cassert>
 
+#include <zlib.h>
 
 BarrierGraph::BarrierGraph( bool special_first_state,
 			    bool verbose,
@@ -507,37 +508,56 @@ BarrierGraph::format_rate_for_treekin(double x)  {
     return std::string(buf);
 }
 
+bool
+BarrierGraph::write_treekin_ratesmatrix_row(std::ostream &out, size_t i) const {
+    if (!basins_[i].merged()) {
+	
+	double total=0.0; // row total rate (i!=j)
+	
+	std::vector<double> row(basins_.size());
+	
+	const transitions_map_t::const_iterator &ts = transitions_.find(i);
+	if (ts != transitions_.end()) {
+	    // "bucket sort"
+	    for(transitions_map_row_t::const_iterator it=ts->second.begin();
+		it != ts->second.end(); ++it) {
+		double rate = (it->second.Z() / basins_[i].Z());
+		row[it->first] = rate;
+		total += rate;
+	    }
+	}
+	
+	row[i] = -total;
+	
+	for(size_t j=0; j<row.size();++j) {
+	    if (!basins_[j].merged()) {
+		out << format_rate_for_treekin(row[j]) << " ";
+	    }
+	}
+	out << "\n";
+	return true;
+    }
+    return false;
+}
+
 void
-BarrierGraph::print_treekin_ratesmatrix(std::ostream &out) const
+BarrierGraph::write_treekin_ratesmatrix(std::ostream &out) const
 {
     for(size_t i=0; i<basins_.size(); ++i) {
-	if (!basins_[i].merged()) {
-	    
-	    double total=0.0; // row total rate (i!=j)
-	    
-	    std::vector<double> row(basins_.size());
-	    
-	    const transitions_map_t::const_iterator &ts = transitions_.find(i);
-	    if (ts != transitions_.end()) {
-		// "bucket sort"
-		for(transitions_map_row_t::const_iterator it=ts->second.begin();
-		    it != ts->second.end(); ++it) {
-		    double rate = (it->second.Z() / basins_[i].Z());
-		    row[it->first] = rate;
-		    total += rate;
-		}
-	    }
-	    
-	    row[i] = -total;
+	write_treekin_ratesmatrix_row(out, i);
+    }
+}
 
-	    for(size_t j=0; j<row.size();++j) {
-		if (!basins_[j].merged()) {
-		    out << format_rate_for_treekin(row[j]) << " ";
-		}
-	    }
-	    out << "\n";
+gzFile
+BarrierGraph::gzwrite_treekin_ratesmatrix(gzFile fh) const
+{
+    for(size_t i=0; i<basins_.size(); ++i) {
+	std::stringstream out;
+	if (write_treekin_ratesmatrix_row(out, i)) {
+	    gzputs(fh,out.str().c_str());
 	}
     }
+    return fh;
 }
 
 
@@ -1080,4 +1100,18 @@ BarrierGraph::write_pruning_track(std::ostream &out, bool sparse) const {
     
     return out;
 
+}
+
+gzFile
+BarrierGraph::gzwrite_pruning_track(gzFile fh, bool sparse) const {
+    assert(track_pruning_);
+
+    for (size_t i=0; i<basins_.size(); i++) {
+	std::stringstream out;
+	basin_pruning_infos_[i].write(out, min_contribution_, num_input_states_, sparse);
+	out << '\n';
+	gzputs(fh,out.str().c_str());
+    }
+    
+    return fh;
 }

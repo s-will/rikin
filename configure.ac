@@ -43,80 +43,6 @@ DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN(HybridPF, Doxyfile, doc)
 
 
-dnl ## ========================================
-dnl ## ELL (& BIU)
-dnl #
-
-dnl # minimal reqired version of the BIU library
-dnl BIU_REQUIRED_VERSION=2.3.5
-dnl ELL_REQUIRED_VERSION=3.2.2
-
-dnl # BIU library path support, if not installed in usual directories
-dnl AC_ARG_WITH(BIU,
-dnl         AC_HELP_STRING(
-dnl             [--with-BIU=PREFIX],
-dnl             [alternative prefix path to BIU library]
-dnl           ),
-dnl           BIUPATHSET=1,
-dnl           BIUPATHSET=0
-dnl )
-dnl if test  $BIUPATHSET = 1 ; then
-dnl                 CXXFLAGS="-I$with_BIU/include $CXXFLAGS"
-dnl                 LDFLAGS="-L$with_BIU/lib $LDFLAGS"
-dnl                 export PKG_CONFIG_PATH="$with_BIU/lib/pkgconfig/:$PKG_CONFIG_PATH"
-dnl fi
-
-dnl # BIU library always needed
-dnl LIBS="-lbiu $LIBS"
-
-dnl # check for biu headers
-dnl AC_MSG_CHECKING([for the BIU C++ library])
-dnl AC_COMPILE_IFELSE(
-dnl      [ #include <biu/VirtualList.hh> ],
-dnl      [ 
-dnl        AC_MSG_RESULT(yes)
-dnl        BIUNOTFOUND=0;
-dnl      ],
-dnl          [
-dnl        AC_MSG_RESULT(no)
-dnl        BIUNOTFOUND=1;
-dnl      ]
-dnl )
-
-
-
-dnl # ELL library path support, if not installed in usual directories
-dnl AC_ARG_WITH(ELL,
-dnl         AC_HELP_STRING(
-dnl             [--with-ELL=prefix],
-dnl             [try this for the ELL-library prefix install directory. Mandatory for latFold program.]
-dnl           ),
-dnl           ELLPATHSET=1,
-dnl           ELLPATHSET=0
-dnl )
-dnl if test  $ELLPATHSET = 1 ; then
-dnl         CXXFLAGS="$CXXFLAGS -I$with_ELL/include"
-dnl         LDFLAGS="-L$with_ELL/lib $LDFLAGS"
-dnl         export PKG_CONFIG_PATH="$with_ELL/lib/pkgconfig/:$PKG_CONFIG_PATH"
-dnl fi
-
-
-dnl # ELL library always needed
-dnl LIBS="-lell $LIBS"
-
-dnl AC_MSG_CHECKING([for the ELL C++ library])
-dnl AC_COMPILE_IFELSE(
-dnl      [ #include <ell/State.hh> ],
-dnl      [ 
-dnl        AC_MSG_RESULT(yes)
-dnl        ELLNOTFOUND=0;
-dnl      ],
-dnl          [
-dnl        AC_MSG_RESULT(no)
-dnl        ELLNOTFOUND=1;
-dnl      ]
-dnl )
-
 
 ##################
 ## Debug option
@@ -162,18 +88,18 @@ AC_ARG_WITH([vrna],
 
 LIBS="-lRNA $LIBS"
 
-#AC_SUBST([VRNA_CFLAGS])
-#AC_SUBST([VRNA_LDFLAGS])
-
 LDFLAGS="$VRNA_LDFLAGS $LDFLAGS"
 CPPFLAGS="$VRNA_CFLAGS $CPPFLAGS"
 
-
 AC_CHECK_HEADER("ViennaRNA/fold.h",
 	[VRNANOTFOUND=0],
-	[echo "ERROR: Cannot find Vienna RNA library (--with-vrna=\"$VRNA_HOME\")",
-	VRNANOTFOUND=0],
+	[VRNANOTFOUND=0],
 	[])
+
+## ========================================
+## zlib
+AC_CHECK_LIB([z],[main],[HAVE_ZLIB="yes"])
+LIBS="-lz $LIBS"
 
 # ------------------------------
 # handle open mp support
@@ -217,44 +143,21 @@ DEPENDENCYNOTFOUND=0;
 # error output if ViennaRNA not found
 if test "$VRNANOTFOUND" = "1"; then
         AC_MSG_NOTICE()
-        AC_MSG_NOTICE(the Vienna RNA C library is required for building the ELL.)
-        AC_MSG_NOTICE(it can be obtained from http://www.tbi.univie.ac.at/~ivo/RNA/.)
+        AC_MSG_NOTICE([The Vienna RNA library is missing.])
         AC_MSG_NOTICE()
         DEPENDENCYNOTFOUND=1;
 fi
 
-dnl # error output if BIU-headers not found
-dnl if test "$BIUNOTFOUND" = "1"; then
-dnl         AC_MSG_NOTICE()
-dnl         AC_MSG_NOTICE(the BIU C++ library is required for building the ELL.)
-dnl         AC_MSG_NOTICE(it can be obtained from http://www.bioinf.uni-freiburg.de/SW/BIU/.)
-dnl         AC_MSG_NOTICE()
-dnl         if test "$BIUPATHSET" = "1"; then
-dnl                 AC_MSG_NOTICE(cant find BIU in given path '$with_BIU'.)
-dnl         else
-dnl                 AC_MSG_NOTICE(if BIU is installed elsewhere use --with-BIU=PREFIX.)
-dnl         fi
-dnl         DEPENDENCYNOTFOUND=1;
-dnl fi
-
-dnl # error output if ELL-headers not found
-dnl if test $ELLNOTFOUND = 1; then
-dnl         AC_MSG_NOTICE()
-dnl         AC_MSG_NOTICE(the ELL C++ library is required for building the tools.)
-dnl         AC_MSG_NOTICE(it can be obtained from http://www.bioinf.uni-freiburg.de/SW/ELL/.)
-dnl         AC_MSG_NOTICE()
-dnl         if test $ELLPATHSET = 1; then
-dnl                 AC_MSG_NOTICE(cant find ELL in given path '$with_ELL'.)
-dnl         else
-dnl                 AC_MSG_NOTICE(if ELL is installed elsewhere use --with-ELL=prefix.)
-dnl         fi
-dnl         DEPENDENCYNOTFOUND=1;
-dnl fi
+if test "$HAVE_ZLIB" != "yes" ; then
+        DEPENDENCYNOTFOUND=1;   
+        AC_MSG_NOTICE()
+        AC_MSG_NOTICE([Zlib is missing.])
+fi
 
 # error ABORT if on of the libraries was not found
 if test "$DEPENDENCYNOTFOUND" = "1"; then
         AC_MSG_NOTICE()
-        AC_MSG_ERROR(library not found! Try './configure --help'.)
+        AC_MSG_ERROR([library not found! Try './configure --help'.])
 fi
 
 

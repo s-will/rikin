@@ -1,7 +1,9 @@
 #include "rri_barrier_graph.hh"
 
+#include <zlib.h>
 
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 
 const bool RECOVER_MISSING_STATES=true;
@@ -63,6 +65,22 @@ RRIBarrierGraph::write_basin_track(std::ostream &out) const {
     }
     
     return out;
+}
+
+gzFile
+RRIBarrierGraph::gzwrite_basin_track(gzFile fh) const {
+    
+    for (size_t i=0; i<basin_infos_.size(); i++) {
+	std::stringstream out;
+	out << i 
+	    << "\t" << basins_[i].number_of_states()
+	    << "\t" << (-model_.RT()*log(basins_[i].Z()))
+	    << "\t" << basin_infos_[i]
+	    << '\n';
+	gzputs(fh,out.str().c_str());
+    }
+    
+    return fh;
 }
 
 

@@ -90,6 +90,7 @@
 #include <fstream>
 #include <iomanip>
 
+#include  <zlib.h>
 
 #include  <stack>
 
@@ -308,12 +309,24 @@ main(int argc, char **argv)
     //stopwatch.stop("write");
 
     if (track) {
-	try {
-	    std::ofstream out(track_file.c_str());
-	    bg.write_basin_track(out);
-	    out.close();
-	} catch(const std::ofstream::failure &e) {
-	    std::cerr << "Cannot write basin track to file "<<track_file<<". "<<e.what()<<std::endl;
+	if (track_file.substr(track_file.length()-3,3)==".gz") {
+	    // write gzip'd
+	    gzFile fh=gzopen(track_file.c_str(),"wb");
+	    if (fh==NULL) {
+		std::cerr << "Cannot write basin track to file "<<track_file<<"."<<std::endl;
+	    } else {
+		bg.gzwrite_basin_track(fh);
+	    }
+	    gzclose(fh);
+	} else {
+	    // write uncompressed
+	    try {
+		std::ofstream out(track_file.c_str());
+		bg.write_basin_track(out);
+		out.close();
+	    } catch(const std::ofstream::failure &e) {
+		std::cerr << "Cannot write basin track to file "<<track_file<<". "<<e.what()<<std::endl;
+	    }
 	}
     }
 

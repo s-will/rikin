@@ -7,6 +7,8 @@
 #include <limits>
 #include <tr1/unordered_map>
 
+#include <zlib.h>
+
 #include "basin.hh"
 #include "basin_pruning_info.hh"
 #include "basin_transition.hh"
@@ -342,15 +344,30 @@ public:
      */
     void
     keep_single_component(size_t c,const std::vector<size_t> &components);
+    
+private:
+    bool
+    write_treekin_ratesmatrix_row(std::ostream &out, size_t i) const;
 
+public:
+    
     /** 
-     * @brief print treekin-compatible rates matrix to stream 
+     * @brief write treekin-compatible rates matrix to stream 
      * 
      * @param out output stream 
      */
     void
-    print_treekin_ratesmatrix(std::ostream &out) const;    
-    
+    write_treekin_ratesmatrix(std::ostream &out) const;    
+
+    /** 
+     * @brief write treekin-compatible rates matrix to stream 
+     * 
+     * @param fh gz output file handle
+     * @return fh, NULL on error
+     */
+    gzFile
+    gzwrite_treekin_ratesmatrix(gzFile fh) const;
+
     /** 
      * @brief print partition functions of basins and transitions to stream 
      * 
@@ -518,6 +535,15 @@ public:
     std::ostream &
     write_pruning_track(std::ostream &out, bool sparse) const;
     
+    /**
+     * @brief Write tracking information about pruning 
+     *
+     * @param fh file handle to open gz file
+     * @param sparse if true, write only non-null entries
+     * return file handle; NULL on error
+     */
+    gzFile
+    gzwrite_pruning_track(gzFile fh, bool sparse) const;
 };
 
 
