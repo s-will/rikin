@@ -7,28 +7,43 @@
 std::ostream &
 BasinPruningInfo::write(std::ostream &out,
 			double min_contribution, 
-			size_t num_input_basins) const {
-    
-    std::vector<double> row;
-    row.resize(num_input_basins);
-    
-    for (BasinPruningInfo::contributions_t::const_iterator it=contributions_.begin(); 
-	 contributions_.end()!=it; ++it) {
-	if (it->second >= min_contribution) { 
-	    row[it->first] = it->second;
+			size_t num_input_basins,
+			bool sparse) const {
+    if (sparse) {
+	for (BasinPruningInfo::contributions_t::const_iterator it=contributions_.begin(); 
+	     contributions_.end()!=it; ++it) {
+	    if (it->second >= min_contribution) { 
+		if (it!=contributions_.begin()) out<< '\t';
+		std::ostringstream entry;
+		entry << it->first << ":";
+		entry.precision(3);
+		entry << it->second;
+		out << entry.str();
+	    }
+	}
+    } else {
+
+	std::vector<double> row;
+	row.resize(num_input_basins);
+	
+	for (BasinPruningInfo::contributions_t::const_iterator it=contributions_.begin(); 
+	     contributions_.end()!=it; ++it) {
+	    if (it->second >= min_contribution) { 
+		row[it->first] = it->second;
+	    }
+	}
+	row[orig_index_]=1;
+	
+	for (size_t i=0; i<row.size(); i++) {
+	    std::ostringstream entry;
+	    entry.precision(3);
+	    entry << row[i];
+	    
+	    if (i!=0) out<< '\t';
+	    out << entry.str();
 	}
     }
-    row[orig_index_]=1;
 
-    for (size_t i=0; i<row.size(); i++) {
-	std::ostringstream entry;
-	entry.precision(3);
-	entry << row[i];
-	
-	if (i!=0) out<< '\t';
-	out << entry.str();
-    }
-    
     return out;
 }
 

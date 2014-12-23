@@ -364,7 +364,7 @@ main(int argc, char **argv)
 	stopwatch.start("write_pruning_info");
 	try {
 	    std::ofstream out(track_file.c_str());
-	    bg.write_pruning_track(out);
+	    bg.write_pruning_track(out,true);
 	    out.close();
 	} catch(const std::ofstream::failure &e) {
 	    std::cerr << "Cannot write pruning track to file "<<track_file<<". "<<e.what()<<std::endl;

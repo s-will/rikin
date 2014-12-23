@@ -54,9 +54,14 @@ public:
     size_t 
     orig_index() const {return orig_index_;} 
     
-    //! @brief write to stream
+    /** @brief write to stream
+     * @param out output stream
+     * @param min_contribution smallest contribution to be written
+     * @param num_input_basins number of input basins
+     * @param sparse if true, write sparse
+     */
     std::ostream &
-    write(std::ostream &out, double min_contribution, size_t num_input_basins) const;
+    write(std::ostream &out, double min_contribution, size_t num_input_basins, bool sparse) const;
 
     
 };
