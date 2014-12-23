@@ -316,17 +316,17 @@ for my $row (@$pairtab) {
     print $jobfh "seqB=$seqB\n\n";
 
     my $active;
-    writecmd $jobfh,"echo START: `date` >>$outfn.prt\n\n",1;
+    writecmd $jobfh,"echo START `date` >>$outfn.prt\n\n",1;
     
     $active=!($skip_enum && (-e "$outfn.senum.gz" || -e "$outfn.senum"));
-    writecmd $jobfh,"echo ENUM >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"echo ENUM `date` >>$outfn.prt\n\n",$active;
     writecmd $jobfh,"$RRIKDIR/src/rrikin_enum \$seqA \$seqB --no-double ".
 	"--verbose $ENUM_OPTS $local_common_opts > $outfn.enum 2>>$outfn.prt\n\n",$active;
     writecmd $jobfh,"sort -g -k1 $outfn.enum > $outfn.senum\n",$active;
     writecmd $jobfh,"rm $outfn.enum\n\n",$active;
 
     $active=(!$skip_barriers || (! -e "$outfn.bar.gz" && ! -e "$outfn.bar"));
-    writecmd $jobfh,"echo BARRIERS >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"echo BARRIERS `date` >>$outfn.prt\n\n",$active;
     writecmd $jobfh,"if [ ! -e \"$outfn.senum\" ]; then gunzip -f $outfn.senum.gz; fi\n",$active;
     writecmd $jobfh,"$RRIKDIR/src/rrikin_barriers \$seqA \$seqB -i $outfn.senum ".
 	"-o $outfn.bar --track $outfn.bartrack.gz --no-double ".
@@ -334,19 +334,19 @@ for my $row (@$pairtab) {
     writecmd $jobfh,"gzip -f $outfn.senum\n",$active;
 
     $active=(!$skip_pruning || (! -e "$outfn.pf"));
-    writecmd $jobfh,"echo PRUNE >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"echo PRUNE `date` >>$outfn.prt\n\n",$active;
     writecmd $jobfh,"if [ ! -e \"$outfn.bar\" ]; then gunzip -f $outfn.bar.gz; fi\n",$active;
     writecmd $jobfh,"$RRIKDIR/src/rrikin_prune $outfn.bar --pffile $outfn.pf  --min-rate $MIN_RATE --num-out $NUM_OUT --num-pequ $NUM_PEQU --qu-out $QU_OUT --qu-pequ $QU_PEQU --track $outfn.prunetrack.gz --verbose --barfile $outfn.bar_prune --ratesfile $outfn.rates.gz > $outfn.prune_out 2>>$outfn.prt\n\n",$active;
 
     $active=(!$skip_kin || (! -e "$outfn.kin"));
-    writecmd $jobfh,"echo XRATES >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"echo XRATES `date` >>$outfn.prt\n\n",$active;
     writecmd $jobfh,"$RRIKDIR/src/xrates.m $outfn.pf --out $outfn.kin --t8 1e16 &>>$outfn.prt\n\n",$active;
     
     $active=(!$skip_pdf || (! -e "$outfn.pdf"));
-    writecmd $jobfh,"echo KINETICS >>$outfn.prt\n\n",$active;
+    writecmd $jobfh,"echo KINETICS `date` >>$outfn.prt\n\n",$active;
     writecmd $jobfh,"Rscript $RRIKDIR/src/kinetics.R $outfn.kin $outfn.pdf 'cor=$cor; ol=$overlap' >$outfn.scores 2>>$outfn.prt\n",$active;
     
-    writecmd $jobfh,"echo FINISH: `date` >>$outfn.prt\n\n",1;
+    writecmd $jobfh,"echo FINISH `date` >>$outfn.prt\n\n",1;
 
     close $jobfh unless $dry;
     print "-------------------------------------------------- eof\n\n" 
