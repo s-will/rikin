@@ -591,7 +591,7 @@ RRIBarrierGraph::read_states(std::istream &in,
     }
 
     if (verbose_ ) {
-	std::cerr << "\r" << state_counter<< "    b:"<<basins_.size()<<"    h:"<<state_hash_.size()<<"        "<<std::endl;
+	std::cerr << state_counter<< "    b:"<<basins_.size()<<"    h:"<<state_hash_.size()<<"        "<<std::endl;
     }
 
 }

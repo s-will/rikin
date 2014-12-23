@@ -126,7 +126,9 @@ BarrierGraph::filter_basin_transitions(const Basin &x0, double min_rate) {
 	
 	//if (basins_[it->first].merged()) continue;
 	assert(!basins_[it->first].merged());
-	    
+	
+	considered_transitions_++;
+	
 	if (it->second.Z() / std::min(x0.Z(), basins_[it->first].Z())
 	    < min_rate) {
 	    
@@ -135,6 +137,8 @@ BarrierGraph::filter_basin_transitions(const Basin &x0, double min_rate) {
 	    transitions_[it->first].erase(x0.idx());
 	    it=trs_x0.erase(it);
 	    
+	    removed_transitions_++;
+
 	} else {
 	    ++it;
 	}
@@ -142,16 +146,6 @@ BarrierGraph::filter_basin_transitions(const Basin &x0, double min_rate) {
     //std::cerr << "DONE"<<std::endl;
 }
 
-void
-BarrierGraph::filter_transitions(double min_rate) {
-    // run through basins
-    for (size_t i=0; i<basins_.size(); ++i) {
-	
-	Basin &x0 = basins_[i];
-	
-	filter_basin_transitions(x0,min_rate);
-    }    
-}
 
 double
 BarrierGraph::outflow_pf(const Basin &x) const {
@@ -214,7 +208,7 @@ void
 BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 
     // compute total outflow
-    double total_out = outflow_pf(x0);
+    double total_out_x0 = outflow_pf(x0);
     
     // traverse neighbor basins of x0
     transitions_map_row_t &trs_x0=transitions_[x0.idx()];
@@ -225,45 +219,64 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 	
 	// skip merged basins, and x0 itself
 	if (y.merged()) continue;
-	if (x0.idx()==y.idx()) continue;
-		
-	// 1) distribute the basin's partition function to its neighbors
-	double Z_yx0 =  it->second.Z();
-	double fraction = Z_yx0/total_out;
+	assert(x0.idx()!=y.idx());
+	//if (x0.idx()==y.idx()) continue;
 	
-	merge_in_basin(x0,y,fraction);
-		
+	// 1) distribute the pf of x0 to its neighbors y
+	double Z_yx0 =  it->second.Z(); // transition pf between x0 and y
+	double fraction_yx0 = Z_yx0/total_out_x0; // fraction of the x0 outflow that flows to y
+	
+	merge_in_basin(x0,y,fraction_yx0); // merge fraction of x0's pf into y's pf
+	
 	if (debug_out_) {
-	    std::cerr << "Transfer a fraction of " << fraction << " of " << x0.idx()
-		      << "'s partfunc to " << y.idx()<<std::endl;
+	    std::cerr << "Transfer " << fraction_yx0*100 << "% of " << x0.idx()
+		      << "'s pf to " << y.idx()<<std::endl;
 	}
-		
-	// 2) distribute the partition function of the transitions to this basin to its neighbors
-		
+	
+	// 2) distribute the partition function of the
+	//    transitions x0->y to transitions x->y between neighbors of x0 
 	for (transitions_map_row_t::iterator it2=trs_x0.begin();
 	     trs_x0.end()!=it2; ++it2) {
 		    
 	    Basin &x = basins_[it2->first];
 	    if (x.merged()) continue;
-				    
-	    if (x.idx()==y.idx()) continue;
-	    if (x0.idx()==x.idx()) continue;
-		    
-	    // update the transition from x to y (via x0)
-		    
+	    
+	    // handle both directions x->y and y->x in the same loop iteration
+	    // Thus, make sure that we don't see the pair (x,y) twice:
+	    if (x.idx()<=y.idx()) continue;
+	    
+	    assert(x0.idx()!=x.idx());
+	    //if (x0.idx()==x.idx()) continue;
+	    
+	    // update the transition from x to y (via x0) and vice versa
+	    
 	    double Z_xx0 = transitions_[x.idx()][x0.idx()].Z();
-		    
+	    // Z_yx0 is known from above
+	    
+	    double fraction_xx0 = Z_xx0/total_out_x0;
+
 	    if (debug_out_) {
-		std::cerr << "Transfer a fraction of " << fraction << " of transition "
+		std::cerr << "Transfer " << fraction_yx0*100 << "% of "
 			  << x.idx() <<"->"<< x0.idx() << " to " << x.idx() 
 			  << "->"<< y.idx()<<std::endl;
+		std::cerr << "Transfer " << fraction_xx0*100 << "% of "
+			  << y.idx() <<"->"<< x0.idx() << " to " << y.idx() 
+			  << "->"<< x.idx()<<std::endl;
 	    }
 	    
-	    // SPARSIFICATION; IMPORTANT FOR EFFICIENCY: update rate
-	    // only if the /increment/ is larger than min_rate
-	    // (otherwise this creates a lot of additional very small transitions)
-	    if ( Z_xx0 * fraction>min_rate ) {
-		transitions_[x.idx()][y.idx()].update(Z_xx0 * fraction);
+	    // HEURISITC SPARSIFICATION; IMPORTANT FOR EFFICIENCY:
+	    // update rate only if transition exists or the single
+	    // /increment/ is larger than min_rate (again
+	    // symmetrically).  Without this optimization, the pruning
+	    // produces a lot of additional very small transitions.
+	    if ( Z_xx0 * fraction_yx0 / x.Z()  > min_rate /* x->x0->y */
+		 ||
+		 Z_yx0 * fraction_xx0 / y.Z()  > min_rate /* y->x0->x */
+		 )  {
+	      	transitions_[x.idx()][y.idx()].update(Z_xx0 * fraction_yx0);
+	      	transitions_[y.idx()][x.idx()].update(Z_yx0 * fraction_xx0);
+	    } else {
+	    	if (debug_out_) {std::cerr << "Transition pf not updated."<<std::endl;}
 	    }
 	} // end for it2 (over neighbors of x0)
 		
@@ -275,13 +288,15 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 	std::cerr << "Mark "<<x0.idx()<<" as merged."<<std::endl;
     }
     x0.mark_merged();
-
     
-    // and release all transitions from and to the merged basin
+    // and release all transitions from and to basin x0:
+    //   1) go through neighbors and delete their transition to x0
+    //      (ATTENTION: this requires that transition "links" are symmetric)
     for (transitions_map_row_t::iterator it=trs_x0.begin();
 	 trs_x0.end()!=it; ++it) {
 	transitions_[it->first].erase(x0.idx());
     }
+    //   2) delete all transitions from x0 to other basins 
     transitions_.erase(x0.idx());
     
 }
@@ -333,6 +348,9 @@ BarrierGraph::prune(double max_outflow,double min_p_equ, double min_rate) {
     for (size_t i=0; i<basins_.size(); ++i) sorted_basin_idxs.push_back(i);
     sort(sorted_basin_idxs.begin(),sorted_basin_idxs.end(),compBasinIdxs(*this));
 
+    removed_transitions_=0;
+    considered_transitions_=0;
+
     // run through sorted basins and merge
     for (size_t i=0; i<basins_.size(); ++i) {
 	
@@ -362,6 +380,11 @@ BarrierGraph::prune(double max_outflow,double min_p_equ, double min_rate) {
 	
 	}
     }
+    
+    std::cerr << "Removed "<<removed_transitions_<<" transitions due to min-rate filter "
+	      << "out of a total of "<<considered_transitions_<<" considered transitions; "
+	      << "finally keeping "<<num_transitions()<<" tranisitions."
+	      << std::endl;
 }
 
 // reduce to keep set
@@ -1045,13 +1068,13 @@ BarrierGraph::print_stats(std::ostream &out) const {
 }
 
 std::ostream &
-BarrierGraph::write_pruning_track(std::ostream &out) const {
+BarrierGraph::write_pruning_track(std::ostream &out, bool sparse) const {
     assert(track_pruning_);
 
     for (size_t i=0; i<basins_.size(); i++) {
 	// out << i 
 	//     << "\t";
-	basin_pruning_infos_[i].write(out, min_contribution_, num_input_states_);
+	basin_pruning_infos_[i].write(out, min_contribution_, num_input_states_, sparse);
 	out << '\n';
     }
     

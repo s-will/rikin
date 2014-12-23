@@ -75,11 +75,22 @@ protected:
     //! vector of basin pruning information
     basin_pruning_infos_t basin_pruning_infos_; 
     
+    //! count removed transitions due to transition rate filter (only
+    //! for statisistics)
+    size_t
+    removed_transitions_;
+
+    //! count considered transitions during pruning (only
+    //! for statisistics)
+    size_t
+    considered_transitions_;
+    
     /**
      * @brief append new basin to basin list
      */
     void
     push_back_basin(size_t index, double pf);
+
 
         
 protected:
@@ -260,15 +271,6 @@ public:
      */
     void
     filter_basin_transitions(const Basin &x0, double min_rate);
-    
-    /**
-     * @brief filter transitions by minimum rate for all basins, also remove self-transitions
-     * @param min_rate minimum rate; transition with lower rate (in
-     * both directions!) are removed
-     *
-     */
-    void filter_transitions(double min_rate);
-    
 
     /** 
      * @brief Print the list of all basins of the barriers graph 
@@ -504,6 +506,7 @@ public:
      * @brief Write tracking information about pruning 
      *
      * @param out output stream
+     * @param sparse if true, write only non-null entries
      *
      * Writes information about dissolving of basins in the pruning
      * process. Essentially, this is a table of original states
@@ -513,8 +516,7 @@ public:
      * index/value pairs.
      */
     std::ostream &
-    write_pruning_track(std::ostream &out) const;
-
+    write_pruning_track(std::ostream &out, bool sparse) const;
     
 };
 

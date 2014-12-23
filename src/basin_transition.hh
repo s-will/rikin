@@ -30,28 +30,6 @@ public:
 	:
 	Z_(transition_weight)
     {}
-    
-    
-    // /** @brief construct from stream
-    //  */
-    // BasinTransition(std::istream &in);
-
-    // /** @brief write to stream (binary)
-    //  */
-    // std::ostream &
-    // write_binary(std::ostream &out);
-
-    
-    // /** 
-    //  * Update transition by energy and partition function of additional transition
-    //  *
-    //  * @param transition_energy transition/barrier energy
-    //  * @param Z partition functions
-    //  */
-    // void
-    // update(double transition_energy,double Z) {
-    // 	Z_ += Z;
-    // }
 
     /** 
      * Update transition by partition function of additional transition
