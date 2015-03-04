@@ -94,6 +94,8 @@
 
 #include  <stack>
 
+#include "util.hh"
+
 extern "C" {
 #include "ViennaRNA/fold_vars.h" // defines global variables
 }
@@ -198,22 +200,9 @@ main(int argc, char **argv)
     size_t region_endA=seqA.length();
     size_t region_startB=1;
     size_t region_endB=seqB.length();
-    
-    if (args_info.regionA_arg>0) {
-	region_endA=std::min(seqA.length(),(size_t)args_info.regionA_arg);
-    } else if (args_info.regionA_arg<0) {
-	if ((size_t)(-args_info.regionA_arg)<seqA.length()) {
-	    region_startA=seqA.length()+args_info.regionA_arg+1;
-	}
-    }
 
-    if (args_info.regionB_arg>0) {
-	region_endB=std::min(seqB.length(),(size_t)args_info.regionB_arg);
-    } else if (args_info.regionB_arg<0) {
-	if ((size_t)(-args_info.regionB_arg)<seqB.length()) {
-	    region_startB=seqB.length()+args_info.regionB_arg+1;
-	}
-    }
+    parse_region(args_info.regionA_arg,region_startA,region_endA);
+    parse_region(args_info.regionB_arg,region_startB,region_endB);
 
     const size_t span = 
 	args_info.span_arg>=0

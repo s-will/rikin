@@ -101,14 +101,14 @@ private:
      * 
      * scaled to current temperature
      */
-    pf_paramT *pf_params; 
+    pf_paramT *pf_params_; 
 
     /**
      * \brief structure containing energy parameter
      * 
      * scaled to current temperature
      */
-    paramT *params; 
+    paramT *params_;
 
     const std::string &seqA; //!< sequence A
     const std::string &seqB; //!< sequence B
@@ -130,17 +130,17 @@ private:
      */
     double RT_;
 
-    short *SA; //!< encoded sequence A (type 0)
-    short *SA1; //!< encoded sequence A (type 1)
-    short *SB; //!< encoded reverse sequence B (type 0)
-    short *SB1; //!< encoded reverse sequence B (type 1)
+    short *SA_; //!< encoded sequence A (type 0)
+    short *SA1_; //!< encoded sequence A (type 1)
+    short *SB_; //!< encoded reverse sequence B (type 0)
+    short *SB1_; //!< encoded reverse sequence B (type 1)
     
     /**
      * 4-dim matrix that holds all partition functions 
-     * Q[i1][i2][j1][j2] is the hybrid partition function 
+     * Q_[i1][i2][j1][j2] is the hybrid partition function 
      * for subsequences seqA[i1..j1] and reverse(seqB)[i2..j2].
      */
-    PFOffsetMatrix4D Q;
+    PFOffsetMatrix4D Q_;
     
     
     //! \brief Compute table Q.
@@ -221,7 +221,7 @@ public:
      */
     energy_t
     DuplexInit() const {
-	return params->DuplexInit;
+	return params_->DuplexInit;
     }
 
 };

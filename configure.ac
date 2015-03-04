@@ -59,7 +59,7 @@ AC_ARG_ENABLE([debug],
 AC_MSG_RESULT($debuger)
 if test x"$debuger" = x"yes"; then
     AC_DEFINE([DEBUG], [], [Define to 1 for turning on debugging])
-    CPPFLAGS="$CPPFLAGS -g -Wall"
+    CXXFLAGS="$CXXFLAGS -g -Wall"
 else
     AC_DEFINE([NDEBUG], [], [Define to 1 for turning off debugging])
 fi
@@ -68,7 +68,7 @@ fi
 # configure for use of LocARNA library
 PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.3 >= 1.7.15])
 
-CPPFLAGS="$LOCARNA_CFLAGS $CPPFLAGS"
+CXXFLAGS="$LOCARNA_CFLAGS $CXXFLAGS"
 LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
 LIBS="-lLocARNA-1.3 $LIBS"
 
@@ -89,7 +89,7 @@ AC_ARG_WITH([vrna],
 LIBS="-lRNA $LIBS"
 
 LDFLAGS="$VRNA_LDFLAGS $LDFLAGS"
-CPPFLAGS="$VRNA_CFLAGS $CPPFLAGS"
+CXXFLAGS="$VRNA_CFLAGS $CXXFLAGS"
 
 AC_CHECK_HEADER("ViennaRNA/fold.h",
 	[VRNANOTFOUND=0],
@@ -107,8 +107,8 @@ LIBS="-lz $LIBS"
 AC_OPENMP
 AC_SUBST(OPENMP_CXXFLAGS)
 
-CPPFLAGS="$OPENMP_CXXFLAGS $CPPFLAGS"
-LDFLAGS="$OPENMP_CXXFLAGS $LDFLAGS"
+CXXFLAGS="$OPENMP_CXXFLAGS $CXXFLAGS"
+# LDFLAGS="$OPENMP_CXXFLAGS $LDFLAGS"
 
 
 ####################

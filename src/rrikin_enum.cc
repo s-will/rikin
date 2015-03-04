@@ -23,7 +23,7 @@
 
 #include <cassert>
 
-
+#include "util.hh"
 
 extern "C" {
 #include "ViennaRNA/fold_vars.h" // defines global variables
@@ -125,7 +125,7 @@ enumerate_double_sites(const HybEnsModel &model,
 	    if ( (model.pair_type(i1,i2)==0) ) {
 		continue;
 	    }
-	    	    
+	    
 	    for (size_t j1=i1+minsitesize-1; j1<=std::min(maxsitesize+i1-1,region_endA); j1++) {
 
 		size_t from_j2 = std::max(i2+minsitesize-1+maxsitesize_diff,j1-i1+i2)-maxsitesize_diff;
@@ -194,6 +194,7 @@ enumerate_double_sites(const HybEnsModel &model,
     return count_double_states;
 }
 
+
 int
 main(int argc, char **argv)
 {
@@ -260,23 +261,10 @@ main(int argc, char **argv)
     size_t region_endA=seqA.length();
     size_t region_startB=1;
     size_t region_endB=seqB.length();
-
-    if (args_info.regionA_arg>0) {
-	region_endA=std::min(seqA.length(),(size_t)args_info.regionA_arg);
-    } else if (args_info.regionA_arg<0) {
-	if ((size_t)(-args_info.regionA_arg)<seqA.length()) {
-	    region_startA=seqA.length()+args_info.regionA_arg+1;
-	}
-    }
-
-    if (args_info.regionB_arg>0) {
-	region_endB=std::min(seqB.length(),(size_t)args_info.regionB_arg);
-    } else if (args_info.regionB_arg<0) {
-	if ((size_t)(-args_info.regionB_arg)<seqB.length()) {
-	    region_startB=seqB.length()+args_info.regionB_arg+1;
-	}
-    }
-
+    
+    parse_region(args_info.regionA_arg,region_startA,region_endA);
+    parse_region(args_info.regionB_arg,region_startB,region_endB);
+    
     const size_t span = 
 	args_info.span_arg>=0
 	? args_info.span_arg
@@ -301,7 +289,7 @@ main(int argc, char **argv)
 			   << "; region A " << region_startA << "-" << region_endA
 			   << "; region B " << region_startB << "-" << region_endB
 			   <<")" << std::endl;
-
+    
     HybEnsModel model(seqA,seqB,
 		      maxsitesize,
 		      maxsitesize_diff,

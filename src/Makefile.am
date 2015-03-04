@@ -3,7 +3,7 @@ bin_PROGRAMS=rrikin_enum rrikin_barriers rrikin_prune test_moves
 # base sources, common to all programs
 BASE_SRCS=hybrid_pf.cc hybrid_pf.hh unpaired_pf.cc unpaired_pf.hh	\
 LocARNA/matrices.hh LPfold.h LPfold.c hybrid_ensemble_model.hh		\
-hybrid_ensemble_model.cc moves.hh moves.cc
+hybrid_ensemble_model.cc moves.hh moves.cc util.hh util.cc
 
 # extended base sources, common to programs operating on barrier graph
 EXT_BASE_SRCS=$(BASE_SRCS) barrier_graph.hh barrier_graph.cc basin.hh	\
