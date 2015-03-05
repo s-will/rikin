@@ -135,10 +135,11 @@ void
 HybridPF::initialize_hybrid_pf() {
     // resize Q
     Q_.resize(region_endA_-region_startA_+1,
-	     region_endB_-region_startB_+1,
-	     region_startA_,
-	     region_startB_);
-
+	      region_endB_-region_startB_+1,
+	      region_startA_,
+	      region_startB_);
+    
+    /*
     for (size_t i1=region_startA_; i1<=region_endA_; i1++) {
 	for (size_t i2=region_startB_; i2<=region_endB_; i2++) {
 	    Q_(i1,i2).resize(region_endA_-region_startA_+1,
@@ -147,15 +148,18 @@ HybridPF::initialize_hybrid_pf() {
 			    region_startB_);
 	}
     }
+    */
  
     // initialisation
-    
+
+    /*
     // fill with 0
     for (size_t i1=region_startA_; i1<=region_endA_; i1++) {
 	for (size_t i2=region_startB_; i2<=region_endB_; i2++) {
 	    Q_(i1,i2).fill(0);
 	} 
     }
+    */
 
     
     // set Q[i][i2][i][i2] to
@@ -169,11 +173,9 @@ HybridPF::initialize_hybrid_pf() {
 	    // This makes energies more similar to cofold results.
 	    // Currently, we add no duplex energy (see below)
 	    
-	    Q_(i1,i2)(i1,i2) = 
-		(ptype > 0) // is i1.i2 pairing canonical ?
-		// ?pf_params_->expDuplexInit // instead of 1.0 ?
-		?1.0
-		:0.0;
+	    if (ptype>0) { // if i1.i2 pairing canonical
+		Q_(i1,i2)(i1,i2) = 1.0; // pf_params_->expDuplexInit // instead of 1.0 ?
+	    }
 	}
     }
 }

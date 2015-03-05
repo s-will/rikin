@@ -8,6 +8,12 @@
    
    We start by defining classes for the computation of hybrid
    partition functions and joint probabilities for two unpaired sites.
+
+   @todo heuristically speed-up model initialisation (e.g. only limited length diff of isites)
+   @todo write only to streams (desync with C-IO to increase performance)
+   @todo encapsulate rri state enumerator, s.t. it could be used from other progs
+   @todo use HybEnsModel::StateDescription with reading and writing methods <<, >>
+   @todo write state descriptions to arbitrary output streams
  */
 
 

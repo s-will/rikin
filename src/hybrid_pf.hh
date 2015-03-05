@@ -6,6 +6,7 @@ extern "C" {
 }
 
 #include <LocARNA/matrices.hh>
+#include <LocARNA/sparse_matrix.hh>
 
 /**
  * \brief Partition functions of hybridizations
@@ -93,7 +94,8 @@ private:
     
     
     //! 4D matrix for holding partition functions.
-    typedef LocARNA::OMatrix<LocARNA::OMatrix<FLT_OR_DBL> > PFOffsetMatrix4D;
+    //typedef LocARNA::OMatrix<LocARNA::OMatrix<FLT_OR_DBL> > PFOffsetMatrix4D;
+    typedef LocARNA::OMatrix<LocARNA::SparseMatrix<FLT_OR_DBL> > PFOffsetMatrix4D;
 
 
     /**

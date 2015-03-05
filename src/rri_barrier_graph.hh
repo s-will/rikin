@@ -29,7 +29,6 @@ private:
     typedef std::tr1::unordered_map< code_t,
 				     size_t,
 				     HybEnsModel::StateDescription::code_t_hash
-
 				     > state_hash_t;
     
     //! hybrid ensemble model
