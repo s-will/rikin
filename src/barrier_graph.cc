@@ -1099,7 +1099,6 @@ BarrierGraph::write_pruning_track(std::ostream &out, bool sparse) const {
     }
     
     return out;
-
 }
 
 gzFile
@@ -1110,6 +1109,100 @@ BarrierGraph::gzwrite_pruning_track(gzFile fh, bool sparse) const {
 	std::stringstream out;
 	basin_pruning_infos_[i].write(out, min_contribution_, num_input_states_, sparse);
 	out << '\n';
+	gzputs(fh,out.str().c_str());
+    }
+    
+    return fh;
+}
+
+
+bool
+BarrierGraph::compute_pruning_pps(size_t ms_idx,
+				   const PairPfs &ppfs,
+				   double &Z,
+				   LocARNA::SparseMatrix<double> &ms_ppfs) const {
+    assert(ms_idx<basins_.size());
+
+    // current macrostate
+    const Basin &ms = basins_[ms_idx];
+    if (ms.merged()) {return false;} // skip merged macrostates
+    
+    Z=ms.Z();
+
+    //std::cerr << "BarrierGraph::compute_pruning_pps "<<ms_idx<<" "<<Z<<std::endl;
+
+
+    // pruning info of macrostate
+    const BasinPruningInfo &pi = basin_pruning_infos_[ms_idx];
+    
+    // iterate over basins that contribute to this macrostate
+    for ( auto &x : pi ) {
+	size_t basin_idx  = x.first;  // (original) index of contributing basin
+	double basin_frac = x.second; // fraction
+
+	double basin_pf = ppfs.Z(basin_idx); //total partition function of basin
+	
+	//std::cerr << "  contributions "<<basin_idx<<" "<<basin_frac<<" "<<basin_pf<<std::endl;
+	
+	// iterate over (k1,k2) pairs (that  exist in the sparse
+	// representation of the current basin)
+	
+	auto &basin_pps = ppfs.pair_probs(basin_idx);
+	
+	for ( auto &y : basin_pps ) {
+	    size_t k1=y.first.first;
+	    size_t k2=y.first.second;
+	    double pr=y.second; // Pr[(k1,k2)|basin]
+
+	    // std::cerr << "    pair "<<k1<<" "<<k2<<" "<<pr<<" "<<(basin_frac * basin_pf * pr)<<"\t";
+	    
+	    ms_ppfs(k1,k2) = ms_ppfs(k1,k2) +  basin_frac * basin_pf * pr;
+	}
+	//std::cerr << std::endl;
+    }
+    return true;
+}
+
+std::ostream &
+BarrierGraph::write_pruning_pps_track(std::ostream &out, 
+				       const PairPfs &ppfs,
+				       double min_prob) const {
+    assert(track_pruning_);
+    
+    //iterate over macrostates
+    for (size_t ms_idx = 0; ms_idx<basins_.size(); ms_idx++) {
+	// pair partition functions of ms
+	LocARNA::SparseMatrix<double> ms_ppfs;
+	// total partition function of ms
+	double Z;
+
+	if ( !compute_pruning_pps(ms_idx,ppfs,Z,ms_ppfs) ) {continue;}
+
+	// now, ppfs contains the pair partition functions for the current macrostate
+	// ==> write them
+	PairPfs::write_state(out,ms_idx,Z,ms_ppfs,min_prob);
+	
+    }  
+
+    return out;
+}
+
+gzFile
+BarrierGraph::gzwrite_pruning_pps_track(gzFile fh,
+					 const PairPfs &ppfs,
+					 double min_prob) const {
+    // variant of write_pruning_pps_track() for gz-compressed output
+
+    assert(track_pruning_);
+    
+    for (size_t ms_idx = 0; ms_idx<basins_.size(); ms_idx++) {
+	LocARNA::SparseMatrix<double> ms_ppfs;
+	double Z;
+	if ( !compute_pruning_pps(ms_idx,ppfs,Z,ms_ppfs) ) {continue;}
+
+	std::ostringstream out;
+	PairPfs::write_state(out,ms_idx,Z,ms_ppfs,min_prob);
+	
 	gzputs(fh,out.str().c_str());
     }
     

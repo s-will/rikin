@@ -1,9 +1,9 @@
-#include <stdlib.h>
-#include <math.h>
+#include <cmath>
 
-#include  <stdlib.h>
-#include  <stdio.h>
-
+//#include  <cstdlib>
+//#include  <cstdio>
+#include <iostream>
+#include <iomanip>
 
 #include "hybrid_ensemble_model.hh"
 
@@ -16,6 +16,9 @@ HybEnsModel::StateDescription::StateDescription()
 {
 }
 
+/**
+ * @brief Construct state from binary code
+ */
 HybEnsModel::StateDescription::StateDescription(const code_t &code) 
     :isites(0)
 {
@@ -84,13 +87,10 @@ HybEnsModel::to_dotbracket(const StateDescription &sd) const {
 // --------------------
 // encoding and decoding compressed representation
 //
-// use very simple code:
+// use simple code:
 // always use 2 bytes per position and 8 * 2 bytes in total (two sites)
 //
-// encode empty sites by invalid entry where i1 > j1 to avoid 0 in
-// encoding; as long as positions are >0 this allows to write encoding
-// to file and still use gnu's "sort -z"! ---  CURRENTLY BROKEN
-// (This was working as long as we used one byte per index)
+// encode empty sites by invalid entry where i1 > j1
 //
 HybEnsModel::StateDescription::code_t &
 HybEnsModel::StateDescription::encode(code_t &the_code) const {
@@ -98,7 +98,7 @@ HybEnsModel::StateDescription::encode(code_t &the_code) const {
     for (size_t i=0; i<size(); i++) {
 	unsigned short *code = 
 	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
-    
+	
 	*(code++)=isites[i].i1;
 	*(code++)=isites[i].i2;
 	*(code++)=isites[i].j1;
@@ -129,17 +129,15 @@ HybEnsModel::StateDescription::encode() const {
     return code;
 }
 
-
-
 HybEnsModel::StateDescription &
 HybEnsModel::StateDescription::decode(const code_t &the_code) {
-    
-    // determine number of encoded sites
+
+    // decode and determine number of encoded sites
     size_t num_sites=0;
     for (size_t i=0; i<2; i++) {
-	const unsigned short *code = 
+        const unsigned short *code = 
 	    reinterpret_cast<const unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
-	
+		
 	if (code[0]<=code[2]) { num_sites++; } 
 	else { break; } // break at first invalid site
     }
@@ -155,30 +153,57 @@ HybEnsModel::StateDescription::decode(const code_t &the_code) {
     return *this;
 }
 
+
+// to avoid 0 bytes in binary file output: encode unsigned short int
+// x=00aaaaaaabbbbbbb as bit sequence aaaaaaa1bbbbbbb1
+void
+encode_ushort(unsigned short &x) {
+    x = 1 | ( (x & 0x7F) << 1 ) | 0x100 | ( ((x>>7) & 0x7F) << 9 );
+}
+void
+decode_ushort(unsigned short &x) {
+    x = ((x>>1) & 0x7F) | (((x>>9) & 0x7F)<<7);
+}
+
 std::ostream &
 HybEnsModel::StateDescription::write_binary(std::ostream &out) const {
-    code_t code;
-    encode(code);
-    
-    out.write(reinterpret_cast<char *>(&code.first),sizeof(code.first));
-    out.write(reinterpret_cast<char *>(&code.second),sizeof(code.second));
-    
-    // now, replaced by use of c++ stream
-    // fwrite(reinterpret_cast<char *>(&code.first),sizeof(char),8,stdout);
-    // fwrite(reinterpret_cast<char *>(&code.second),sizeof(char),8,stdout);
-    // fputc(0,stdout);
+    code_t the_code;
+    encode(the_code);
 
+    for (size_t i=0; i<2; i++) {
+	unsigned short *code = 
+	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
+		
+	encode_ushort(code[0]);
+	encode_ushort(code[1]);
+	encode_ushort(code[2]);
+	encode_ushort(code[3]);
+	
+	out.write(reinterpret_cast<char *>(&code),4*sizeof(unsigned short));
+    }
+    
     return out;
 }
 
 bool
 HybEnsModel::StateDescription::read_binary(std::istream &in) {
-    HybEnsModel::StateDescription::code_t code;
+    HybEnsModel::StateDescription::code_t the_code;
     
-    in.read(reinterpret_cast<char *>(&code.first),sizeof(code.first));
-    in.read(reinterpret_cast<char *>(&code.second),sizeof(code.second));
+    for (size_t i=0; i<2; i++) {
+	unsigned short *code = 
+	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
+	
+	in.read(reinterpret_cast<char *>(&code),4*sizeof(unsigned short));
+	
+	decode_ushort(code[0]);
+	decode_ushort(code[1]);
+	decode_ushort(code[2]);
+	decode_ushort(code[3]);
 
-    decode(code);
+    }
+
+    decode(the_code);
+
     return true;
 }
 
@@ -232,22 +257,28 @@ HybEnsModel::HybEnsModel(std::string seqA,
 			 size_t window,
 			 bool cond
 			 )
-    : seqA_(seqA),
-      seqB_(seqB),
-      uppfA_(seqA,+1,maxsitesize,span,window,cond),
-      uppfB_(seqB,-1,maxsitesize,span,window,cond),
-      hybridpf_(seqA,seqB,
-		maxsitesize,
-		maxsitesize_diff,
-		region_startA,
-		region_endA,
-		region_startB,
-		region_endB),
-      maxunpinloop_(6),
-      minsitesize_(3),
-      minsitedist_(6),
-      maxsitesize_( maxsitesize ),
-      homodimer_(false)
+    : 
+    seqA_(seqA),
+    seqB_(seqB),
+    uppfA_(seqA,+1,maxsitesize,span,window,cond),
+    uppfB_(seqB,-1,maxsitesize,span,window,cond),
+    hybrid_pf_(seqA,seqB,
+	      maxsitesize,
+	      maxsitesize_diff,
+	      region_startA,
+	      region_endA,
+	      region_startB,
+	      region_endB),
+    maxunpinloop_(6),
+    minsitesize_(3),
+    minsitedist_(6),
+    maxsitesize_( maxsitesize ),
+    maxsitesize_diff_( maxsitesize_diff ),
+    region_startA_(region_startA),
+    region_endA_(region_endA),
+    region_startB_(region_startB),
+    region_endB_(region_endB),
+    homodimer_(false)
 {
     std::string seqA1=seqA;
     reverse(seqA1);
@@ -264,7 +295,7 @@ HybEnsModel::energy_hybrid(const StateDescription::ISite &is) const {
 
 HybEnsModel::energy_t
 HybEnsModel::energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const {    
-    return - hybridpf_.RT() * log( hybridpf_.partition_function(i1,j1,i2,j2) );
+    return - hybrid_pf_.RT() * log( hybrid_pf_.partition_function(i1,j1,i2,j2) );
 }
 
 HybEnsModel::energy_t
@@ -298,6 +329,41 @@ HybEnsModel::energy(const StateDescription &sd) const {
 	assert(false);
     }
 }
+
+double
+HybEnsModel::interaction_probability(size_t k1, 
+				     size_t k2,
+				     const StateDescription &sd) const {
+    assert(pair_type(k1,k2)>0);
+    
+    double prob=0;
+    for ( auto &isite : sd ) {
+	if (isite.i1<=k1 && k1<=isite.j1
+	    &&
+	    isite.i2<=k2 && k2<=isite.j2) {
+	    
+	    prob =
+		hybrid_pf_.partition_function(isite.i1,k1,isite.i2,k2) *
+		hybrid_pf_.partition_function(k1,isite.j1,k2,isite.j2)
+		/ hybrid_pf_.partition_function(isite.i1,isite.j1,isite.i2,isite.j2);
+	}
+    }
+    assert(0.0<=prob);
+    if (prob>1.0) {
+	std::cerr <<sd<<" "<<k1<<" "<<k2<<" ";
+	for ( auto &isite : sd ) {
+	    if (isite.i1<=k1 && k1<=isite.j1
+		&&
+		isite.i2<=k2 && k2<=isite.j2) {
+		std::cerr << hybrid_pf_.partition_function(isite.i1,k1,isite.i2,k2) << "*" << hybrid_pf_.partition_function(k1,isite.j1,k2,isite.j2) << "/" << hybrid_pf_.partition_function(isite.i1,isite.j1,isite.i2,isite.j2) <<" = "<< prob << " ";
+	    }
+	}
+	std::cout << std::endl;
+    }
+    assert(prob<=1.0);
+    return prob;
+}
+
 
 
 std::ostream &

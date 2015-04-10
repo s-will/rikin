@@ -42,7 +42,9 @@ DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN(HybridPF, Doxyfile, doc)
 
-
+########################################
+## turn on C++11
+CXXFLAGS="-std=c++11 $CXXFLAGS"
 
 ##################
 ## Debug option
@@ -162,7 +164,7 @@ fi
 
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile src/Tests/Makefile])
 
-AC_OUTPUT([src/Makefile])
+AC_OUTPUT
 

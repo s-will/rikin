@@ -10,6 +10,10 @@
  * 
  * Represents a node of the barrier graph together with outgoing edges
  * 
+ * @note A basin is not necessarily a gradient basin, but more
+ * general.  Even the number of states in a basin can be fractional,
+ * i.e. basins are not necessarily discrete sets of states. (It may be
+ * appropriate to rename the class from Basin to MacroState.)
  */
 class Basin {
     

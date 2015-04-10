@@ -4,10 +4,6 @@
  * the tests are performed.
  *
  * @todo change the transitions data structure to array of hashs
- *
- * @todo (low priority) Try the use of a lru cache
- * (e.g. http://code.google.com/p/lru-cache-cpp/). Check first if the
- * hash causes space problems with large instances.
  */
 
 /**
@@ -165,10 +161,19 @@ main(int argc, char **argv)
     const std::string outputfile = args_info.output_arg;
 
 
-    bool track = args_info.track_given;
+    bool track = args_info.track_given || args_info.track_ipps_given;
+
+    bool compress_track = args_info.compress_track_given;
+
     std::string track_file;
-    if (track) { track_file = args_info.track_arg; }
+    if (args_info.track_given) { track_file = args_info.track_arg; }
+
+    std::string track_ipps_file;
+    if (args_info.track_ipps_given) { track_ipps_file = args_info.track_ipps_arg; }
     
+    double ipp_min_prob = args_info.ipp_min_prob_arg;
+
+
     std::string seqA = args_info.inputs[0];
     HybEnsModel::norm_RNA_seq(seqA);
     std::string seqB = "";
@@ -297,12 +302,12 @@ main(int argc, char **argv)
     }
     //stopwatch.stop("write");
 
-    if (track) {
-	if (track_file.substr(track_file.length()-3,3)==".gz") {
+    if (track_file.length()>0) {
+	if (compress_track) {
 	    // write gzip'd
 	    gzFile fh=gzopen(track_file.c_str(),"wb");
 	    if (fh==NULL) {
-		std::cerr << "Cannot write basin track to file "<<track_file<<"."<<std::endl;
+		std::cerr << "Cannot compressed write basin track to file "<<track_file<<"."<<std::endl;
 	    } else {
 		bg.gzwrite_basin_track(fh);
 	    }
@@ -314,7 +319,32 @@ main(int argc, char **argv)
 		bg.write_basin_track(out);
 		out.close();
 	    } catch(const std::ofstream::failure &e) {
-		std::cerr << "Cannot write basin track to file "<<track_file<<". "<<e.what()<<std::endl;
+		std::cerr << "Cannot write basin track to file "
+			  << track_file <<". "<<e.what()<<std::endl;
+	    }
+	}
+    }
+
+    if (track_ipps_file.length()>0) {
+	if (compress_track) {
+	    // write gzip'd
+	    gzFile fh=gzopen(track_ipps_file.c_str(),"wb");
+	    if (fh==NULL) {
+		std::cerr << "Cannot write compressed interaction pair probabilities to file "
+			  << track_file << "." <<std::endl;
+	    } else {
+		bg.gzwrite_basin_ipps(fh,ipp_min_prob);
+	    }
+	    gzclose(fh);
+	} else {
+	    // write uncompressed
+	    try {
+		std::ofstream out(track_ipps_file.c_str());
+		bg.write_basin_ipps(out,ipp_min_prob);
+		out.close();
+	    } catch(const std::ofstream::failure &e) {
+		std::cerr << "Cannot write interaction pair probabilities to file "
+			  << track_ipps_file<<". "<<e.what()<<std::endl;
 	    }
 	}
     }

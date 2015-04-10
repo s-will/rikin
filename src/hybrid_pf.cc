@@ -1,7 +1,8 @@
-#include <string.h> // strchr needed in pair_mat.h ! dependency BUG
-#include <assert.h>
+#include <cstring> // strchr needed in pair_mat.h ! dependency BUG
+#include <cassert>
 
 #include "hybrid_pf.hh"
+
 
 // #include "LocARNA/stopwatch.hh"
 
@@ -77,14 +78,14 @@ HybridPF::free_temporary() {
 
 int
 HybridPF::pair_type(size_t i1, size_t i2) const {
-    assert(1 <= i1);
-    assert(i1 <= lenA_);
-    assert(1 <= i2);
+    // assert(1 <= i1);
+    // assert(i1 <= lenA_);
+    // assert(1 <= i2);
     
-    if (! (i2 <= lenB_) ) {
-	std::cerr <<"i2: "<<i2<<" lenB: "<<lenB_<<std::endl;
-	assert(i2 <= lenB_);
-    }
+    // if (! (i2 <= lenB_) ) {
+    // 	std::cerr <<"i2: "<<i2<<" lenB: "<<lenB_<<std::endl;
+    // 	assert(i2 <= lenB_);
+    // }
 
     return pair[SA_[i1]][SB_[i2]];
 }
@@ -161,28 +162,19 @@ HybridPF::initialize_hybrid_pf() {
     }
     */
 
-    
-    // set Q[i][i2][i][i2] to
-    // 1 if (i,i2) is a possible interaction base pair
-    // and 0 otherwise
-    for (size_t i1=region_startA_; i1<=region_endA_; i1++) {
-	for (size_t i2=region_startB_; i2<=region_endB_; i2++) {
-	    int ptype = pair_type(i1,i2);
-	    
-	    // Do we want the Duplex Init Energy added to each hybridisation????
-	    // This makes energies more similar to cofold results.
-	    // Currently, we add no duplex energy (see below)
-	    
-	    if (ptype>0) { // if i1.i2 pairing canonical
-		Q_(i1,i2)(i1,i2) = 1.0; // pf_params_->expDuplexInit // instead of 1.0 ?
-	    }
-	}
-    }
 }
-
 
 void
 HybridPF::compute_hybrid_pf_common_start(size_t i1, size_t i2) {
+    
+    LocARNA::SparseMatrix<pf_matrix_slice_t::value_t>  Q_slice;
+    //OrderedSparseMatrix<pf_matrix_slice_t::value_t>  Q_slice;
+    //auto &Q_slice = Q_(i1,i2);
+
+    // set Q[i1][i2][i1][i2] to
+    // 1 if (i1,i2) is a possible interaction base pair
+    
+    Q_slice(i1,i2)=1.0;
     
     // iterate over interaction loops closed by i1.i2 with innner
     // base pair k1.k2 such that k1-i1 + k2-i2 <= MAXLOOP
@@ -198,47 +190,50 @@ HybridPF::compute_hybrid_pf_common_start(size_t i1, size_t i2) {
 	    // factor for energy contribution of loop
 	    // closed by i2.i2 with inner bp k1.k2
 	    
-	    if (pair_type(i1,i2)<=0) continue;
+	    if (pair_type(k1,k2)<=0) continue;
 	    
-	    pf_t exp_loopE = 
-		exp_ILoopE(i1,i2,k1,k2);
+	    if (abs((int)(k1-i1)-(int)(k2-i2))>maxsitesize_diff_) continue;
+
+    
+	    const pf_t exp_loopE = exp_ILoopE(i1,i2,k1,k2);
 	    
-	    for (size_t j1=k1; j1<=region_endA_; j1++) {
+	    // iterate over all entries in Q_(k1,k2)
+	    // note: this includes the entry (k1,k2) with value 1.0
+	    for (auto &x : Q_(k1,k2)) {
+		const size_t j1=x.first.first;
+		const size_t j2=x.first.second;
+		const size_t u=i1+j2;
+		const size_t v=i2+j1;
 		
-		// site_length_diff = |(j1-i1)-(j2-i2)| <= maxsitesize_diff_
-		// ==                 (j1-i1+i2)-maxsitesize_diff_ <= j2 <= (j1-i1+i2)+maxsitesize_diff_
-		size_t min_j2=std::max(k2+maxsitesize_diff_,(j1-i1+i2))-maxsitesize_diff_;
-		size_t max_j2=std::min(region_endB_,(j1-i1+i2)+maxsitesize_diff_);
-		
-		for (size_t j2=min_j2; j2<=max_j2; j2++) {
-		    
-		    // std::cout << i1 << " " << i2 << " "
-		    // 	      << k1 << " " << k2 << " "
-		    // 	      << j1 << " " << j2 << " " 
-		    // 	      << exp_loopE << " " << Q_(k1,k2)(j1,j2)
-		    // 	      << std::endl;
-		    
-		    Q_(i1,i2)(j1,j2) += 
+		if ( u <= v+maxsitesize_diff_ && v <= u+maxsitesize_diff_ ) {
+		    // condition is equivalent to abs((int)(j1-i1)-(int)(j2-i2))<=maxsitesize_diff_
+		    Q_slice(j1,j2) += 
 			exp_loopE *
-			Q_(k1,k2)(j1,j2);
-		    
+			x.second;
 		}
 	    }
 	}
     }
+
+    Q_(i1,i2) = Q_slice;
+    
 }
 
 void
 HybridPF::compute_hybrid_pf() { 
     initialize_hybrid_pf();
     
+    std::cerr << "HybridPF::compute_hybrid_pf "<<std::endl;
+	
     for (size_t i1=region_endA_; i1>=region_startA_; i1--) {
 	for (size_t i2=region_endB_; i2>=region_startB_; i2--) {
+	    //std::cerr << i1 <<" "<< i2 << "\r";
 	    if (pair_type(i1,i2)>0) {
 		compute_hybrid_pf_common_start(i1,i2);
 	    }
 	}
     }
+    std::cerr << std::endl;
 }
 
 HybridPF::pf_t
@@ -249,6 +244,9 @@ HybridPF::partition_function(size_t i1, size_t j1,size_t i2, size_t j2) const {
     
     assert(i1<=j1);
     assert(i2<=j2);
+    assert(j1<=lenA_);
+    assert(j2<=lenB_);
+
     return Q_(i1,i2)(j1,j2);
 }
 

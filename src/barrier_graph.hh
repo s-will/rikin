@@ -12,6 +12,7 @@
 #include "basin.hh"
 #include "basin_pruning_info.hh"
 #include "basin_transition.hh"
+#include "pair_pfs.hh"
 
 /**
  * @brief Graph of basins and barriers
@@ -138,7 +139,7 @@ public:
 		 );
     
     /**
-     * @brief write barrier graph to stream in binary "bg" format
+     * @brief write barrier graph to stream in binary "pf" format
      * 
      * @param out output stream
      *
@@ -544,6 +545,52 @@ public:
      */
     gzFile
     gzwrite_pruning_track(gzFile fh, bool sparse) const;
+
+    
+    /** 
+     * @brief compute pps for pruning; single state
+     * 
+     * @param ms_idx       macrostate index
+     * @param ppfs         pair partition functions for all basins
+     * @param[out] ms_Z    macrostate partition function
+     * @param[out] ms_ppfs macrostate pair partition functions
+     * 
+     * @return true, unless macrostate is merged
+     */
+    bool
+    compute_pruning_pps(size_t ms_idx,
+			 const PairPfs &ppfs,
+			 double &ms_Z,
+			 LocARNA::SparseMatrix<double> &ms_ppfs) const;
+    
+    /**
+     * @brief Write interaction pair probability information
+     *
+     * @param out output stream
+     * @param ppfs pair partition functions
+     * @param min_prob minimal probability in output
+     * @return stream
+     *
+     */
+    std::ostream &
+    write_pruning_pps_track(std::ostream &out, 
+			    const PairPfs &ppfs,
+			    double min_prob) const;
+    
+    /**
+     * @brief Write compressed interaction pair probability information
+     *
+     * @param out output stream
+     * @param ppfs pair partition functions
+     * @param min_prob minimal probability in output
+     * @return file handle
+     *
+     */
+    gzFile
+    gzwrite_pruning_pps_track(gzFile fh,
+			      const PairPfs &ppfs,
+			      double min_prob) const;
+    
 };
 
 

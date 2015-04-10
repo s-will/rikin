@@ -1,22 +1,19 @@
 #include <basin.hh>
-#include <cstdio>
+#include <iostream>
+#include <iomanip>
 #include <cmath>
 
 /* Methods of basin */
 
 void Basin::print_header(std::ostream &out) const {
-    printf("%5s %10s %6s",
-	   "idx",
-	   "n_s",
-	   "Z"
-	   );
+    out <<std::setw(5)<<"idx"<<" "
+	<<std::setw(10)<<"n_s"<<" "
+	<<std::setw(6)<<"Z";
 }
 
 void
 Basin::print(std::ostream &out) const {
-    printf("%5lu %10.2f %6.2f",
-	   index_,
-	   states_,
-	   log(Z_)
-	   );
+    out <<std::setw(5)<<index_<<" "
+	<<std::setw(10)<<states_<<" "
+	<<std::setw(6)<<std::setprecision(2)<<log(Z_);
 }

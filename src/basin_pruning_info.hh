@@ -11,6 +11,9 @@ class BasinPruningInfo {
     size_t orig_index_;
     
     typedef std::tr1::unordered_map<size_t,double> contributions_t;
+    typedef contributions_t::const_iterator const_iterator;
+
+    //! contributions from this and other basins
     contributions_t contributions_;
     
 public:
@@ -33,7 +36,7 @@ public:
      * @param min_contribution minimum contribution that is recorded (as single term in summations)
      *
      * @note the merged in basin itself is going to be dissolved
-     */    
+     */
     void
     merge_in_basin(size_t orig_index, double contribution, 
 		   const BasinPruningInfo &bpi,
@@ -63,7 +66,22 @@ public:
     std::ostream &
     write(std::ostream &out, double min_contribution, size_t num_input_basins, bool sparse) const;
 
-    
+
+
+    /**
+     * @brief begin const iterator of contributions
+     * @return iterator
+     */
+    const_iterator 
+    begin() const { return contributions_.begin(); }
+
+    /**
+     * @brief end const iterator of contributions
+     * @return iterator
+     */
+    const_iterator 
+    end() const { return contributions_.end(); }
+
 };
 
 

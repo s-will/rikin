@@ -29,13 +29,7 @@
  * In our model, we don't explicitely represent all O(n^8) many states
  * but sparsify the 'microstate' space. The HybEnsModel
  * object needs to know this kind of sparsification and how to
- * enumerate all states (maybe sorted!?, what do we need for the
- * barrier tree construction in ELL?).
- *
- * The model class is used to implement the HybridEnsembleState class,
- * wich interfaces to the ELL.  An object of this class knows its
- * description (HybEnsModel::StateDescription) and its model
- * (HybEnsModel) in order to compute its energy.
+ * enumerate all states.
  *
  * @todo Splitting and merging is too restrictive, (and probably also
  * new site creation)! Currently, splitting introduces separation
@@ -171,6 +165,7 @@ public:
 	    
 	};
 	
+	typedef std::vector<ISite> isites_t;
 	
 
 	//! type of encoded class representation
@@ -288,6 +283,13 @@ public:
 	 */
 	ISite & operator [](size_t i) {return isites[i];}
 	
+	// support iteration over isites
+	isites_t::const_iterator begin() const {return isites.begin();}
+	isites_t::const_iterator end() const {return isites.end();}
+	isites_t::iterator begin() {return isites.begin();}
+	isites_t::iterator end() {return isites.end();}
+
+	
 	/** 
 	 * @brief Set number of interaction sites
 	 * 
@@ -331,6 +333,7 @@ public:
 	bool
 	is_valid(const HybEnsModel &model) const;
 
+	
 	/** 
 	 * Maximum site length
 	 * 
@@ -338,7 +341,7 @@ public:
 	 */
 	size_t
 	max_site_size() const;
-
+	
 	/** 
 	 * @brief symmetric state for homodimers
 	 * @return symmetric state
@@ -366,7 +369,7 @@ public:
 	 * @brief positions of hybridization sites
 	 *
 	 */
-	std::vector<ISite> isites;
+	isites_t isites;
 	
     }; // end class StateDescription
 	    
@@ -382,7 +385,8 @@ public:
 #   include "moves.hh"
     
     /**
-     * construct from sequences
+     * @brief construct from sequences
+     *
      * @param seqA sequence A
      * @param seqB sequence B
      * @param maxsitesize maximum length of a unpaired site
@@ -411,7 +415,36 @@ public:
      */
     energy_t
     energy(const StateDescription &desc) const;
-  
+
+    /** 
+     * @brief Partition function of a state
+     * 
+     * @param desc Description of a state
+     * 
+     * @return partition function of the state described by desc in the model *this
+     *
+     * @note O(1) time due to table lookup
+     *
+     * @note the partition function equals the Boltzmann weight of
+     * energy()
+     */
+    pf_t
+    partition_function(const StateDescription &desc) const {
+	return boltzmann_weight(energy(desc));
+    }
+    
+    /**
+     * @brief Probability of an interaction in a state
+     *
+     * @param k1 interaction position in sequence 1
+     * @param k2 interaction position in sequence 2
+     *
+     * @note works only for states with at most one interaction site
+     * @todo implement for two interaction sites
+     */
+    double
+    interaction_probability(size_t k1, size_t k2,const StateDescription &sd) const;
+    
     /** 
      * @brief Read sequence A
      * 
@@ -489,11 +522,11 @@ public:
      */
     energy_t
     energy_hybrid_loop(size_t i1,size_t i2,size_t j1,size_t j2) const {
-	return hybridpf_.ILoopE(i1,i2,j1,j2);
+	return hybrid_pf_.ILoopE(i1,i2,j1,j2);
     }
 
     energy_t
-    energy_duplex_init() const {return hybridpf_.DuplexInit();}
+    energy_duplex_init() const {return hybrid_pf_.DuplexInit();}
 
     
     /**
@@ -504,9 +537,15 @@ public:
      */
     int
     pair_type(size_t i1, size_t i2) const {
-	return hybridpf_.pair_type(i1,i2);
+	return hybrid_pf_.pair_type(i1,i2);
     }
-
+    
+    /**
+     * @brief Read access to hybrid pf object
+     * @return hybrid pf object
+     */
+    const HybridPF &
+    hybrid_pf() const {return hybrid_pf_;}
 
     // give access to some constants of the model
     
@@ -515,7 +554,7 @@ public:
      * 
      * @return Maximal number of unpaired bases at one side of an interaction loop
      */
-    const size_t
+    size_t
     maxunpinloop() const {
 	return maxunpinloop_;
     }
@@ -523,14 +562,36 @@ public:
     /** 
      * Minimal size of interaction sites
      * 
-     * @return Minimal number of bases that the mode allows for sites
+     * @return Minimal number of bases that the model allows for sites
      * in each sequence
      */
-    const size_t
+    size_t
     minsitesize() const {
 	return minsitesize_;
     }
+
+    /** 
+     * Maximal size of interaction sites
+     * 
+     * @return Maximal number of bases that the model allows for sites
+     * in each sequence
+     */
+    size_t
+    maxsitesize() const {
+	return maxsitesize_;
+    }
     
+    
+    /** 
+     * Maximum site length difference
+     * 
+     * @return largest size of any subsequence in interaction sites 
+     */
+    size_t
+    maxsitesize_diff() const {
+	return maxsitesize_diff_;
+    };
+
     /** 
      * Minimal separation of two sites
      *  
@@ -541,13 +602,50 @@ public:
      * from ensembles with one site, it will suffice to make this
      * distance larger than maxunpinloop_
      */
-    const size_t
+    size_t
     minsitedist() const {
 	return minsitedist_;
     }
     
-    double RT() const {
-	return hybridpf_.RT();
+    /**
+     * @brief Start of region in sequence A
+     * @return position
+     */
+    size_t
+    region_startA() const {
+	return region_startA_;
+    }
+
+    /**
+     * @brief End of region in sequence A
+     * @return position
+     */
+    size_t
+    region_endA() const {
+	return region_endA_;
+    }
+    
+    /**
+     * @brief Start of region in sequence B
+     * @return position
+     */
+    size_t
+    region_startB() const {
+	return region_startB_;
+    }
+
+    /**
+     * @brief End of region in sequence B
+     * @return position
+     */
+    size_t
+    region_endB() const {
+	return region_endB_;
+    }
+    
+    double 
+    RT() const {
+	return hybrid_pf_.RT();
     }
 
     pf_t
@@ -599,14 +697,14 @@ public:
 
     bool
     is_homodimer() const {return homodimer_;}
-    
+
 private:
     const std::string seqA_; //!< sequence A
     const std::string seqB_; //!< sequence B
 
     const UnpairedPF uppfA_; //!< unpaired pf sequence A
     const UnpairedPF uppfB_; //!< unpaired pf sequence A
-    const HybridPF hybridpf_; //!< hybrid pf
+    const HybridPF hybrid_pf_; //!< hybrid pf
     
     //! @brief maximal number of unpaired bases in a loop (for each sequence)
     const size_t maxunpinloop_;
@@ -625,11 +723,21 @@ private:
 
     //! @brief maximal number of bases in one site (for each sequence)
     const size_t maxsitesize_;
+
+    //! @brief maximal difference between numbers of bases of sequences of one site
+    const size_t maxsitesize_diff_;
         
+    const size_t region_startA_;
+    const size_t region_endA_;
+    const size_t region_startB_;
+    const size_t region_endB_;
+
+
     //! @brief whether seqA and seqB form homodimers
     //!
     //! true iff seqB is reverse complement of seqA
     const bool homodimer_;
+
 
 }; // end class HybEnsModel
 

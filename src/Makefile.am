@@ -1,14 +1,19 @@
+SUBDIRS=Tests
+
 bin_PROGRAMS=rrikin_enum rrikin_barriers rrikin_prune test_moves
 
 # base sources, common to all programs
 BASE_SRCS=hybrid_pf.cc hybrid_pf.hh unpaired_pf.cc unpaired_pf.hh	\
 LocARNA/matrices.hh LPfold.h LPfold.c hybrid_ensemble_model.hh		\
-hybrid_ensemble_model.cc moves.hh moves.cc util.hh util.cc
+hybrid_ensemble_model.cc moves.hh moves.cc util.hh util.cc		\
+const_sparse_matrix.hh ordered_sparse_matrix.hh rrikin_enumerator.hh	\
+rrikin_enumerator.cc
 
 # extended base sources, common to programs operating on barrier graph
 EXT_BASE_SRCS=$(BASE_SRCS) barrier_graph.hh barrier_graph.cc basin.hh	\
 basin.cc basin_info.hh basin_info.cc basin_pruning_info.hh		\
-basin_pruning_info.cc basin_transition.hh basin_transition.cc
+basin_pruning_info.cc basin_transition.hh basin_transition.cc		\
+pair_pfs.hh pair_pfs.cc
 
 
 test_moves_SOURCES=test_moves.cc $(BASE_SRCS)
@@ -37,7 +42,14 @@ rrikin_prune_cmdline.c rrikin_prune_cmdline.h config.h
 ## removed by 'make clean')
 CLEANFILES = $(BUILT_SOURCES)
 
-%_cmdline.c: $(srcdir)/%.ggo
+## gen get opt rules (rules are expanded to avoid GNU-only pattern rule)
+rrikin_barriers_cmdline.c: $(srcdir)/rrikin_barriers.ggo 
+	gengetopt < $<
+
+rrikin_enum_cmdline.c: $(srcdir)/rrikin_enum.ggo 
+	gengetopt < $<
+
+rrikin_prune_cmdline.c: $(srcdir)/rrikin_prune.ggo 
 	gengetopt < $<
 
 ## get a copy of config.h in directory src 

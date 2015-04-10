@@ -147,7 +147,8 @@ public:
      * @brief access to the hybrid ensemble model of the object
      * @return model
      */
-    const HybEnsModel &model() const {
+    const HybEnsModel &
+    model() const {
 	return model_;
     }
 
@@ -378,11 +379,48 @@ public:
     gzFile
     gzwrite_basin_track(gzFile file) const;
 
+private:
+
+    /**
+     * @brief write interactions pair probabilities of a single basin
+     * @param out output stream
+     * @param min_prob minimum probability 
+     * @param basin_idx index of basin
+     * @return stream
+     */
+    std::ostream &
+    write_basin_ipps_single_basin(std::ostream &out, 
+				  double min_prob,
+				  size_t basin_idx) const;
+
+public:
+
+    /**
+     * @brief write interactions pair probabilities of basins
+     * @param out output stream
+     * @param min_prob minimum probability
+     * @return stream
+     */
+    std::ostream &
+    write_basin_ipps(std::ostream &out,
+		     double min_prob) const;
+
+    /**
+     * @brief write interactions pair probabilities of basins
+     * @param file gz file handle opened for write 
+     * @param min_prob minimum probability
+     * @return file handle; NULL on error
+     */
+    gzFile
+    gzwrite_basin_ipps(gzFile file,
+		       double min_prob) const;
+
 };
 
 
 std::ostream &
-operator <<(std::ostream &out,const RRIBarrierGraph::transition_t &t);
+operator << (std::ostream &out,
+	     const RRIBarrierGraph::transition_t &t);
 
 
 #endif // RRI_BARRIER_GRAPH_HH

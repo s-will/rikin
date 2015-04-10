@@ -10,10 +10,12 @@ BasinPruningInfo::write(std::ostream &out,
 			size_t num_input_basins,
 			bool sparse) const {
     if (sparse) {
+	bool is_first=true;
 	for (BasinPruningInfo::contributions_t::const_iterator it=contributions_.begin(); 
 	     contributions_.end()!=it; ++it) {
 	    if (it->second >= min_contribution) { 
-		if (it!=contributions_.begin()) out<< '\t';
+		if (!is_first) {out<< '\t';}
+		is_first=false;
 		std::ostringstream entry;
 		entry << it->first << ":";
 		entry.precision(3);
@@ -32,7 +34,6 @@ BasinPruningInfo::write(std::ostream &out,
 		row[it->first] = it->second;
 	    }
 	}
-	row[orig_index_]=1;
 	
 	for (size_t i=0; i<row.size(); i++) {
 	    std::ostringstream entry;
@@ -49,8 +50,9 @@ BasinPruningInfo::write(std::ostream &out,
 
 BasinPruningInfo::BasinPruningInfo(size_t index)
     : orig_index_(index),
-      contributions_() // no contributions to new basin
+      contributions_() // no contributions to new basin, other than from this basin itself
 {
+    contributions_[orig_index_]=1.0;
 }
 
 void
@@ -61,7 +63,7 @@ BasinPruningInfo::merge_in_basin(size_t orig_index, double contribution, const B
     // index must not contribute to the basin already
     assert(contributions_.find(orig_index) == contributions_.end());
     
-    contributions_[orig_index] = contribution; 
+    contributions_[orig_index] = contribution;
     
     for ( contributions_t::const_iterator it = bpi.contributions_.begin();
 	  bpi.contributions_.end() != it; ++it ) {

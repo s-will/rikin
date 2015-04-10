@@ -6,6 +6,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include "pair_pfs.hh"
+
 const bool RECOVER_MISSING_STATES=true;
 
 
@@ -80,6 +82,44 @@ RRIBarrierGraph::gzwrite_basin_track(gzFile fh) const {
 	gzputs(fh,out.str().c_str());
     }
     
+    return fh;
+}
+
+std::ostream &
+RRIBarrierGraph::
+write_basin_ipps_single_basin(std::ostream &out, 
+			      double min_prob, 
+			      size_t basin_idx) const {
+    BasinInfo::pf_matrix_t pfs;
+    const BasinInfo &bi=basin_infos_[basin_idx];
+    bi.interaction_pair_pfs(model_, pfs);
+    
+    auto basin_pf = basins_[basin_idx].Z();
+    
+    return PairPfs::write_state(out,
+				basin_idx,
+				basin_pf,
+				pfs,
+				min_prob);
+}
+
+std::ostream &
+RRIBarrierGraph::write_basin_ipps(std::ostream &out,
+				  double min_prob) const {
+    for (size_t i=0; i<basin_infos_.size(); i++) {
+	write_basin_ipps_single_basin(out,min_prob,i);
+    }
+    return out;
+}
+
+gzFile
+RRIBarrierGraph::gzwrite_basin_ipps(gzFile fh,
+				    double min_prob) const {
+    for (size_t i=0; i<basin_infos_.size(); i++) {
+	std::stringstream out;
+	write_basin_ipps_single_basin(out,min_prob,i);
+	gzputs(fh,out.str().c_str());
+    }
     return fh;
 }
 
@@ -244,7 +284,7 @@ void RRIBarrierGraph::add_state_to_basin(size_t basin_index, const code_t &state
     basins_[basin_index].add_state(model_.boltzmann_weight(energy));
     
     if (track_basins_) {
-	basin_infos_[basin_index].update(state_code,energy);
+	basin_infos_[basin_index].add_state(state_code,energy);
     }
 }
 

@@ -27,7 +27,13 @@ option "no-gradient" - "Don't combine into basins by gradient walk" optional
 option "homodimer" - "Compute rates for homodimer (only one sequence accepted)" optional
 option "antisense" - "Computes rates for sense/antisense pair (only one sequence accepted)" optional
 
+option "compress-track" - "Gzip-compress all written track or ipp track information" optional
+
 option "track" - "Turn on basin tracking, providing output filename" string optional
+
+option "track-ipps" - "Track interaction pair probabilities, providing output filename" string optional
+
+option "ipp-min-prob" - "Minimum interaction pair probabilities for output" double default="1e-2" optional
 
 option "regionA" - "Restrict region for interaction <n> bases at head (>0) or tail (-1) of sequence A; use i-j for region (default: 0=no restriction)." string default="0" optional
 

@@ -6,6 +6,8 @@
 
 #include "basin_transition.hh"
 #include "barrier_graph.hh"
+#include "pair_pfs.hh"
+
 
 #include <LocARNA/stopwatch.hh>
 
@@ -111,9 +113,34 @@ main(int argc, char **argv)
     bool debug_out           = args_info.debug_given;
 
     /* tracking */
-    bool track = args_info.track_given;
+    bool track = args_info.track_given || args_info.track_pps_in_given || args_info.track_pps_out_given;
+    
+    bool compress_track = args_info.compress_track_given;
+
     std::string track_file;
-    if (track) { track_file = args_info.track_arg; }
+    if (args_info.track_given) {
+	track_file = args_info.track_arg;
+    }
+
+    std::string track_pps_in_file;
+    if (args_info.track_pps_in_given) { 
+	track_pps_in_file = args_info.track_pps_in_arg;
+    }
+    
+    std::string track_pps_out_file;
+    if (args_info.track_pps_out_given) { 
+	track_pps_out_file = args_info.track_pps_out_arg;
+    }
+    
+    if ( (args_info.track_pps_out_given && !args_info.track_pps_in_given)
+	 || 
+	 (!args_info.track_pps_out_given && args_info.track_pps_in_given)) {
+	std::cerr << "One cannot specify one of track-pps-in or track-pps-out "
+		  <<"without the other."<<std::endl;
+	return -1;
+    }
+
+    double pp_min_prob = args_info.pp_min_prob_arg;
 
 
     std::set<size_t> to_keep_set;
@@ -300,7 +327,7 @@ main(int argc, char **argv)
 	if (verbose) {
 	    std::cerr << "Write rates matrix to file '"<<ratesfile<<"'."<<std::endl;
 	}
-	if (track_file.substr(ratesfile.length()-3,3)==".gz") {
+	if (compress_track) {
 	    // write gzip'd
 	    gzFile fh=gzopen(ratesfile.c_str(),"wb");
 	    if (fh==NULL) {
@@ -371,15 +398,16 @@ main(int argc, char **argv)
 	
     }
 
-
-    if (track) {
+    // handle output of pruning track to file
+    if (track_file.length()>0) {
 	bool sparse_prune_track=true;
 	stopwatch.start("write_pruning_info");
-	if (track_file.substr(track_file.length()-3,3)==".gz") {
+	if (compress_track) {
 	    // write gzip'd
 	    gzFile fh=gzopen(track_file.c_str(),"wb");
 	    if (fh==NULL) {
-		std::cerr << "Cannot write prune track to file "<<track_file<<"."<<std::endl;
+		std::cerr << "Cannot write prune track to file "
+			  << track_file<<"."<<std::endl;
 	    } else {
 		bg.gzwrite_pruning_track(fh,sparse_prune_track);
 	    }
@@ -391,14 +419,46 @@ main(int argc, char **argv)
 		bg.write_pruning_track(out,sparse_prune_track);
 		out.close();
 	    } catch(const std::ofstream::failure &e) {
-		std::cerr << "Cannot write pruning track to file "<<track_file<<". "<<e.what()<<std::endl;
+		std::cerr << "Cannot write pruning track to file "
+			  << track_file<<". "<<e.what()<<std::endl;
 	    }
 	}
 	
 	stopwatch.stop("write_pruning_info");
     }
     
-    
+    // handle output of interaction pair probabilities (after reading the bar pps)
+    if (track_pps_in_file.length()>0) {
+	assert(track_pps_out_file.length()>0);
+	
+	PairPfs bar_pps(track_pps_in_file);
+	
+	// bar_pps.write_pps(std::cout,pp_min_prob);
+	
+	if (compress_track) {
+	    // write gzip'd
+	    gzFile fh=gzopen(track_pps_out_file.c_str(),"wb");
+	    if (fh==NULL) {
+		std::cerr << "Cannot write prune track to file "
+			  << track_pps_out_file<<"."<<std::endl;
+	    } else {
+		bg.gzwrite_pruning_pps_track(fh,bar_pps,pp_min_prob);
+	    }
+	    gzclose(fh);
+	} else {
+	    // write uncompressed
+	    try {
+		std::ofstream out(track_pps_out_file.c_str());
+		bg.write_pruning_pps_track(out,bar_pps,pp_min_prob);
+		out.close();
+	    } catch(const std::ofstream::failure &e) {
+		std::cerr << "Cannot write pruning track to file "
+			  << track_pps_out_file<<". "<<e.what()<<std::endl;
+	    }
+	}
+	
+    }
+
     if (verbose) {
 	stopwatch.print_info(std::cerr);
     }

@@ -8,6 +8,8 @@ extern "C" {
 #include <LocARNA/matrices.hh>
 #include <LocARNA/sparse_matrix.hh>
 
+#include "const_sparse_matrix.hh"
+
 /**
  * \brief Partition functions of hybridizations
  * Computes and maintaines pf for all subsequences
@@ -73,7 +75,7 @@ public:
      * @param left whether left end (true) or right end (false)
      *
      * @note: this could be used to compute the energy of a shift move
-     * transition state. Howeverm there is a simpler definition of
+     * transition state. However there is a simpler definition of
      * this transition state that does not require conditional hybrid pfs.
      *
      * @return partition function of hybridization of seqA[i1..j1] and seqB[i2..j2],
@@ -90,14 +92,32 @@ public:
     double
     RT() const {return RT_;}
     
+    //! type of pf matrix slice for common left ends
+    typedef ConstSparseMatrix<unsigned short int,FLT_OR_DBL> pf_matrix_slice_t;
+    //typedef LocARNA::SparseMatrix<FLT_OR_DBL> pf_matrix_slice_t;
+
+    /**
+     * @brief Hybrid partition functions for all sites with given left ends
+     *
+     * @param i1 left end of sites in sequence 1 
+     * @param i2 left end of sites in sequence 1 
+     *
+     * @return 2D matrix slice
+     */
+    HybridPF::pf_matrix_slice_t
+    hybrid_pfs_common_left_ends(size_t i1,size_t i2) const { return Q_(i1,i2); }
+
 private:
     
-    
-    //! 4D matrix for holding partition functions.
+   
     //typedef LocARNA::OMatrix<LocARNA::OMatrix<FLT_OR_DBL> > PFOffsetMatrix4D;
-    typedef LocARNA::OMatrix<LocARNA::SparseMatrix<FLT_OR_DBL> > PFOffsetMatrix4D;
+    typedef std::pair<size_t,size_t> idx_pair_t;
 
-
+    //! 4D matrix for holding partition functions.
+    typedef LocARNA::OMatrix< pf_matrix_slice_t > PFOffsetMatrix4D;
+    
+    typedef LocARNA::OMatrix<FLT_OR_DBL> PFOffsetMatrix2D;
+    
     /**
      * \brief structure containing Boltzmann weights for energy parameter
      * 
