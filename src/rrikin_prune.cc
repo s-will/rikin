@@ -433,8 +433,6 @@ main(int argc, char **argv)
 	
 	PairPfs bar_pps(track_pps_in_file);
 	
-	// bar_pps.write_pps(std::cout,pp_min_prob);
-	
 	if (compress_track) {
 	    // write gzip'd
 	    gzFile fh=gzopen(track_pps_out_file.c_str(),"wb");
@@ -442,14 +440,14 @@ main(int argc, char **argv)
 		std::cerr << "Cannot write prune track to file "
 			  << track_pps_out_file<<"."<<std::endl;
 	    } else {
-		bg.gzwrite_pruning_pps_track(fh,bar_pps,pp_min_prob);
+		bg.gzwrite_pruning_pps(fh,bar_pps,pp_min_prob);
 	    }
 	    gzclose(fh);
 	} else {
 	    // write uncompressed
 	    try {
 		std::ofstream out(track_pps_out_file.c_str());
-		bg.write_pruning_pps_track(out,bar_pps,pp_min_prob);
+		bg.write_pruning_pps(out,bar_pps,pp_min_prob);
 		out.close();
 	    } catch(const std::ofstream::failure &e) {
 		std::cerr << "Cannot write pruning track to file "
