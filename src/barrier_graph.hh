@@ -573,9 +573,9 @@ public:
      *
      */
     std::ostream &
-    write_pruning_pps_track(std::ostream &out, 
-			    const PairPfs &ppfs,
-			    double min_prob) const;
+    write_pruning_pps(std::ostream &out, 
+		      const PairPfs &ppfs,
+		      double min_prob) const;
     
     /**
      * @brief Write compressed interaction pair probability information
@@ -587,9 +587,9 @@ public:
      *
      */
     gzFile
-    gzwrite_pruning_pps_track(gzFile fh,
-			      const PairPfs &ppfs,
-			      double min_prob) const;
+    gzwrite_pruning_pps(gzFile fh,
+			const PairPfs &ppfs,
+			double min_prob) const;
     
 };
 

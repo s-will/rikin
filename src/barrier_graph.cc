@@ -1164,9 +1164,9 @@ BarrierGraph::compute_pruning_pps(size_t ms_idx,
 }
 
 std::ostream &
-BarrierGraph::write_pruning_pps_track(std::ostream &out, 
-				       const PairPfs &ppfs,
-				       double min_prob) const {
+BarrierGraph::write_pruning_pps(std::ostream &out, 
+				const PairPfs &ppfs,
+				double min_prob) const {
     assert(track_pruning_);
     
     //iterate over macrostates
@@ -1180,17 +1180,16 @@ BarrierGraph::write_pruning_pps_track(std::ostream &out,
 
 	// now, ppfs contains the pair partition functions for the current macrostate
 	// ==> write them
-	PairPfs::write_state(out,ms_idx,Z,ms_ppfs,min_prob);
-	
-    }  
+	PairPfs::write_state(out,ms_idx,Z,ms_ppfs,min_prob);	
+    }
 
     return out;
 }
 
 gzFile
-BarrierGraph::gzwrite_pruning_pps_track(gzFile fh,
-					 const PairPfs &ppfs,
-					 double min_prob) const {
+BarrierGraph::gzwrite_pruning_pps(gzFile fh,
+				  const PairPfs &ppfs,
+				  double min_prob) const {
     // variant of write_pruning_pps_track() for gz-compressed output
 
     assert(track_pruning_);
