@@ -57,13 +57,14 @@ BasinPruningInfo::BasinPruningInfo(size_t index)
 
 void
 BasinPruningInfo::merge_in_basin(size_t orig_index, double contribution, const BasinPruningInfo &bpi, double min_contribution) {
+    
+    assert(contribution<=1.0);
+    assert(orig_index_ != orig_index);
 
     if (contribution<min_contribution) return;
 
     // index must not contribute to the basin already
     assert(contributions_.find(orig_index) == contributions_.end());
-    
-    contributions_[orig_index] = contribution;
     
     for ( contributions_t::const_iterator it = bpi.contributions_.begin();
 	  bpi.contributions_.end() != it; ++it ) {

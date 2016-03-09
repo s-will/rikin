@@ -15,16 +15,16 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>    /* #defines FLT_MAX ... */
-#include "ViennaRNA/utils.h"
-#include "ViennaRNA/energy_par.h"
-#include "ViennaRNA/fold_vars.h"
-#include "ViennaRNA/pair_mat.h"
-#include "ViennaRNA/PS_dot.h"
-#include "ViennaRNA/part_func.h"
-#include "ViennaRNA/params.h"
-#include "ViennaRNA/loop_energies.h"
+#include <ViennaRNA/utils.h>
+#include <ViennaRNA/energy_par.h>
+#include <ViennaRNA/fold_vars.h>
+#include <ViennaRNA/pair_mat.h>
+#include <ViennaRNA/PS_dot.h>
+#include <ViennaRNA/part_func.h>
+#include <ViennaRNA/params.h>
+#include <ViennaRNA/loop_energies.h>
 #include "LPfold.h"
-#include "ViennaRNA/Lfold.h"
+#include <ViennaRNA/Lfold.h>
 
 #ifdef _OPENMP
 #include <omp.h>

@@ -21,6 +21,8 @@ class BasinInfo {
     // vector of (codes of) all states in the basin
     state_vec_t states_;
     
+    typedef state_vec_t::const_iterator const_iterator;
+    
 public:
 
     /**
@@ -73,6 +75,25 @@ public:
 			 pf_matrix_t &pfs) const;
     
     friend std::ostream &operator << (std::ostream &out, const BasinInfo &bi);
+    
+    /**
+     * @brief begin of states vector
+     *
+     * @return constant iterator pointing to begin of vector of states
+     * (i.e. codes of states) in the basin
+     */
+    const_iterator
+    begin() const {return states_.begin();}
+    
+    /**
+     * @brief end of states vector
+     *
+     * @return constant iterator pointing to end of vector of states
+     * in the basin
+     * @see begin()
+     */
+    const_iterator
+    end() const {return states_.end();}
 
 };
 

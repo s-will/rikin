@@ -3,7 +3,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([RRIKin], [0.7], [])
+AC_INIT([RRIKin], [0.8], [])
 
 # special dir for aux config files 
 AC_CONFIG_AUX_DIR(config)
@@ -68,11 +68,11 @@ fi
 
 
 # configure for use of LocARNA library
-PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.3 >= 1.7.15])
+PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.4 >= 1.8.7])
 
 CXXFLAGS="$LOCARNA_CFLAGS $CXXFLAGS"
 LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
-LIBS="-lLocARNA-1.3 $LIBS"
+LIBS="-lLocARNA-1.4 $LIBS"
 
 
 ## ========================================
@@ -92,6 +92,7 @@ LIBS="-lRNA $LIBS"
 
 LDFLAGS="$VRNA_LDFLAGS $LDFLAGS"
 CXXFLAGS="$VRNA_CFLAGS $CXXFLAGS"
+CFLAGS="$VRNA_CFLAGS $CFLAGS"
 
 AC_CHECK_HEADER("ViennaRNA/fold.h",
 	[VRNANOTFOUND=0],

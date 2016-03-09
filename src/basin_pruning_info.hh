@@ -35,7 +35,8 @@ public:
      * @param bpi pruning info of merged in basin
      * @param min_contribution minimum contribution that is recorded (as single term in summations)
      *
-     * @note the merged in basin itself is going to be dissolved
+     * @note the merged in basin itself is going to be dissolved; the
+     * basin orig_index must not contribute to this basin already
      */
     void
     merge_in_basin(size_t orig_index, double contribution, 
@@ -65,7 +66,6 @@ public:
      */
     std::ostream &
     write(std::ostream &out, double min_contribution, size_t num_input_basins, bool sparse) const;
-
 
 
     /**

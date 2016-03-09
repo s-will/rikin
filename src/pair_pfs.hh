@@ -145,10 +145,10 @@ PairPfs::write_state(std::ostream &out,
     for (auto &x: pfs) {
 	prob_t prob = is_pf ? x.second/state_pf : x.second;
 	if ( prob  > min_prob ) {
-	    vec.push_back(make_pair(x.first,prob));
+	    vec.push_back(std::make_pair(x.first,prob));
 	}
-    }
-    
+    }    
+
     sort(vec.begin(),vec.end());
     
     out << state_idx << "\t";
