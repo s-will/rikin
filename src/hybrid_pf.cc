@@ -164,6 +164,8 @@ HybridPF::initialize_hybrid_pf() {
 
 }
 
+/* old code
+
 void
 HybridPF::compute_hybrid_pf_common_start(size_t i1, size_t i2) {
     
@@ -217,6 +219,68 @@ HybridPF::compute_hybrid_pf_common_start(size_t i1, size_t i2) {
 
     Q_(i1,i2) = Q_slice;
     
+}
+*/
+
+
+void
+HybridPF::compute_hybrid_pf_common_start(size_t i1, size_t i2) {
+    
+    LocARNA::OMatrix<pf_matrix_slice_t::value_t>  Q_slice;
+
+    Q_slice.resize(region_endA_-i1+1,region_endB_-i2+1,i1,i2);
+    Q_slice.fill(0);
+    // set Q[i1][i2][i1][i2] to
+    // 1 if (i1,i2) is a possible interaction base pair
+    
+    assert(pair_type(i1,i2)>0);
+    Q_slice(i1,i2)=1.0;
+    
+    // iterate over all j1,j2 (without maxsitesize_diff constraint!)
+    size_t max_j1 = std::min(region_endA_,i1+maxsitesize_-1);
+    size_t max_j2 = std::min(region_endB_,i2+maxsitesize_-1);
+    for (size_t j1=i1; j1<=max_j1; j1++) {
+	for (size_t j2=i2; j2<=max_j2; j2++) {
+
+	    if (pair_type(j1,j2)<=0) continue;
+	    
+	    // iterate over loops
+	    size_t min_k1 = std::max(i1+MAXLOOP+1, j1)-MAXLOOP-1;
+	    for (size_t k1=j1-1; k1>=min_k1; k1--) {
+		size_t len1=j1-k1-1;
+		// here compute min_k2 such that maxlooplength constraint holds
+		size_t min_k2 = std::max(i2+MAXLOOP+1,
+					 j2+len1)-MAXLOOP-1;
+		
+		for (size_t k2=j2-1; k2>=min_k2; k2--) {
+		    
+		    // factor for energy contribution of loop
+		    // closed by i2.i2 with inner bp k1.k2
+		    
+		    if (pair_type(k1,k2)<=0) continue;
+
+		    Q_slice(j1,j2) += 
+			Q_slice(k1,k2) * exp_ILoopE(k1,k2,j1,j2);
+		    
+		}
+	    }
+	}
+    }
+    
+    pf_matrix_slice_t::key_value_vec_t
+	sparse_Q_slice;
+
+    // transfer all non-zero entries (j1,j2) of Q_slice to where maxsitesize_diff is satisfied 
+    for (size_t j1=i1; j1<=max_j1; j1++) {
+	for (size_t j2=i2; j2<=max_j2; j2++) {
+	    if (Q_slice(j1,j2)!=0.0 && (abs((int)(j1-i1)-(int)(j2-i2)) <= maxsitesize_diff_)) {
+		sparse_Q_slice.push_back(std::make_pair(std::make_pair(j1,j2),
+							Q_slice(j1,j2)));
+	    }
+	}
+    }
+
+    Q_(i1,i2) = std::move( sparse_Q_slice );
 }
 
 void
