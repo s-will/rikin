@@ -21,7 +21,7 @@ bool verbose;
 // #endif
 
 #include "rrikin_enum_cmdline.h"
-#include "rrikin_enumerator.hh"
+#include "rri_enumeration.hh"
 #include "hybrid_ensemble_model.hh"
 
 int
@@ -134,11 +134,10 @@ main(int argc, char **argv)
 
     stopwatch.stop("init_model");
 
-    RRIKinEnumerator enumerator(std::cout,
-				model,
-				max_hyb_energy,
-				max_total_energy,
-				binary);
+    RRIEnumeration enumeration(model,
+			       max_hyb_energy,
+			       max_total_energy,
+			       binary);
     
     //if (verbose) stopwatch.print_info(std::cerr);
 
@@ -158,8 +157,9 @@ main(int argc, char **argv)
 	    std::cerr <<"Write open state"<<std::endl;
 	}
 	if (model.energy(empty_state) <= max_total_energy) {
-	    enumerator.check_state_validity(empty_state);
-	    enumerator.write_state(model.energy(empty_state),empty_state);
+	    enumeration.write_state(std::cout,model.energy(empty_state),
+				    empty_state,
+				    binary);
 	}
     }
     
@@ -176,7 +176,7 @@ main(int argc, char **argv)
 
     //stopwatch.start("enum_single");
     size_t count_single_states =
-	enumerator.enumerate_single_sites();
+	enumeration.enumerate_single_sites(false);
     //stopwatch.stop("enum_single");
 
     if (verbose) {
@@ -194,7 +194,7 @@ main(int argc, char **argv)
 	}
 	
 	count_double_states = 
-	    enumerator.enumerate_double_sites();
+	    enumeration.enumerate_double_sites(false);
 	
 	if (verbose) {
 	    if (verbose) std::cerr << "\r";
