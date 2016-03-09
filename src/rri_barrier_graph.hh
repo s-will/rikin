@@ -63,21 +63,6 @@ private:
     
     //! vector of additional infos for each basin (if track_) 
     std::vector<BasinInfo> basin_infos_;
-    
-    /** 
-     * Read a state description line from input stream
-     * 
-     * @param in input stream 
-     * @param[out] state state description 
-     * @param[out] energy state energy
-     * @param lineno line number (for error output)
-     * 
-     * @return whether valid state description line could be read
-     * @note Exit on invalid input!
-     */
-    bool
-    read_state(std::istream &in, HybEnsModel::StateDescription &state, 
-	       double &energy, size_t lineno,bool binary) const;
 
 public:
 

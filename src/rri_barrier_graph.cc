@@ -7,6 +7,8 @@
 #include <iomanip>
 
 #include "pair_pfs.hh"
+#include "hybrid_ensemble_model.hh"
+#include "rri_enumeration.hh"
 
 const bool RECOVER_MISSING_STATES=true;
 
@@ -95,7 +97,7 @@ write_basin_ipps_single_basin(std::ostream &out,
     bi.interaction_pair_pfs(model_, pfs);
     
     auto basin_pf = basins_[basin_idx].Z();
-    
+        
     return PairPfs::write_state(out,
 				basin_idx,
 				basin_pf,
@@ -121,77 +123,6 @@ RRIBarrierGraph::gzwrite_basin_ipps(gzFile fh,
 	gzputs(fh,out.str().c_str());
     }
     return fh;
-}
-
-
-bool 
-RRIBarrierGraph::read_state(std::istream &in, 
-			    HybEnsModel::StateDescription &state,
-			    double &energy, 
-			    size_t lineno,
-			    bool binary) const {
-    
-    if(binary) {
-	in >> energy;
-	if (in.eof()) return false;
-	
-	if(in.get()!=' ') {
-	    std::cerr << "expected blank after energy at line "<< lineno <<std::endl;
-	    return false; 
-	}
-	
-	if ( !state.read_binary(in) || in.get()!=0) { 
-	    std::cerr << "Error while parsing state at "<< lineno <<"."<<std::endl;
-	    return false; 
-	}
-	
-    }else{
-	std::string line;
-	
-	if (!getline(in,line)) return false;
-	
-	std::istringstream linein(line);
-	linein >> energy;
-	
-	std::vector<size_t> state_vec;
-	for (size_t i; linein >> i;) {
-	    state_vec.push_back(i);
-	}
-	
-	switch ( state_vec.size() ) {
-	case 0:
-	    state = HybEnsModel::StateDescription();
-	    break;
-	    
-	case 4:
-	    state = HybEnsModel::StateDescription(state_vec[0],
-						  state_vec[1],
-						  state_vec[2],
-						  state_vec[3]);
-	    break;
-	case 8:
-	    state = HybEnsModel::StateDescription(state_vec[0],
-						  state_vec[1],
-						  state_vec[2],
-						  state_vec[3],
-						  state_vec[4],
-						  state_vec[5],
-						  state_vec[6],
-						  state_vec[7]);
-	    break;
-	default:
-	    std::cerr << "ERROR: invalid input line "<< lineno<<"." << std::endl;
-	    exit(-1);
-	}
-	
-    }
-
-    if (not state.is_valid(model_)) {
-	std::cerr << "ERROR: read state "<<state<<" at line "<<lineno<<" is not valid in model."<<std::endl;
-	exit(-1);
-    }
-        
-    return true;
 }
 
 bool
@@ -411,7 +342,7 @@ RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state
 	    moves_counter++;
 	}
     }
-   
+    
     if (debug_out_) std::cerr << "  " << transitions.size() << " transitions, "
 			     << moves_counter << " moves" <<std::endl;
     
@@ -593,7 +524,7 @@ RRIBarrierGraph::read_states(std::istream &in,
     
     // use to check input
     double last_energy=-std::numeric_limits<double>::infinity();
-    int line=1;
+    int lineno=1;
     
     if (special_first_state_) {
 	// add the empty/open state first, to guarantee to create a new basin 
@@ -610,14 +541,26 @@ RRIBarrierGraph::read_states(std::istream &in,
     }
     
 
-    while (read_state(in,source_state,energy,line,binary)) {
+    while (RRIEnumeration::read_state(in,source_state,energy,lineno,binary)) {
     	
+	if (not source_state.is_valid(model_)) {
+	    std::cerr << "ERROR: read state "<<source_state<<" at line "<<lineno<<" is not valid in model."<<std::endl;
+	    exit(-1);
+	}
+        
+	// recompute the source energy to avoid rounding errors
+	energy = model_.energy(source_state);
+	
 	/*	if (verbose_ && (state_counter%5000==0)) {
 	    std::cerr << "\r" << state_counter<< "    b:"<<basins_.size()<<"    h:"<<state_hash_.size()<<"        ";
 	    }*/
-	if (energy < last_energy) {
-	    std::cerr << "ERROR: input states have to be sorted by increasing energy (at line "
-		      <<line<<": "<<energy<<"<"<<last_energy << " ).\n";
+	if (energy+1e-6 < last_energy) {
+	    std::cerr 
+		<< "ERROR: input states have to be sorted by increasing energy (at line "
+		<<lineno<<": "<<energy<<"<"<<last_energy << " ).\n"
+		<< "       Ensure that input states are sorted.\n"
+		<< "       NOTE: this error may still occur due to insufficient\n"
+		<< "             precision in enum file.\n";
 	    exit(-1);
 	}
 
@@ -645,7 +588,7 @@ RRIBarrierGraph::read_states(std::istream &in,
 	state_counter++;
 	
 	last_energy=energy;
-	line++;
+	lineno++;
     }
 
     if (verbose_ ) {
