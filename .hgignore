@@ -44,4 +44,9 @@ src/SparseMatrix/test
 src/SparseMatrix/test_sparse_vector
 src/SparseMatrix/test_symmetric_sparse_matrix
 src/Obsolete
+IntARNA-data
+Blitz
+_build
+_inst
+Wolfgang-Paerchen
 *~
