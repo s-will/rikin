@@ -1,5 +1,5 @@
-#ifndef SIMPLE_MAP_HH
-#define SIMPLE_MAP_HH
+#ifndef CONST_SPARSE_MATRIX_HH
+#define CONST_SPARSE_MATRIX_HH
 
 #include <LocARNA/sparse_matrix.hh>
 #include "ordered_sparse_matrix.hh"
@@ -95,13 +95,39 @@ public:
     }
 
     /** 
+     * @brief move contents according to vector of key value pairs
+     * 
+     * @param m matrix
+     * @return this
+     */
+    ConstSparseMatrix &
+    operator = (key_value_vec_t &&vec) {
+	vec_=vec;
+	sort();
+	return *this;
+    }
+
+    /** 
+     * @brief copy contents according to vector of key value pairs
+     * 
+     * @param m matrix
+     * @return this
+     */
+    ConstSparseMatrix &
+    operator = (const key_value_vec_t &vec) {
+	vec_=vec;
+	sort();
+	return *this;
+    }
+    
+    /** 
      * @brief copy contents of ordered sparse matrix
      * 
      * @param sm sparse matrix
      * @return this
      */
     ConstSparseMatrix &
-    operator =(const OrderedSparseMatrix<value_t> &sm) {
+    operator = (const OrderedSparseMatrix<value_t> &sm) {
 	vec_.clear();
 	def_ = sm.def();
 	for (auto &x : sm) {
@@ -148,4 +174,4 @@ public:
     }
 };
 
-#endif //SIMPLE_MAP_HH
+#endif //CONST_SPARSE_MATRIX_HH
