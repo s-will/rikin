@@ -38,6 +38,8 @@ BUILT_SOURCES = rrikin_enum_cmdline.c rrikin_enum_cmdline.h	\
 rrikin_barriers_cmdline.c rrikin_barriers_cmdline.h		\
 rrikin_prune_cmdline.c rrikin_prune_cmdline.h config.h
 
+EXTRA_DIST=rrikin_barriers.ggo rrikin_enum.ggo rrikin_prune.ggo
+
 ## register built sources as cleanfiles (otherwise they would not be
 ## removed by 'make clean')
 CLEANFILES = $(BUILT_SOURCES)
