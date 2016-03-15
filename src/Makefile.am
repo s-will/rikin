@@ -47,13 +47,13 @@ EXTRA_DIST=rrikin_barriers.ggo rrikin_enum.ggo rrikin_prune.ggo
 CLEANFILES = $(BUILT_SOURCES)
 
 ## gen get opt rules (rules are expanded to avoid GNU-only pattern rule)
-rrikin_barriers_cmdline.c: $(srcdir)/rrikin_barriers.ggo 
+rrikin_barriers_cmdline.c rrikin_barriers_cmdline.h: $(srcdir)/rrikin_barriers.ggo 
 	gengetopt < $<
 
-rrikin_enum_cmdline.c: $(srcdir)/rrikin_enum.ggo 
+rrikin_enum_cmdline.c rrikin_enum_cmdline.h: $(srcdir)/rrikin_enum.ggo 
 	gengetopt < $<
 
-rrikin_prune_cmdline.c: $(srcdir)/rrikin_prune.ggo 
+rrikin_prune_cmdline.c rrikin_prune_cmdline.h: $(srcdir)/rrikin_prune.ggo 
 	gengetopt < $<
 
 ## get a copy of config.h in directory src 
