@@ -74,30 +74,34 @@ CXXFLAGS="$LOCARNA_CFLAGS $CXXFLAGS"
 LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
 LIBS="-lLocARNA-1.4 $LIBS"
 
-
 ## ========================================
 ## Vienna RNA
 #
 
-# Get Vienna RNA library and include locations
 AC_ARG_WITH([vrna],
   [AS_HELP_STRING([--with-vrna],
     [location of the Vienna RNA headers])],
-  [VRNA_HOME=$withval;
-   VRNA_CFLAGS="-I$withval/include"; 
-   VRNA_LDFLAGS="-L$withval/lib"],
+  [],
   [])
 
-LIBS="-lRNA $LIBS"
+dnl if with_vrna is set, then use it to set the path for pkg_config
+if test "$with_vrna" != "" ; then
+    export PKG_CONFIG_PATH="$with_vrna/lib/pkgconfig:$PKG_CONFIG_PATH"
+    if test ! -e "$with_vrna/lib/pkgconfig/RNAlib2.pc" ; then
+        AC_MSG_NOTICE([Pkg-config of Vienna RNA cannot be found.])
+    fi
+fi
+        
+PKG_CHECK_MODULES([VRNA],[RNAlib2 >= 2.1.9],[VRNALIB_OK=true],[VRNALIB_OK=false])
+                                  
+dnl replace ViennaRNA add end of include path -- use perl, since we require it anyway
+dnl This fixes a legacy problem in ViennaRNA <2.2.x pkg-config files
+VRNA_CFLAGS=$(echo $VRNA_CFLAGS | perl -ne 's/(-I.*)\/ViennaRNA(\/\s|\s|$)/\1\2/g;print')
 
-LDFLAGS="$VRNA_LDFLAGS $LDFLAGS"
-CXXFLAGS="$VRNA_CFLAGS $CXXFLAGS"
+
+LIBS="$VRNA_LIBS $LIBS"
 CFLAGS="$VRNA_CFLAGS $CFLAGS"
-
-AC_CHECK_HEADER("ViennaRNA/fold.h",
-	[VRNANOTFOUND=0],
-	[VRNANOTFOUND=0],
-	[])
+CXXFLAGS="$VRNA_CFLAGS $CXXFLAGS"
 
 ## ========================================
 ## zlib
