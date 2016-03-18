@@ -1,5 +1,7 @@
 #!/usr/bin/Rscript
 
+library("shape")
+
 ### parse command line using python-like argparse
 
 suppressPackageStartupMessages(library("argparse"))
@@ -194,8 +196,6 @@ ppdotplot <- function(ppfile,idxs,seqA,seqB,nameA,nameB,restrictdp) {
     axis(1,at=c(1,seq(10,lenA,10)),cex.axis=0.6)
     axis(2,at=lenB+1-c(1,seq(10,lenB,10)),labels=c(1,seq(10,lenB,10)),cex.axis=0.6)
     
-
-    
     indices=c()
     color=1
     colors=c()
@@ -210,29 +210,88 @@ ppdotplot <- function(ppfile,idxs,seqA,seqB,nameA,nameB,restrictdp) {
         abline(h=lenB+1-i,lty=2,lwd=lwd,col="grey")
     }
 
+    dimx <- maxxlim-minxlim+1
+    dimy <- maxylim-minylim+1
+    matrixP <- as.list(rep(0,dimx*dimy))
+    dim(matrixP)=c(dimx,dimy)
+    matrixCol <- as.list(rep(0,dimx*dimy))
+    dim(matrixCol)=c(dimx,dimy)
+    
     for (line in lines) {
         entries <- unlist( strsplit(line,"[ \t]") );
         index<-as.integer(entries[1]);
-        # pf<-as.numeric(entries[2]);
-        entries<-entries[3:length(entries)]
-        indices<-c(indices, index)
-        
-        for ( k in seq(1,length(entries),3)) {
-            i = as.numeric(entries[k+0]);
-            j = as.numeric(entries[k+1]);
-            p = sqrt(as.numeric(entries[k+2]));
-            points(i,j,cex=p,col=color,pch=16);
+        ## pf<-as.numeric(entries[2]);
+        if (length(entries)>2) {
+
+            entries<-entries[3:length(entries)]
+            indices<-c(indices, index)
+            
+            for ( k in seq(1,length(entries),3)) {
+                i = as.numeric(entries[k+0]);
+                j = as.numeric(entries[k+1]);
+                p = as.numeric(entries[k+2]);
+
+                ##registerDot(i,j,p,color);
+                ii=i-minxlim+1
+                jj=j-minylim+1
+                
+                matrixP[[ii,jj]] <- c(matrixP[[ii,jj]],p)
+                matrixCol[[ii,jj]] <- c(matrixCol[[ii,jj]],color) 
+                
+                ## p=sqrt(p)
+                ## points(i,j,cex=p,col=color,pch=16);
+                ## print(c(i,j,p))
+            }
+            colors=c(colors,color)
+            color=color+1
         }
-        colors=c(colors,color)
-        color=color+1
+    }
+
+    for (i in minxlim:maxxlim) {
+        for (j in minylim:maxylim) {
+            ii=i-minxlim+1
+            jj=j-minylim+1
+            ps <- matrixP[[ii,jj]]
+            cols <- matrixCol[[ii,jj]]
+
+            ps <- tail(ps,-1)
+            cols <- tail(cols,-1)
+            
+            if (length(ps)>=1) {
+                acc <- c(0)
+                for (k in 1:length(ps)) {
+                    acc=c(acc,acc[k]+ps[k])
+                }
+                total=acc[length(ps)+1]
+                
+                for (k in 1:length(ps)) {
+                    e <-
+                        getellipse(
+                            mid=c(i,j),
+                            rx=sqrt(total),
+                            ry=sqrt(total)*dimy/dimx,
+                            dr=0.1,
+                            from=acc[k]/total*2*pi,
+                            to=acc[k+1]/total*2*pi);
+                    
+                    e <- rbind(c(i,j),e,c(i,j)) ## connect to center! ==> sector
+
+                    polygon(e,col=cols[k],lty=0)
+                }
+            }
+        }
     }
     
+    ## ------------------------------------------------------------
+    ## write sequence A (x-axis)
     for (i in minxlim:maxxlim) {
         c <- substr(seqA,i,i)
         text(i,minylim-1,c,adj=0.5,cex=0.25)
         text(i,maxylim+1,c,adj=0.5,cex=0.25)
     }
 
+    ## ------------------------------------------------------------
+    ## write sequence B (y-axis)
     for (i in minylim:maxylim) {
         c <- substr(seqB,i,i)
         text(minxlim-1,i,c,adj=0.5,cex=0.25)
@@ -255,9 +314,13 @@ pdf(output,width=6*numofplots,height=7)
 
 par(mfrow=c(1,numofplots),mar=c(4.25,4.25,2,1))
 
+library("RColorBrewer")
+
 palette(c(rgb(0,0,0.4,1),
-          adjustcolor(rainbow(8),alpha.f=0.6),
-          adjustcolor(rainbow(8), alpha.f=0.3)));
+          rgb(0.8,0,0,1),
+          adjustcolor(brewer.pal(8,"Dark2"),alpha.f=0.9),
+          adjustcolor(brewer.pal(8,"Set2"),alpha.f=0.8),
+          adjustcolor(brewer.pal(8,"Pastel2"),alpha.f=0.7)))
 
 ## get input table
 input_tab<-read.table(input)
@@ -279,3 +342,4 @@ if (ppfile != "") {
 
 ## close graphics output
 dev.off();
+
