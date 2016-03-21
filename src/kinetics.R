@@ -88,11 +88,32 @@ myopaquepalette <- c(rgb(0,0,0.4,1),
                      brewer.pal(8,"Set2"),
                      brewer.pal(8,"Pastel2"))
 
+plotBg=grey(0.975)
 
 ############################################################
 ### functions
 
-kinetics <- function(tab) {
+
+clearPlotBg <- function(color,log) {
+    lim=par("usr")
+    xmin=lim[1]
+    xmax=lim[2]
+    ymin=lim[3]
+    ymax=lim[4]
+    if (log=="x" || log=="xy") {
+        xmin=10^xmin
+        xmax=10^xmax
+    }
+    if (log=="y" || log=="xy") {
+        ymin=10^ymin
+        ymax=10^ymax
+    }
+
+    ## print (c(xmin,xmax,ymin,ymax))
+    rect(xmin,ymin,xmax,ymax,col = color)
+}
+
+kinetics_plot <- function(tab,title) {
     time<-tab[[1]]
     n <- length(tab)-1 # number of states
 
@@ -102,9 +123,11 @@ kinetics <- function(tab) {
          xlab="Time",
          ylab="p",
          log="x",
-         main=sub(".kin","",basename(input))
+         main=title
          )
 
+    clearPlotBg(plotBg,"x")
+    
     niceidxs <- c()
     nicemaxs <- c()
     
@@ -123,7 +146,13 @@ kinetics <- function(tab) {
         }
     }
     
-    legend("left",legend=paste(niceidxs-1," (",nicemaxs,")"),fill=palette(),inset=0.01,border=F)
+    legend("left",
+           legend=paste(niceidxs-1," (",nicemaxs,")"),
+           fill=mypalette,inset=0.02,
+           border=grey(0.7),
+           cex=0.85,
+           bg=grey(0.9,0.8)
+           )
 
     ## return
     niceidxs
@@ -139,7 +168,8 @@ evaluation_plot <- function(tab,info) {
          xlab="time",
          ylab="p",
          log="x",
-         main="evaluation")
+         main="Evaluation")
+    clearPlotBg(plotBg,"x")
     
     T0<-time[1]
     T8<-time[length(time)]
@@ -219,14 +249,21 @@ ppdotplot <- function(ppfile,idxs,weights,seqA,seqB,nameA,nameB) {
     addxlim=if (maxxlim-minxlim<40) 1 else 0
     addylim=if (maxylim-minylim<40) 1 else 0
     
-    plot(c(),c(),main="ipps",xlab=nameA,ylab=nameB,xlim=c(minxlim-addxlim,maxxlim+addxlim),ylim=c(minylim-addylim,maxylim+addylim),axes=F)
+    plot(c(),c(),
+         main="Interaction pair probabilities",
+         xlab=nameA,
+         ylab=nameB,
+         xlim=c(minxlim-addxlim,maxxlim+addxlim),
+         ylim=c(minylim-addylim,maxylim+addylim),
+         axes=F)
+    clearPlotBg(plotBg,"")
 
     box()
     axis(1,at=c(1,seq(10,lenA,10)),cex.axis=0.6)
     axis(2,at=lenB+1-c(1,seq(10,lenB,10)),labels=c(1,seq(10,lenB,10)),cex.axis=0.6)
     
     ## indices=c()
-    seriesno=1
+    ##idxOfIdx=1
     ## colors=c()
 
        
@@ -246,7 +283,9 @@ ppdotplot <- function(ppfile,idxs,weights,seqA,seqB,nameA,nameB) {
     matrixCol <- as.list(rep(0,dimx*dimy))
     dim(matrixCol)=c(dimx,dimy)
     
-    for (idx in idxs) {
+    for (idxOfIdx in 1:length(idxs)) {
+        idx=idxs[idxOfIdx]
+        
         line <- lines[idx]
         
         entries <- unlist( strsplit(line,"[ \t]") );
@@ -261,22 +300,21 @@ ppdotplot <- function(ppfile,idxs,weights,seqA,seqB,nameA,nameB) {
             for ( k in seq(1,length(entries),3)) {
                 i = as.numeric(entries[k+0]);
                 j = as.numeric(entries[k+1]);
-                p = as.numeric(entries[k+2]) * weights[seriesno];
+                p = as.numeric(entries[k+2]) * weights[idxOfIdx];
 
-                ##registerDot(i,j,p,seriesno);
+                ##registerDot(i,j,p,idxOfIdx);
                 ii=i-minxlim+1
                 jj=j-minylim+1
                 
                 matrixP[[ii,jj]] <- c(matrixP[[ii,jj]],p)
-                matrixCol[[ii,jj]] <- c(matrixCol[[ii,jj]],seriesno) 
+                matrixCol[[ii,jj]] <- c(matrixCol[[ii,jj]],idxOfIdx) 
                 
                 ## p=sqrt(p)
-                ## points(i,j,cex=p,col=seriesno,pch=16);
+                ## points(i,j,cex=p,col=idxOfIdx,pch=16);
                 ## print(c(i,j,p))
             }
         }
-        ## colors=c(colors,seriesno)
-        seriesno=seriesno+1
+        ## colors=c(colors,idxOfIdx)
     }
 
     for (i in minxlim:maxxlim) {
@@ -299,7 +337,6 @@ ppdotplot <- function(ppfile,idxs,weights,seqA,seqB,nameA,nameB) {
                 for (k in 1:length(ps)) {
                     rx = total^(1/dproot)*sqrt(2);
 
-                    print(c(i,j,rx,k,acc[k],acc[k+1]))
                     e <-
                         getellipse(
                             mid=c(i,j),
@@ -353,7 +390,14 @@ interaction_probability_plot <- function(ppfile,idxs,weights,seqA,nameA) {
     addxlim=if (maxxlim-minxlim<40) 1 else 0
     addylim=if (maxylim-minylim<40) 1 else 0
     
-    plot(c(),c(),main="interaction probabilities",xlab=nameA,ylab=nameB,xlim=c(minxlim-addxlim,maxxlim+addxlim),ylim=c(minylim-addylim,maxylim+addylim),axes=F)
+    plot(c(),c(),
+         main="Interaction probabilities",
+         xlab=nameA,
+         ylab="State",
+         xlim=c(minxlim-addxlim,maxxlim+addxlim),
+         ylim=c(minylim-addylim,maxylim+addylim),
+         axes=F)
+    clearPlotBg(plotBg,"")
 
     box()
     axis(1,at=c(1,seq(10,lenA,10)),cex.axis=0.6)
@@ -371,8 +415,9 @@ interaction_probability_plot <- function(ppfile,idxs,weights,seqA,nameA) {
     }
 
     dimx <- maxxlim-minxlim+1
-    seriesno=1
-    for (idx in idxs) {
+
+    for (idxOfIdx in 1:length(idxs)) {
+        idx <- idxs[idxOfIdx]
         line <- lines[idx]
         accp <- rep(0,dimx)
              
@@ -388,7 +433,7 @@ interaction_probability_plot <- function(ppfile,idxs,weights,seqA,nameA) {
             for ( k in seq(1,length(entries),3)) {
                 i = as.numeric(entries[k+0])
                 j = as.numeric(entries[k+1])
-                p = as.numeric(entries[k+2]) * weights[seriesno]
+                p = as.numeric(entries[k+2]) * weights[idxOfIdx]
 
                 ## compute 1-based index
                 ii=i-minxlim+1
@@ -401,17 +446,16 @@ interaction_probability_plot <- function(ppfile,idxs,weights,seqA,nameA) {
                 p=accp[ii]
                 r=p^(1/dproot)
                 e <- getellipse(
-                    mid=c(i,length(idxs)-seriesno+1),
+                    mid=c(i,length(idxs)-idxOfIdx+1),
                     rx=r*1.1, ## somewhat more overlap for high probs
                     ry=r/2,
                     dr=0.1
                     )
                 polygon(e,
                         lty=0,
-                        col=myopaquepalette[seriesno])
+                        col=myopaquepalette[idxOfIdx])
             }
         }
-        seriesno <- seriesno+1
     }
 
     
@@ -427,91 +471,123 @@ interaction_probability_plot <- function(ppfile,idxs,weights,seqA,nameA) {
 
 
 ## plot interaction probability of each position of RNA A vs. time
-time_interaction_probability_plot <- function(kintab,ppfile,idxs,weights,seqA,nameA) {
+time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
     lenA=nchar(seqA)
     lenIdxs=length(niceidxs)
     
+    time<-kintab[[1]] ## vector of time points in kinetics table
+    statesnum <- length(kintab)-1 # number of states in kinetics table
+
     lines<-readLines(ppfile)
-    ## lines<-lines[idxs]
 
-    minxlim=1; maxxlim=lenA;
-    minylim=1; maxylim=lenIdxs;
+    minxlim=time[1]; maxxlim=time[length(time)];
+    minylim=1; maxylim=lenA; ## put sequence A on y-axis!
     
-    ## print(c(minxlim,maxxlim,minylim,maxylim));
-
-    addxlim=if (maxxlim-minxlim<40) 1 else 0
+    addxlim=0
     addylim=if (maxylim-minylim<40) 1 else 0
     
-    plot(c(),c(),main="interaction probabilities",xlab=nameA,ylab=nameB,xlim=c(minxlim-addxlim,maxxlim+addxlim),ylim=c(minylim-addylim,maxylim+addylim),axes=F)
+    plot(c(),c(),
+         main="Interaction probabilities vs. time",
+         xlab="Time",
+         ylab=nameA,
+         xlim=c(minxlim-addxlim,maxxlim+addxlim),
+         ## ylim=c(minylim-addylim,maxylim+addylim),
+         ylim=c(maxylim+addylim,minylim-addylim),
+         axes=F,
+         log="x")
+    clearPlotBg(plotBg,"x")
 
     box()
-    axis(1,at=c(1,seq(10,lenA,10)),cex.axis=0.6)
-    axis(2,at=seq(1,lenIdxs,1),labels=rev(idxs-1),cex.axis=0.6,las=2)
+    axis(1)
+    axis(2,at=c(1,seq(10,lenA,10)),cex.axis=0.6,las=2)  
+
+    ########################################
+    ## collect conditional interaction probabilities for each state in matrix ips
+
+    ips = matrix(0,nrow=length(idxs),ncol=lenA)
     
-       
-    for (i in seq(0,lenA,5)) {
-        lwd <- if (i%%10==0) 0.8 else 0.4
-        abline(v=i,lty=2,lwd=lwd,col="grey")
-    }
-
-    for (i in seq(0,lenIdxs+1,1)) {
-        lwd <- 0.4
-        abline(h=lenIdxs+1-i-0.5,lty=2,lwd=lwd,col="grey")
-    }
-
-    dimx <- maxxlim-minxlim+1
-    seriesno=1
-    for (idx in idxs) {
+    for (idxOfIdx in 1:length(idxs)) {
+        
+        idx=idxs[idxOfIdx]
         line <- lines[idx]
-        accp <- rep(0,dimx)
+
+        accp <- rep(0,lenA)
              
         entries <- unlist( strsplit(line,"[ \t]") )
-        ## index<-as.integer(entries[1]);
 
-        ## pf<-as.numeric(entries[2]);
         if (length(entries)>2) {
-
+            
             entries <- entries[3:length(entries)]
             ## indices<-c(indices, index)
             
             for ( k in seq(1,length(entries),3)) {
                 i = as.numeric(entries[k+0])
                 j = as.numeric(entries[k+1])
-                p = as.numeric(entries[k+2]) * weights[seriesno]
+                p = as.numeric(entries[k+2])
 
-                ## compute 1-based index
-                ii=i-minxlim+1
-                
-                accp[ii] <- accp[ii] + p
+                accp[i] <- accp[i] + p
             }
-
-            for (i in minxlim:maxxlim) {
-                ii=i-minxlim+1
-                p=accp[ii]
-                r=p^(1/dproot)
-                e <- getellipse(
-                    mid=c(i,length(idxs)-seriesno+1),
-                    rx=r*1.1, ## somewhat more overlap for high probs
-                    ry=r/2,
-                    dr=0.1
-                    )
-                polygon(e,
-                        lty=0,
-                        col=myopaquepalette[seriesno])
+            
+            for (i in 1:lenA) {
+                p=accp[i]
+                ips[idxOfIdx,i]=p
             }
         }
-        seriesno <- seriesno+1
+    }
+
+    opal = c(rgb(1,1,1),brewer.pal(9,"YlOrRd"))
+    pal = opal # adjustcolor(opal,alpha.f=0.2)
+    
+    ## ----------------------------------------
+    ## for each time point compute mixture distribution
+    ## and plot
+    for (timeIdx in 1:length(time)) {
+        theTime=time[timeIdx]
+        
+        for (i in 1:lenA) {
+            accp <- 0
+            for(idxOfIdx in 1:length(idxs)) {
+                idx=idxs[idxOfIdx]
+                accp <- accp + ips[idxOfIdx,i] * kintab[timeIdx,idx+1]
+            }
+            p=accp^(1/dproot)
+            mycol=as.integer(p*9+1)
+            if (mycol>1) {
+                #print(c(theTime,i,p))
+                points(theTime,i,cex=1,pch=15,col=pal[mycol])
+            }
+        }
+    }
+
+        
+    ## for (i in seq(0,lenA,5)) {
+    ##     lwd <- if (i%%10==0) 0.8 else 0.4
+    ##     abline(v=i,lty=2,lwd=lwd,col="grey")
+    ## }
+
+    for (i in seq(0,lenA,5)) {
+        lwd <- if (i%%10==0) 0.8 else 0.4
+        abline(h=i,lty=2,lwd=lwd,col=grey(0.5,0.5))
     }
 
     
     ## ------------------------------------------------------------
     ## write sequence A (x-axis)
-    for (i in minxlim:maxxlim) {
+    for (i in minylim:maxylim) {
         c <- substr(seqA,i,i)
-        text(i,minylim-1,c,adj=0.5,cex=0.25)
-        text(i,maxylim+1,c,adj=0.5,cex=0.25)
+        text(minxlim/1.4,i,c,adj=0.5,cex=0.25)
+        text(maxxlim*1.4,i,c,adj=0.5,cex=0.25)
     }
 
+    legend("left",
+           legend=c("1.0",rep("",8),"0.0"),
+           fill=rev(opal),
+           inset=0.05,
+           border=grey(0.7),
+           cex=0.85,
+           bg=grey(0.9,0.8)
+           )
+    
 }
 
 
@@ -532,11 +608,12 @@ par(mfrow=c(1,numofplots),mar=c(4.25,4.25,2,1))
 ## get input table
 input_tab<-read.table(input)
 
+title <- "Kinetics"
 
 ########################################
 ## draw plots
 
-niceidxs <- kinetics(input_tab)
+niceidxs <- kinetics_plot(input_tab,title)
 
 if (relativedp) {
     niceweights <- c()
@@ -551,11 +628,11 @@ if (evalplot) {
     evaluation_plot(input_tab,info)
 }
 
-### optionally draw dot plot (for niceidxs)
+### optionally draw dot plots (for niceidxs)
 if (ppfile != "") {
+    time_interaction_probability_plot(input_tab,ppfile,niceidxs,seqA,nameA)
     ppdotplot(ppfile,niceidxs,niceweights,seqA,seqB,nameA,nameB)
     interaction_probability_plot(ppfile,niceidxs,niceweights,seqA,nameA)
-    #time_interaction_probability_plot(input_tab,ppfile,niceidxs,niceweights,seqA,nameA)
 }
 
 ## close graphics output
