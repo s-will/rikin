@@ -121,7 +121,7 @@ kinetics_plot <- function(tab,title) {
          xlim=c(min(time),max(time)),
          ylim=c(0,1),
          xlab="Time",
-         ylab="p",
+         ylab="State Probability",
          log="x",
          main=title
          )
@@ -158,15 +158,15 @@ kinetics_plot <- function(tab,title) {
     niceidxs
 }
 
-evaluation_plot <- function(tab,info) {
+evaluation_plot <- function(tab,info,instanceName) {
     time<-tab[[1]]
     n <- length(tab)-1 # number of states
     
     plot(c(),c(),
          xlim=c(min(time),max(time)),
          ylim=c(0,1),
-         xlab="time",
-         ylab="p",
+         xlab="Time",
+         ylab="State Probability",
          log="x",
          main="Evaluation")
     clearPlotBg(plotBg,"x")
@@ -199,7 +199,7 @@ evaluation_plot <- function(tab,info) {
     
     text(T8,0.4,info,adj=1)
     
-    cat(paste(sep="\t",basename(input),score,convergencetime,nscore,info),"\n");
+    cat(paste(sep="\t","#evaluation",instanceName,score,convergencetime,nscore,info),"\n");
     
     legend("bottomright",
            legend=c("1-p0 (norm'd)","p1 (norm'd)","difference"),
@@ -610,6 +610,21 @@ input_tab<-read.table(input)
 
 title <- "Kinetics"
 
+instanceName<-""
+
+if (nameA!="") {
+    instanceName=paste(instanceName,nameA)
+}
+if (nameB!="") {
+    if (nameA!="") {
+        instanceName=paste(instanceName,"-",sep="")
+    }
+    instanceName=paste(instanceName,nameB,sep="")
+}
+
+title=paste(title,instanceName)
+
+
 ########################################
 ## draw plots
 
@@ -625,12 +640,17 @@ if (relativedp) {
 }
 
 if (evalplot) {
-    evaluation_plot(input_tab,info)
+    evaluation_plot(input_tab,info,instanceName)
+}
+
+if (ppfile != "") {
+    time_interaction_probability_plot(input_tab,ppfile,niceidxs,seqA,nameA)
 }
 
 ### optionally draw dot plots (for niceidxs)
 if (ppfile != "") {
-    time_interaction_probability_plot(input_tab,ppfile,niceidxs,seqA,nameA)
+    par(mfrow=c(1,2))
+
     ppdotplot(ppfile,niceidxs,niceweights,seqA,seqB,nameA,nameB)
     interaction_probability_plot(ppfile,niceidxs,niceweights,seqA,nameA)
 }
