@@ -352,18 +352,26 @@ public:
      * @brief write basin information
      * @param out output stream
      * @return stream
+     *
+     * write lines 
+     * basin_idx no_states ensemble_energy min_mesostate min_mesostate_energy list_of_mesostates,
+     * where list_of_mesostates enumerates all mesostates in the basin
+     * 
+     * the last three entries are available only if basin tracking was turned on (@see track_basins())
      */
     std::ostream &
     write_basin_track(std::ostream &out) const;
-
+    
     /**
      * @brief write basin information
      * @param file gz file handle opened for write 
      * @return file handle; NULL on error
+     *
+     * @see write_basin_track()
      */
     gzFile
     gzwrite_basin_track(gzFile file) const;
-
+    
 private:
 
     /**
@@ -385,6 +393,14 @@ public:
      * @param out output stream
      * @param min_prob minimum probability
      * @return stream
+     *
+     * Write list with lines for each basin (@see
+     * write_basin_ipps_single_basin()):
+     * 
+     * basin_index basin_partition_function { i j p_ij }
+     *
+     * @note the information about the partition function of the basin is as well given in the
+     * basin track (@see write_basin_track()); there, in the form of basin ensemble energy
      */
     std::ostream &
     write_basin_ipps(std::ostream &out,
@@ -395,6 +411,8 @@ public:
      * @param file gz file handle opened for write 
      * @param min_prob minimum probability
      * @return file handle; NULL on error
+     *
+     * @see write_basin_ipps()
      */
     gzFile
     gzwrite_basin_ipps(gzFile file,

@@ -10,7 +10,7 @@
    Stores basin information going beyond the data in class Basin. The
    information here is not needed for the construction of the basin
    graph and computation of transition rates, however here we keep
-   track of the states in the basin.
+   track of the single meso-states in the basin.
 */
 class BasinInfo {
     HybEnsModel::StateDescription::code_t min_state_; //!< minimum state in basin
@@ -18,7 +18,7 @@ class BasinInfo {
 
     typedef std::vector<HybEnsModel::StateDescription::code_t> state_vec_t; 
     
-    // vector of (codes of) all states in the basin
+    // vector of (codes of) all states in the basin (including the minimum state)
     state_vec_t states_;
     
     typedef state_vec_t::const_iterator const_iterator;

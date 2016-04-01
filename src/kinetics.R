@@ -150,7 +150,7 @@ kinetics_plot <- function(tab,title) {
            legend=paste(niceidxs-1," (",nicemaxs,")"),
            fill=mypalette,inset=0.02,
            border=grey(0.7),
-           cex=0.85,
+           ## cex=0.85,
            bg=grey(0.9,0.8)
            )
 
@@ -584,7 +584,7 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
            fill=rev(opal),
            inset=0.05,
            border=grey(0.7),
-           cex=0.85,
+           ## cex=0.85,
            bg=grey(0.9,0.8)
            )
     
