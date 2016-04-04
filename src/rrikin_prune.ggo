@@ -27,6 +27,8 @@ option "dont-simplify-graph" - "Turn of all barrier graph simplifications" optio
 
 option "no-special-first-state" - "Treat first state like any other state; def=never dissolve first state" optional
 
+option "preexpf-first" - "Pre-exponential factor for rates from and to first (usually \"open\") state (default/other rates: factor 1; only with special first state)" double default="1.0" optional
+
 option "barfile" - "Write treekin compatible pseudo-barrier file" string optional
 option "ratesfile" - "Write rates matrix to a treekin compatible file" string optional
 

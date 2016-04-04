@@ -20,8 +20,8 @@ class Basin {
     size_t index_; //<! index of basin 
     double Z_;      //!< partition function
 
-    double states_; //!< size in number of states   
-    
+    double states_; //!< size in number of states
+
     bool merged_;
     
 public:

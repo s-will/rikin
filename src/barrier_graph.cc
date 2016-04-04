@@ -92,6 +92,11 @@ BarrierGraph::BarrierGraph(std::istream &in,
     num_input_states_ = basins_.size();
 }
 
+void BarrierGraph::multiply_transitions_from_to(int basin_idx, double factor) {
+    for (auto &x : transitions_[basin_idx]) {
+        x.second.multiply(factor);
+    }
+}
 
 size_t
 BarrierGraph::num_basins() const {

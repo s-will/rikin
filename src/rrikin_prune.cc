@@ -105,6 +105,8 @@ main(int argc, char **argv)
     
     bool special_first_state = ! args_info.no_special_first_state_given;
 
+    double preexpf_first = args_info.preexpf_first_arg;
+    
     /* control behavior */
     bool simplify_graph      = ! args_info.dont_simplify_graph_given;
     
@@ -186,6 +188,10 @@ main(int argc, char **argv)
 		    debug_out,
 		    track);
     in.close();
+    
+    if (special_first_state) {
+        bg.multiply_transitions_from_to(0,preexpf_first);
+    }
     
     //stopwatch.stop("read");
     

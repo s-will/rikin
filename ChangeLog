@@ -1,0 +1,3 @@
+0.9~pre
+	add pre-exponential factor for transitions from and to firs state
+	[=open state] in rrikin_prune

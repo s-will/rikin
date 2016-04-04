@@ -52,15 +52,15 @@ protected:
     bool debug_out_;
     
     /**
-     * @brief map of all transitions from one basin to another basins,
+     * @brief map of all transitions from one basin to other basins,
      * keys=basin indices of source and target 
      * 
      * @note this matrix is
      * symmetric, we maintain the equivalence of symmetric pairs
      * transitions[i][j] and transitions[j][i].
      */
-    transitions_map_t transitions_;        
-    
+    transitions_map_t transitions_;
+
     //! vector storing basins of all local minima
     std::vector<Basin> basins_; // 0-based, note: also basin indices are 0-based
 
@@ -137,6 +137,17 @@ public:
 		 bool debug_out,
 		 bool track_pruning
 		 );
+    
+    /**
+     * @brief modify transitions from and to state
+     *
+     * @param basin_idx index of basin (0-based)
+     * @param factor (pre-exponential) factor for transition pf (and consequently, rates)
+     *
+     * Multiplies all transition pfs from and to state by factor
+     */
+    void
+    multiply_transitions_from_to(int basin_idx, double factor);
     
     /**
      * @brief write barrier graph to stream in binary "pf" format

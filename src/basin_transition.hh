@@ -42,6 +42,18 @@ public:
     update(double Z) {
 	Z_ += Z;
     }
+
+    /** 
+     * Multiply transition partition function
+     *
+     * @param f multiplication factor
+     *
+     */
+    void
+    multiply(double f) {
+	Z_ *= f;
+    }
+
     
     /** 
      * Get partition function
