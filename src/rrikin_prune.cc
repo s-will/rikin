@@ -175,9 +175,9 @@ main(int argc, char **argv)
         spcsfile = args_info.spcs_arg;
     }
 
-    bool connect_components=false;
-    if (args_info.connect_components_given) {
-        connect_components=true;
+    bool connect_components=true;
+    if (args_info.only_first_component_given) {
+        connect_components=false;
     }
     
     
