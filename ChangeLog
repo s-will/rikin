@@ -1,3 +1,4 @@
-0.9~pre
+0.9
+	connect disconnected components heuristically
 	add pre-exponential factor for transitions from and to firs state
 	[=open state] in rrikin_prune
