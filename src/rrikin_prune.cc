@@ -174,6 +174,12 @@ main(int argc, char **argv)
     if (args_info.spcs_given) {
         spcsfile = args_info.spcs_arg;
     }
+
+    bool connect_components=false;
+    if (args_info.connect_components_given) {
+        connect_components=true;
+    }
+    
     
     cmdline_parser_free(&args_info);
     
@@ -189,10 +195,14 @@ main(int argc, char **argv)
 		    track);
     in.close();
     
-    if (special_first_state) {
+    if (special_first_state && preexpf_first!=1.0) {
+        if (verbose) {
+            std::cerr <<"Multiply rates from and to first/open state by "
+                      <<preexpf_first<<std::endl;
+        }
         bg.multiply_transitions_from_to(0,preexpf_first);
     }
-    
+
     //stopwatch.stop("read");
     
     
@@ -226,9 +236,9 @@ main(int argc, char **argv)
 	
 	if (verbose) {
 	    std::cerr << "Prune basins with outflow larger " << max_outflow 
-		      << " or equilibrium probability smaller "<< min_pequ << std::endl;
-	    std::cerr << "Remove rates smaller than " << min_rate << std::endl;	    
-	}
+		      << " or equilibrium probability smaller "<< min_pequ
+                      <<"; "
+                      << "remove rates smaller than " << min_rate << std::endl;	    	}
 	
 	stopwatch.start("prune");
 	
@@ -279,20 +289,40 @@ main(int argc, char **argv)
     }
     
     std::vector<size_t> components;
-    std::vector<size_t> component_sizes=bg.connected_components(components);
+    std::vector<size_t> component_sizes;
+    std::vector<double> component_pfs;
+    bg.connected_components(components,component_sizes,component_pfs);
     if (component_sizes.size()>1) {
     	if (verbose) {
 	    std::cerr << "Components: #="<<component_sizes.size()<<" sizes: ";
-	    for (size_t i=0; i<component_sizes.size(); i++)
-		std::cerr << component_sizes[i]<<" ";
-	    std::cerr <<std::endl;
-	
-	    std::cerr << "Keep only the first component." 
-		      << std::endl;
+	    
+            double Z=0.0;
+            for (size_t i=0; i<component_sizes.size(); i++) {
+                Z+=component_pfs[i];
+            }
+            for (size_t i=0; i<component_sizes.size(); i++) {
+		std::cerr << component_sizes[i]<<"["
+                    << component_pfs[i]/Z<<"] ";
+            }
+            std::cerr <<std::endl;
+
+        }
+        
+        if (connect_components) {
+            //for all pairs of components, set
+            if (verbose) {
+                std::cerr << "Heuristically connect the components." 
+                          << std::endl;
+            }
+            bg.connect_components(component_sizes.size(),components,min_rate);
+        } else {
+            if (verbose) {
+                std::cerr << "Keep only the first component." 
+                          << std::endl;
+            }
+            bg.keep_single_component(1,components); // note: this reindexes internally
 	}
-	
-	bg.keep_single_component(1,components); // note: this reindexes internally
-	
+
 	if (verbose) {
 	    bg.print_stats(std::cerr);
 	}

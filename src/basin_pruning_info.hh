@@ -6,6 +6,7 @@
 #include <limits>
 
 //! Additional information about a basin
+//! @todo check memory consumption; make sparse!
 class BasinPruningInfo {
     
     size_t orig_index_;
@@ -43,14 +44,24 @@ public:
 		   const BasinPruningInfo &bpi,
 		   double min_contribution);
     
-    // /**
-    //  * @brief sparsify
-    //  * @param min_contrib minimum contribution
-    //  *
-    //  * Remove all stored contributions less than min_contribution 
-    //  */
-    // void
-    // sparsify(double min_contrib);
+    /**
+     * @brief sparsify
+     * @param min_contrib minimum contribution
+     *
+     * Remove all stored contributions less than min_contribution 
+     */
+    void
+    sparsify(double min_contrib);
+
+    /**
+     * @brief clear
+     *
+     * Remove all stored contributions 
+     *
+     * @note Guarantees reallocation (other than vector clear())
+     */
+    void
+    clear();
     
     /**
      * @brief access original index

@@ -74,3 +74,19 @@ BasinPruningInfo::merge_in_basin(size_t orig_index, double contribution, const B
 	}
     }
 }
+
+void BasinPruningInfo::sparsify(double min_contrib) {
+    for ( contributions_t::const_iterator it = contributions_.begin();
+	  contributions_.end() != it; ) {
+        
+        if ( it->second < min_contrib ) {
+            it=contributions_.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void BasinPruningInfo::clear() {
+    contributions_t().swap(contributions_);   // clear x reallocating
+}

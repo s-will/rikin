@@ -58,6 +58,9 @@ protected:
      * @note this matrix is
      * symmetric, we maintain the equivalence of symmetric pairs
      * transitions[i][j] and transitions[j][i].
+     *
+     * @note transitions[i][j] and transitions[j][i] are two different
+     * doubles! So, the symmetrty has to be maintained actively.
      */
     transitions_map_t transitions_;
 
@@ -122,13 +125,10 @@ public:
      * @param debug_out turn on debugging output
      * @param track_pruning turn on tracking of pruning
      *
-     * Read in "pf" format; same as written by write_binary()
+     * Read in "pf" format; same as written by @see write_binary()
      *
-     * @note pf format:
-     * <i0><pf0><j00><tpf00>...<j0*><tpf0*><stopper><i1><pf1><j10><tpf00>...<j1*><tpf1*><stopper><j**><tpf*0>...<j**><tpf**><stopper><stopper>.
-     * indices are sizeof(size_t) bytes long; pfs, sizeof(double)
-     * bytes; binary encoding the stopper code is
-     * numeric_limits<size_t>::max()
+     * @todo symmetry of barrier graph: check or change pf format to
+     * store only one direction @see write_binary()
      */
     BarrierGraph(std::istream &in,
 		 double min_rate,
@@ -153,7 +153,18 @@ public:
      * @brief write barrier graph to stream in binary "pf" format
      * 
      * @param out output stream
+     * @param min_rate minimum rate (for sparse output)
      *
+     * @note write only transition pfs, where from OR to rate >=min_rate
+     *
+     * @note pf format:
+     * <i0><pf0><j00><tpf00>...<j0*><tpf0*><stopper><i1><pf1><j10><tpf00>...<j1*><tpf1*><stopper><j**><tpf*0>...<j**><tpf**><stopper><stopper>.
+     * indices are sizeof(size_t) bytes long; pfs, sizeof(double)
+     * bytes; binary encoding the stopper code is
+     * numeric_limits<size_t>::max()
+     *
+     * @todo if possible, exploit symmetry of barrier graphs (store
+     * only pfs in one direction)
      */
     std::ostream &
     write_binary(std::ostream &out, double min_rate) const;
@@ -340,13 +351,16 @@ public:
     /** 
      * @brief determine connected components
      * @param[out] components mapping of each basin index to a (1-based) component index
-     * @return vector of component sizes
-     *
+     * @param[out] component_sizes  vector of component sizes (number of states)
+     * @param[out] component_pfs  vector of component partition functions
      * @note the current code requires that every state has an entry in the hash transitions
      */
-    std::vector<size_t>
-    connected_components(std::vector<size_t> &components) const;
-    
+    void
+    connected_components(std::vector<size_t> &components,
+                         std::vector<size_t> &component_sizes,
+                         std::vector<double> &component_pfs
+                         ) const;
+
     /** 
      * @brief keep only a single component
      * @param c index of component to keep 
@@ -356,6 +370,23 @@ public:
      */
     void
     keep_single_component(size_t c,const std::vector<size_t> &components);
+
+    /** 
+     * @brief heuristically connect the components
+     * @param component_num number of components
+     * @param components mapping of each basin index to its component index
+     * @param rate connecting rate
+     *
+     * Connect the heaviest basins in the components to each other using the given rate.
+     * Component indices have to be in the range 1..component_num
+     *
+     * @note for db, we calculate correct transition pfs, such that
+     * min_rate is the larger rate that connects the basins.
+     */
+    void
+    connect_components(size_t component_num,
+                       const std::vector<size_t> &components,
+                       double rate);
     
 private:
     bool

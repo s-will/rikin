@@ -42,6 +42,8 @@ option "nameAB" - "Specify name of molecule AB in rxns/spcs (def=nameA+nameB)" s
 
 option "to-keep" - "Keep only the specified states (separate indices by comma)" int optional multiple
 
+option "connect-components" - "If barrier graph is not connected, heuristically connect the components [defaul=keep first component]"
+
 option "verbose" - "Turn on verbose output" optional
 option "debug" - "Turn on debugging output" optional
 

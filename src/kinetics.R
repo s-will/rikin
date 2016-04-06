@@ -391,7 +391,7 @@ interaction_probability_plot <- function(ppfile,idxs,weights,seqA,nameA) {
     addylim=if (maxylim-minylim<40) 1 else 0
     
     plot(c(),c(),
-         main="Interaction probabilities",
+         main="Conditional interaction probabilities",
          xlab=nameA,
          ylab="State",
          xlim=c(minxlim-addxlim,maxxlim+addxlim),
