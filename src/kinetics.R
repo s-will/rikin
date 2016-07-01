@@ -40,13 +40,21 @@ parser$add_argument("--dproot", default="2",
 
 parser$add_argument("--evalplot", action="store_true", default=FALSE, help="draw evaluation plot [default: off]")
 
+parser$add_argument("--dotplots", action="store_true", default=FALSE, help="draw evaluation plot [default: off]")
+
 parser$add_argument("input",nargs=1,help="input file [required]")
 
 parser$add_argument("--int-startA", default="0",
                     help="start of interaction in RNA A")
 
+parser$add_argument("--int-endA", default="0",
+                    help="end of interaction in RNA A")
+
 parser$add_argument("--int-startB", default="0",
                     help="start of interaction in RNA B")
+
+parser$add_argument("--int-endB", default="0",
+                    help="end of interaction in RNA B")
 
 parser$add_argument("--interaction", default="",
                     help="interaction pattern (dot-bracket, order B&A !)")
@@ -69,8 +77,13 @@ relativedp <- args$relative_dp
 dproot <- as.numeric(args$dproot)
 
 intStartA <- as.integer(args$int_startA);
+intEndA <- as.integer(args$int_endA);
 intStartB <- as.integer(args$int_startB);
+intEndB <- as.integer(args$int_endB);
+
 interaction <- args$interaction;
+
+dotplots <- args$dotplots
 
 if (pps!="") {
     if (seqA=="" || seqB=="") {
@@ -115,17 +128,19 @@ plotBg=grey(0.975)
 ########################################
 ## source kinetics plotting and evaluation functions
 #
-source(paste(sep="/",bindir(),"kinetics_lib.R"))
+source((file.path(bindir(),"kinetics_lib.R")))
 ########################################
 
 ## setup graphics output
+
 numofplots=1;
+
 if (evalplot) {numofplots=numofplots+1;}
 if (pps!="") {numofplots=numofplots+1;}
 
 pdf(output,width=7*numofplots,height=7)
 
-par(mfrow=c(1,numofplots),mar=c(4.25,4.25,2,1))
+par(mfrow=c(1,numofplots),mar=c(4.25,4.25,2,2))
 
 
 ## get input table
@@ -167,17 +182,18 @@ if (evalplot) {
 }
 
 if (ppfile != "") {
-    time_interaction_probability_plot(input_tab,ppfile,niceidxs,seqA,nameA)
+    sink(paste(sep="",output,".txt"))
+    time_interaction_probability_plot(input_tab,ppfile,niceidxs,seqA,nameA,intStartA,intEndA)
+    sink()
 }
 
 ### optionally draw dot plots (for niceidxs)
-if (ppfile != "") {
+if (dotplots && ppfile != "") {
     par(mfrow=c(1,2))
 
-    ppdotplot(ppfile,niceidxs,niceweights,seqA,seqB,nameA,nameB,intStartA,intStartB,interaction)
+    ppdotplot(ppfile,niceidxs,niceweights,seqA,seqB,nameA,nameB,intStartA,intEndA,intStartB,intEndB)
     interaction_probability_plot(ppfile,niceidxs,niceweights,seqA,nameA)
 }
 
 ## close graphics output
 dev.off();
-

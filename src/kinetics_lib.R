@@ -115,21 +115,16 @@ evaluation_plot <- function(tab,info,instanceName) {
            inset=0.01)
 }
 
-ppdotplot <- function(ppfile,idxs,weights,seqA,seqB,nameA,nameB,intStartA,intStartB,interaction) {
+ppdotplot <- function(ppfile,idxs,weights,seqA,seqB,nameA,nameB,
+                      intStartA,intEndA,intStartB,intEndB) {
     lenA=nchar(seqA)
     lenB=nchar(seqB)
 
     intEndA=intStartA-1
     intEndB=intStartB-1
 
-    if (interaction != ""){
-        interact = unlist(strsplit(interaction,'&'));
-        intEndA=intStartA+nchar(interact[2])-1;
-        intEndB=intStartB+nchar(interact[1])-1;
-
-        cat("#regions ",intStartA,"-",intEndA,"; ",
-            intStartB,"-",intEndB,"; ",interact[1]," & ",interact[2],"\n");
-    }
+    #cat("#regions ",intStartA,"-",intEndA,"; ",
+    #    intStartB,"-",intEndB,"; ",interact[1]," & ",interact[2],"\n");
     
     ## iterate over lines of ppfile
     ##  + plot dot plot for each line
@@ -395,7 +390,7 @@ interaction_probability_plot <- function(ppfile,idxs,weights,seqA,nameA) {
 
 
 ## plot interaction probability of each position of RNA A vs. time
-time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
+time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA,intStartA,intEndA) {
     lenA=nchar(seqA)
     lenIdxs=length(niceidxs)
     
@@ -404,7 +399,7 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
 
     lines<-readLines(ppfile)
 
-    minxlim=time[1]; maxxlim=time[length(time)];
+    minxlim=time[1]; maxxlim=5e9; #time[length(time)];
     minylim=1; maxylim=lenA; ## put sequence A on y-axis!
     
     addxlim=0
@@ -424,12 +419,12 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
     box()
     axis(1)
     axis(2,at=c(1,seq(10,lenA,10)),cex.axis=0.6,las=2)  
-
+    
     ########################################
     ## collect conditional interaction probabilities for each state in matrix ips
 
     ips = matrix(0,nrow=length(idxs),ncol=lenA)
-    
+
     for (idxOfIdx in 1:length(idxs)) {
         
         idx=idxs[idxOfIdx]
@@ -459,14 +454,35 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
         }
     }
 
-    opal = c(rgb(1,1,1),brewer.pal(9,"YlOrRd"))
+    numColors=9
+    opal = c(rgb(1,1,1),brewer.pal(numColors,"YlOrRd"))
     pal = opal # adjustcolor(opal,alpha.f=0.2)
+
+    
+    ## vector of accumulated probabilities in interaction region (intStartA-intEndA)
+    ## for each time point
+    regionPs=c()
     
     ## ----------------------------------------
     ## for each time point compute mixture distribution
     ## and plot
+
+    ## collect points of color classes before plotting
+    ## (does only slightly speed up!)
+    ##
+    xs <- vector(mode="list",length=numColors)
+    ys <- vector(mode="list",length=numColors)
+    
+    plottime=c() ## times that occur in the plot    
+
     for (timeIdx in 1:length(time)) {
         theTime=time[timeIdx]
+
+        if (theTime>maxxlim) {break;}
+
+        plottime=c(plottime,theTime)
+        
+        regionP=0
         
         for (i in 1:lenA) {
             accp <- 0
@@ -474,15 +490,29 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
                 idx=idxs[idxOfIdx]
                 accp <- accp + ips[idxOfIdx,i] * kintab[timeIdx,idx+1]
             }
+            if (i>=intStartA && i<=intEndA)
+            regionP <- regionP + accp
+            
             p=accp^(1/dproot)
-            mycol=as.integer(p*9+1)
+            mycol=as.integer(p*numColors+1)
+            
             if (mycol>1) {
                 #print(c(theTime,i,p))
-                points(theTime,i,cex=1,pch=15,col=pal[mycol])
+                ## points(theTime,i,cex=1,pch=15,col=pal[mycol])
+                xs[[mycol]] <- c(xs[[mycol]],theTime)
+                ys[[mycol]] <- c(ys[[mycol]],i)
             }
         }
+        
+        regionPs=c(regionPs,regionP)
     }
 
+    for (col in 1:numColors) {
+        points(xs[[col]],ys[[col]],cex=0.75,pch=15,col=pal[col])
+    }
+    
+    axis(4,at=0:10/10*lenA,labels=rev(0:10/10)*(intEndA-intStartA+1),cex.axis=0.6,las=2)
+    lines(plottime,lenA - regionPs/(intEndA-intStartA+1)*lenA, lwd=3)
         
     ## for (i in seq(0,lenA,5)) {
     ##     lwd <- if (i%%10==0) 0.8 else 0.4
@@ -499,8 +529,12 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
     ## write sequence A (x-axis)
     for (i in minylim:maxylim) {
         c <- substr(seqA,i,i)
-        text(minxlim/1.4,i,c,adj=0.5,cex=0.25)
-        text(maxxlim*1.4,i,c,adj=0.5,cex=0.25)
+
+        col="black";
+        if (i>=intStartA && i <= intEndA) {col="red";}
+
+        text(minxlim/1.4,i,c,adj=0.5,cex=0.25,col=col)
+        text(maxxlim*1.4,i,c,adj=0.5,cex=0.25,col=col)
     }
 
     legend("left",
@@ -512,4 +546,18 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA) {
            bg=grey(0.9,0.8)
            )
     
+
+    ## ------------------------------------------------------------
+    ## print benchmark scores (for speed of blocking the given interaction region)
+    ##
+    idx=1
+    timePoints=c(1e7,5e7,1e8,5e8,1e9) ## sorted list of time points
+    for (timeIdx in 1:length(time)) {
+        theTime=time[timeIdx]
+        if ( theTime >= timePoints[idx] ) {
+            cat('#',timePoints[idx],regionPs[timeIdx],regionPs[timeIdx]/(intEndA-intStartA+1),'\n')
+            idx = idx+1
+            if (idx>length(timePoints)) {break;}
+        }
+    }
 }
