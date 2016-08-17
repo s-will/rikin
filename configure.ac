@@ -10,6 +10,7 @@ AC_CONFIG_AUX_DIR(config)
 
 AM_INIT_AUTOMAKE
 
+AC_CONFIG_MACRO_DIR([m4])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -68,11 +69,11 @@ fi
 
 
 # configure for use of LocARNA library
-PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.4 >= 1.8.7])
+PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.5 >= 1.8.11])
 
 CXXFLAGS="$LOCARNA_CFLAGS $CXXFLAGS"
 LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
-LIBS="-lLocARNA-1.4 $LIBS"
+LIBS="-lLocARNA-1.5 $LIBS"
 
 ## ========================================
 ## Vienna RNA
@@ -105,8 +106,12 @@ CXXFLAGS="$VRNA_CFLAGS $CXXFLAGS"
 
 ## ========================================
 ## zlib
-AC_CHECK_LIB([z],[main],[HAVE_ZLIB="yes"])
-LIBS="-lz $LIBS"
+# AX_CHECK_ZLIB
+if test "$HAVE_LIBZ" != "1" ; then
+   PKG_CHECK_MODULES([LIBZ],[zlib],[HAVE_LIBZ=1],[HAVE_LIBZ=0])
+   LDFLAGS="$LDFLAGS $LIBZ_LIBS"
+   CFLAGS="$CFLAGS $LIBZ_CFLAGS"
+fi
 
 # ------------------------------
 # handle open mp support
@@ -155,7 +160,7 @@ if test "$VRNANOTFOUND" = "1"; then
         DEPENDENCYNOTFOUND=1;
 fi
 
-if test "$HAVE_ZLIB" != "yes" ; then
+if test "$HAVE_LIBZ" != "1" ; then
         DEPENDENCYNOTFOUND=1;   
         AC_MSG_NOTICE()
         AC_MSG_NOTICE([Zlib is missing.])
