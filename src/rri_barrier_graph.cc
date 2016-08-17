@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <cmath>
 
 #include "pair_pfs.hh"
 #include "hybrid_ensemble_model.hh"
@@ -475,7 +476,7 @@ RRIBarrierGraph::create_gradient_walk(const HybEnsModel::StateDescription &state
 	    
 	    double neigh_energy=model_.energy(neigh_state);
 	    
-	    if (tE<min_transE && !isinf(neigh_energy)) {
+	    if (tE<min_transE && !std::isinf(neigh_energy)) {
 		min_transE = tE;
 		
 		gradient_state = neigh_state;
