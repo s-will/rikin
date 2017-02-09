@@ -69,11 +69,11 @@ fi
 
 
 # configure for use of LocARNA library
-PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.5 >= 1.8.11])
+PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.6 >= 1.9.1])
 
 CXXFLAGS="$LOCARNA_CFLAGS $CXXFLAGS"
 LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
-LIBS="-lLocARNA-1.5 $LIBS"
+LIBS="-lLocARNA-1.6 $LIBS"
 
 ## ========================================
 ## Vienna RNA
