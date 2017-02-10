@@ -255,13 +255,13 @@ HybEnsModel::HybEnsModel(std::string seqA,
 			 size_t region_endB,
 			 size_t span,
 			 size_t window,
-			 bool cond
+			 bool model_double_sites
 			 )
     : 
     seqA_(seqA),
     seqB_(seqB),
-    uppfA_(seqA,+1,maxsitesize,span,window,cond),
-    uppfB_(seqB,-1,maxsitesize,span,window,cond),
+    uppfA_(seqA,+1,maxsitesize,span,window,model_double_sites),
+    uppfB_(seqB,-1,maxsitesize,span,window,model_double_sites),
     hybrid_pf_(seqA,seqB,
 	      maxsitesize,
 	      maxsitesize_diff,

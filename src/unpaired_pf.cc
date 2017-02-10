@@ -16,14 +16,14 @@ UnpairedPF::UnpairedPF(const std::string &seq,
 		       size_t maxsitesize,
 		       size_t span,
 		       size_t window,
-		       bool cond) 
+		       bool model_double_sites) 
     : seq_(seq),
       //orientation_(orientation),
       RT_( (temperature+K0)*GASCONST/1000.0 ),
       maxsitesize_(maxsitesize),
       span_(span),
       window_(window),
-      cond_(cond)
+      model_double_sites_(model_double_sites)
 {
     assert(orientation==-1 || orientation==1);
     
@@ -31,11 +31,11 @@ UnpairedPF::UnpairedPF(const std::string &seq,
     
     // std::cout << "Create UnpairedPF from sequence "<<seq<<" ("<<seq_.length()<<")"<<std::endl;
     computeSingleProbs();
-    if (cond_) { computeCondProbs(); }
+    if (model_double_sites_) { computeCondProbs(); }
     
     if  (orientation==-1) {
 	revert_single_probs();
-	if (cond_) { revert_cond_probs(); }
+	if (model_double_sites_) { revert_cond_probs(); }
     }
 }
 
@@ -92,7 +92,7 @@ UnpairedPF::unpaired_prob_conditional(size_t i, size_t j,size_t k, size_t l) con
     assert(j-i+1 <= maxsitesize_);
     assert(l-k+1 <= maxsitesize_);
     
-    if (cond_) {
+    if (model_double_sites_) {
 	return Pcond(k,l)(i,j);
     } else {
 	return Psingle(i,j);
