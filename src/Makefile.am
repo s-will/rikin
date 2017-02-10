@@ -2,7 +2,7 @@ SUBDIRS=Tests
 
 bin_PROGRAMS=rrikin_enum rrikin_barriers rrikin_prune test_moves
 
-bin_SCRIPTS=xrates.m kinetics.R
+bin_SCRIPTS=xrates.m kinetics.R kinetics_lib.R
 
 # base sources, common to all programs
 BASE_SRCS=hybrid_pf.cc hybrid_pf.hh unpaired_pf.cc unpaired_pf.hh	\

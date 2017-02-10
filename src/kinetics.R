@@ -40,7 +40,7 @@ parser$add_argument("--dproot", default="2",
 
 parser$add_argument("--evalplot", action="store_true", default=FALSE, help="draw evaluation plot [default: off]")
 
-parser$add_argument("--dotplots", action="store_true", default=FALSE, help="draw evaluation plot [default: off]")
+parser$add_argument("--dotplots", action="store_true", default=FALSE, help="draw dotplots [default: off]")
 
 parser$add_argument("input",nargs=1,help="input file [required]")
 
@@ -194,6 +194,3 @@ if (dotplots && ppfile != "") {
     ppdotplot(ppfile,niceidxs,niceweights,seqA,seqB,nameA,nameB,intStartA,intEndA,intStartB,intEndB)
     interaction_probability_plot(ppfile,niceidxs,niceweights,seqA,nameA)
 }
-
-## close graphics output
-dev.off();
