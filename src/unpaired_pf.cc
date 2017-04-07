@@ -7,7 +7,7 @@ extern "C" {
 #include "ViennaRNA/fold_vars.h"    
 #include <ViennaRNA/part_func.h>
 #include <ViennaRNA/utils.h>
-#include <LPfold.h>
+#include <ViennaRNA/LPfold.h>
 }
 
 
@@ -134,7 +134,12 @@ UnpairedPF::computeSingleProbs() {
 
 void
 UnpairedPF::computeProbsGeneric(LocARNA::Matrix<prob_t> &P, const char *structure) {
-    
+
+    if (structure != NULL) {
+        std::cerr << "computeProbsGeneric with structure constraints not implemented. EXIT." << std::endl;
+        std::exit(-1);
+    }
+
     int fold_constrained_before=fold_constrained;
     if (structure!=NULL) {fold_constrained=-1;}
     
@@ -160,7 +165,8 @@ UnpairedPF::computeProbsGeneric(LocARNA::Matrix<prob_t> &P, const char *structur
     pf_scale = 1;
     
     //! call libRNA
-    plist *pl = pfl_foldC(const_cast<char *>(sequence), structure, plfW, plfL, cutoff, pup, &dpp, NULL, NULL);
+    //plist *pl = pfl_foldC(const_cast<char *>(sequence), structure, plfW, plfL, cutoff, pup, &dpp, NULL, NULL);
+    plist *pl = pfl_fold(const_cast<char *>(sequence), plfW, plfL, cutoff, pup, &dpp, NULL, NULL);
     
     // copy result to matrix Psingle
     P.resize(seq_.length()+1,seq_.length()+1);
