@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <zlib.h>
+#include <math.h>
 
 /**
  * @brief Represent probabilities / partition functions of pairs for a set of states

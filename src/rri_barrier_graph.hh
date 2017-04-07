@@ -32,7 +32,7 @@ private:
 				     > state_hash_t;
     
     //! hybrid ensemble model
-    HybEnsModel model_;
+    const HybEnsModel &model_;
 
     //! maximum recover energy
     double max_recover_energy_;
@@ -85,19 +85,23 @@ public:
      * @param gradient whether to combine states into basins due to gradient walks
      * @param verbose turns on verbose output 
      * @param debug_out turns on debugging output 
+     *
+     * @todo consider interface change, such that the model is passed to the constructor! This
+     * avoids passing through of model specific parameters
      */
-    RRIBarrierGraph(const std::string &seqA, 
-		    const std::string &seqB,
+    RRIBarrierGraph(const HybEnsModel &model,
+                    //const std::string &seqA, 
+		    //const std::string &seqB,
 		    bool special_open_state,
-		    size_t maxsitesize,
-		    size_t maxsitesize_diff,
+		    //size_t maxsitesize,
+		    //size_t maxsitesize_diff,
 		    double max_recover_energy,
 		    size_t region_startA,
 		    size_t region_endA,
 		    size_t region_startB,
 		    size_t region_endB,
-		    size_t span,
-		    size_t window,
+		    //size_t span,
+		    //size_t window,
 		    bool consider_double_sites,
 		    bool gradient,
 		    bool verbose,

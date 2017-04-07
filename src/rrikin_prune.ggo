@@ -42,7 +42,7 @@ option "nameAB" - "Specify name of molecule AB in rxns/spcs (def=nameA+nameB)" s
 
 option "to-keep" - "Keep only the specified states (separate indices by comma)" int optional multiple
 
-option "only-first-component" - "If barrier graph is not connected, keep only first component [default=heuristically connect the components]"
+option "only-first-component" - "If barrier graph is not connected, keep only first component [default=heuristically connect the components]" optional
 
 option "verbose" - "Turn on verbose output" optional
 option "debug" - "Turn on debugging output" optional

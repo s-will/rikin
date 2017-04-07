@@ -175,7 +175,7 @@ main(int argc, char **argv)
 
 
     std::string seqA = args_info.inputs[0];
-    HybEnsModel::norm_RNA_seq(seqA);
+    HybEnsModel::normalize_RNA_sequence(seqA);
     std::string seqB = "";
     
     if (homodimer) {
@@ -186,9 +186,14 @@ main(int argc, char **argv)
 	HybEnsModel::complement(seqB);
     } else {
 	seqB = args_info.inputs[1];
-	HybEnsModel::norm_RNA_seq(seqB);
+	HybEnsModel::normalize_RNA_sequence(seqB);
     }
 
+    // @todo the maxsitesize is thrown away!!!
+    // since we use std::max(seqA.length(),seqB.length()) in the model construction.
+    // when did I change this?
+    // why ist this happening?
+    //    
     const size_t maxsitesize = 
     	(args_info.max_hyb_length_arg>=0)
     	? args_info.max_hyb_length_arg
@@ -231,24 +236,42 @@ main(int argc, char **argv)
     // global settings for Vienna libRNA
     dangles=2;
     
+    // ========================================
+    // Initialize the RRI barrier graph
+    //   in the process, this initializes the hybrid ensemble model
     if (verbose) {
 	std::cerr << "Initialize model." << std::endl;
     }
 
     stopwatch.start("initialize");
 
+    HybEnsModel model(seqA,
+                      seqB,
+                      std::max(seqA.length(),seqB.length()), // maxsitesize !!
+                      maxsitesize_diff,
+                      region_startA,
+                      region_endA,
+                      region_startB,
+                      region_endB,
+                      span,
+                      window,
+                      consider_double_sites);
+
+
     // construct barrier graph
-    RRIBarrierGraph bg(seqA,seqB,
+    RRIBarrierGraph bg(model,
+                       //seqA,
+                       //seqB,
 		       special_open_state,
-		       maxsitesize,
-		       maxsitesize_diff,
+		       //maxsitesize,
+		       //maxsitesize_diff,
 		       max_recover_energy,
 		       region_startA,
 		       region_endA,
 		       region_startB,
 		       region_endB,
-		       span,
-		       window,
+		       //span,
+		       //window,
 		       consider_double_sites,
 		       gradient,
 		       verbose,
@@ -260,6 +283,9 @@ main(int argc, char **argv)
 	bg.track_basins();
     }
 
+    // ========================================
+    // Construct the RRI barrier graph from reading the energy sorted states
+    //
     if (verbose) {
 	std::cerr << "Construct barrier graph." << std::endl;
     }
@@ -267,7 +293,8 @@ main(int argc, char **argv)
     stopwatch.start("construct");
     
     try {
-	std::ifstream in(inputfile.c_str(),std::ios::in); // | std::ios::binary
+        //! (@todo CHECK do we need '| std::ios::binary') if binary?
+	std::ifstream in(inputfile.c_str(),std::ios::in);
 	if (!in) {throw std::ifstream::failure("Cannot open file.");}
 	bg.read_states(in,binary);
 	in.close();

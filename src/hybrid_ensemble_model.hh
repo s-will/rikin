@@ -390,7 +390,7 @@ public:
      * @param seqA sequence A
      * @param seqB sequence B
      * @param maxsitesize maximum length of a unpaired site
-     * @param cond whether to model double sites
+     * @param model_double_sites whether to model double sites
      */
     HybEnsModel(std::string seqA, std::string seqB,
 		size_t maxsitesize,
@@ -401,7 +401,7 @@ public:
 		size_t region_endB,
 		size_t span,
 		size_t window,
-		bool cond
+		bool model_double_sites
 		);
     
     /** 
@@ -690,7 +690,7 @@ public:
     //! \brief in place normalization of RNA sequence (upcase, T->U)
     static
     void
-    norm_RNA_seq(std::string &s) {
+    normalize_RNA_sequence(std::string &s) {
 	std::transform(s.begin(),s.end(),s.begin(),toupper);
 	std::replace(s.begin(),s.end(),'T','U');
     }

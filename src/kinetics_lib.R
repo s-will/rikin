@@ -391,6 +391,8 @@ interaction_probability_plot <- function(ppfile,idxs,weights,seqA,nameA) {
 
 ## plot interaction probability of each position of RNA A vs. time
 time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA,intStartA,intEndA) {
+    maxTime = 5e11 ## maximum time in the plot
+
     lenA=nchar(seqA)
     lenIdxs=length(niceidxs)
     
@@ -399,7 +401,7 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA,intS
 
     lines<-readLines(ppfile)
 
-    minxlim=time[1]; maxxlim=5e9; #time[length(time)];
+    minxlim=time[1]; maxxlim=maxTime; #time[length(time)];
     minylim=1; maxylim=lenA; ## put sequence A on y-axis!
     
     addxlim=0
@@ -490,8 +492,9 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA,intS
                 idx=idxs[idxOfIdx]
                 accp <- accp + ips[idxOfIdx,i] * kintab[timeIdx,idx+1]
             }
-            if (i>=intStartA && i<=intEndA)
-            regionP <- regionP + accp
+            if (i>=intStartA && i<=intEndA) {
+                regionP <- regionP + accp
+            }
             
             p=accp^(1/dproot)
             mycol=as.integer(p*numColors+1)
@@ -507,6 +510,18 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA,intS
         regionPs=c(regionPs,regionP)
     }
 
+    ## -- compute regionP at convergence time
+    regionPconv <- 0
+    for (i in intStartA:intEndA) {
+      accp <- 0
+      for(idxOfIdx in 1:length(idxs)) {
+        idx=idxs[idxOfIdx]
+        accp <- accp + ips[idxOfIdx,i] * kintab[length(time),idx+1]
+      }
+      regionPconv <- regionPconv + accp
+    }
+    ## -- end
+    
     for (col in 1:numColors) {
         points(xs[[col]],ys[[col]],cex=0.75,pch=15,col=pal[col])
     }
@@ -550,14 +565,33 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA,intS
     ## ------------------------------------------------------------
     ## print benchmark scores (for speed of blocking the given interaction region)
     ##
+    timePoints=c(1e7,3.16e7,1e8,3.16e8,1e9,3.16e9,1e10,3.16e10,1e11) ## sorted list of time points
+    mainTimePoints=c(1e8,1e9,1e10,1e11)
+    
+    ## draw line in the plot, where measurement was taken
+    for (idx in 1:length(mainTimePoints)) {
+        abline( v=mainTimePoints[idx],lty=2,col=grey(0.5,0.5) )
+    }
+
     idx=1
-    timePoints=c(1e7,5e7,1e8,5e8,1e9) ## sorted list of time points
+    lastIdx=0
+    lastTimeIdx=1
     for (timeIdx in 1:length(time)) {
         theTime=time[timeIdx]
         if ( theTime >= timePoints[idx] ) {
-            cat('#',timePoints[idx],regionPs[timeIdx],regionPs[timeIdx]/(intEndA-intStartA+1),'\n')
+            cat('#',timePoints[idx],regionPs[timeIdx],
+                regionPs[timeIdx]/(intEndA-intStartA+1),regionPs[timeIdx]/regionPconv,'\n')
+            lastTimeIdx=timeIdx
+            lastIdx=idx
             idx = idx+1
             if (idx>length(timePoints)) {break;}
         }
+    }
+
+    ## print data for remaining times (assuming convergence at last calculated time point)
+    for (idx in (lastIdx+1):length(timePoints)) {
+        cat('#',timePoints[idx],regionPs[lastTimeIdx],
+            regionPs[lastTimeIdx]/(intEndA-intStartA+1),regionPs[lastTimeIdx]/regionPconv,'\n')
+        
     }
 }

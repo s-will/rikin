@@ -59,7 +59,7 @@ main(int argc, char **argv)
     }
     
     std::string seqA = args_info.inputs[0];
-    HybEnsModel::norm_RNA_seq(seqA);
+    HybEnsModel::normalize_RNA_sequence(seqA);
     std::string seqB = "";
     
     if (homodimer) {
@@ -70,7 +70,7 @@ main(int argc, char **argv)
 	HybEnsModel::complement(seqB);
     } else {
 	seqB = args_info.inputs[1];
-	HybEnsModel::norm_RNA_seq(seqB);
+	HybEnsModel::normalize_RNA_sequence(seqB);
     }
         
     // set some global variables for Vienna libRNA

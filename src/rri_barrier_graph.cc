@@ -14,33 +14,25 @@
 const bool RECOVER_MISSING_STATES=true;
 
 
-RRIBarrierGraph::RRIBarrierGraph(const std::string &seqA, 
-				 const std::string &seqB,
+RRIBarrierGraph::RRIBarrierGraph(const HybEnsModel &model,
+                                 //const std::string &seqA, 
+				 //const std::string &seqB,
 				 bool special_open_state,
-				 size_t maxsitesize,
-				 size_t maxsitesizediff,
+				 //size_t maxsitesize,
+				 //size_t maxsitesizediff,
 				 double max_recover_energy,
 				 size_t region_startA,
 				 size_t region_endA,
 				 size_t region_startB,
 				 size_t region_endB,
-				 size_t span,
-				 size_t window,
+				 //size_t span,
+				 //size_t window,
 				 bool consider_double_sites,
 				 bool gradient,
 				 bool verbose,
 				 bool debug_out)
     :BarrierGraph(special_open_state,verbose,debug_out),
-     model_(seqA,seqB,
-	    std::max(seqA.length(),seqB.length()),
-	    maxsitesizediff,
-	    region_startA,
-	    region_endA,
-	    region_startB,
-	    region_endB,
-	    span,
-	    window,
-	    consider_double_sites),
+     model_(model),
     max_recover_energy_(max_recover_energy),
     region_startA_(region_startA),
     region_endA_(region_endA),
@@ -536,7 +528,7 @@ RRIBarrierGraph::read_states(std::istream &in,
 	    std::cerr << "add open state " << open_state << std::endl;
 	}
 	
-	process_state(open_state, -4.1);
+	process_state(open_state, model_.energy(open_state));
 	
 	state_counter++;
     }
