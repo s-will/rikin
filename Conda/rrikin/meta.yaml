@@ -1,0 +1,30 @@
+package:
+  name: rrikin
+  version: "0.9.3"
+
+about:
+  license: GPL
+  license_file: COPYING
+  summary: RNA-RNA interaction kinetics
+
+build:
+  number: 0
+
+source:
+  fn: rrikin-0.9.3.tar.gz
+  url: "file:///home/will/Research/Projects/RRIkinetics/RRIKin/Releases/rrikin-0.9.3.tar.gz"
+  sha256: 85888997e34ab8143093bd1d3a7838fa9bcb198bd5ca1312d5cf743c9ea96d58
+
+requirements:
+  build: 
+    - viennarna ==2.3.5
+    - locarna ==1.9.2
+    - gcc
+  run: 
+    - viennarna ==2.3.5
+    - locarna ==1.9.2
+    - libgcc
+
+test:
+  commands:
+    rrikin_enum --help >/dev/null 2>&1
