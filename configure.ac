@@ -44,8 +44,8 @@ DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN(HybridPF, Doxyfile, doc)
 
 ########################################
-## turn on C++11
-CXXFLAGS="-std=c++11 $CXXFLAGS"
+## turn on C++14
+CXXFLAGS="-std=c++14 $CXXFLAGS"
 
 ##################
 ## Debug option
@@ -69,11 +69,13 @@ fi
 
 
 # configure for use of LocARNA library
-PKG_CHECK_MODULES([LOCARNA], [LocARNA-1.6 >= 1.9.1])
+PKG_CHECK_MODULES([LOCARNA], [LocARNA-2.0 >= 1.9.2])
+
+dnl set rpath for LocARNA lib directories (rather hackish by 'duplicating' -L entries)
+LOCARNA_LIBS=[`echo $LOCARNA_LIBS |sed 's/-L\([^ ]*\)/-L\1 -Wl,-rpath \1 /g'`]
 
 CXXFLAGS="$LOCARNA_CFLAGS $CXXFLAGS"
 LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
-LIBS="-lLocARNA-1.6 $LIBS"
 
 ## ========================================
 ## Vienna RNA
