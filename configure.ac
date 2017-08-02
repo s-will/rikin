@@ -75,7 +75,8 @@ dnl set rpath for LocARNA lib directories (rather hackish by 'duplicating' -L en
 LOCARNA_LIBS=[`echo $LOCARNA_LIBS |sed 's/-L\([^ ]*\)/-L\1 -Wl,-rpath \1 /g'`]
 
 CXXFLAGS="$LOCARNA_CFLAGS $CXXFLAGS"
-LDFLAGS="$LDFLAGS $LOCARNA_LIBS"
+LDFLAGS="$LDFLAGS"
+LIBS="$LIBS $LOCARNA_LIBS"
 
 ## ========================================
 ## Vienna RNA
