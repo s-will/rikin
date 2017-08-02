@@ -32,6 +32,8 @@ option "regionB" - "Restrict region for interaction <n> bases at head (>0) or ta
 
 option "span" - "Base pair span for local folding. Set this to turn on local folding." int default="-1" optional
 
+option "temperature" - "Folding temperature" double default="37.0" optional
+
 option "verbose" - "Turn on verbose output" optional
 
 text "\nInput sequences:\n"

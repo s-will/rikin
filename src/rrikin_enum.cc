@@ -74,7 +74,8 @@ main(int argc, char **argv)
     }
 
     // set some global variables for Vienna libRNA
-    dangles=2;
+    dangles     = 2;
+    temperature = args_info.temperature_arg;
 
     const double max_hyb_energy   = args_info.max_hyb_energy_arg;
     const double max_total_energy = args_info.max_total_energy_arg;

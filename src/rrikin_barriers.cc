@@ -59,7 +59,7 @@
  * k(a->b) = sum_x in a,y in b Pr[x|a]k(x->y) = Z^trans_ab / Z_a,
  * where Z^trans_ab = sum_x in a,y in b: Z^trans_xy.
  *
- * @note Although the model is degenerate, steepest descent walks are 
+ * @note Although the model is degenerate, steepest descent walks are
  * uniquely defined, since the order on moves is fixed
  *
  * @note Barriers/transition states between basins: the energy of the
@@ -119,19 +119,19 @@ main(int argc, char **argv)
     stopwatch.start("total");
 
     gengetopt_args_info args_info;
-    
+
     // get options (call gengetopt command line parser)
     if (cmdline_parser (argc, argv, &args_info) != 0)
 	exit(1);
-    
+
     bool homodimer=args_info.homodimer_given;
     bool antisense=args_info.antisense_given;
 
-    
+
     // names of molecules for rxns and spcs output
     std::string nameA = "A";
     std::string nameB = "B";
-        
+
     size_t expected_sequences=(homodimer||antisense)?1:2;
 
     if (homodimer && antisense) {
@@ -140,13 +140,13 @@ main(int argc, char **argv)
 	cmdline_parser_free(&args_info);
 	exit(1);
     }
-    
+
     if ( args_info.inputs_num != expected_sequences ) {
 	std::cerr << "Expect "<<expected_sequences<<" sequence(s) on command line."<<std::endl;
 	cmdline_parser_print_help();
 	cmdline_parser_free(&args_info);
 	exit(1);
-    }    
+    }
 
     bool binary         = args_info.binary_given;
     bool special_open_state = ! args_info.no_special_open_state_given;
@@ -170,14 +170,14 @@ main(int argc, char **argv)
 
     std::string track_ipps_file;
     if (args_info.track_ipps_given) { track_ipps_file = args_info.track_ipps_arg; }
-    
+
     double ipp_min_prob = args_info.ipp_min_prob_arg;
 
 
     std::string seqA = args_info.inputs[0];
     HybEnsModel::normalize_RNA_sequence(seqA);
     std::string seqB = "";
-    
+
     if (homodimer) {
 	seqB = seqA;
 	HybEnsModel::reverse(seqB);
@@ -193,19 +193,19 @@ main(int argc, char **argv)
     // since we use std::max(seqA.length(),seqB.length()) in the model construction.
     // when did I change this?
     // why ist this happening?
-    //    
-    const size_t maxsitesize = 
+    //
+    const size_t maxsitesize =
     	(args_info.max_hyb_length_arg>=0)
     	? args_info.max_hyb_length_arg
-    	: std::max(seqA.length(),seqB.length());    
+    	: std::max(seqA.length(),seqB.length());
 
-    const size_t maxsitesize_diff = 
+    const size_t maxsitesize_diff =
 	(args_info.max_hyb_length_diff_arg>=0)
 	? args_info.max_hyb_length_diff_arg
 	: std::max(seqA.length(),seqB.length());
 
     const double max_recover_energy=args_info.max_recover_energy_arg;
-    
+
     size_t region_startA=1;
     size_t region_endA=seqA.length();
     size_t region_startB=1;
@@ -214,12 +214,12 @@ main(int argc, char **argv)
     parse_region(args_info.regionA_arg,region_startA,region_endA);
     parse_region(args_info.regionB_arg,region_startB,region_endB);
 
-    const size_t span = 
+    const size_t span =
 	args_info.span_arg>=0
 	? args_info.span_arg
 	: std::numeric_limits<size_t>::max();
-    
-    const size_t window = 
+
+    const size_t window =
 	args_info.span_arg>=0
 	? args_info.span_arg*2
 	: std::numeric_limits<size_t>::max();
@@ -232,10 +232,11 @@ main(int argc, char **argv)
     // }
 
     cmdline_parser_free(&args_info);
-    
+
     // global settings for Vienna libRNA
-    dangles=2;
-    
+    dangles     = 2;
+    temperature = args_info.temperature_arg;
+
     // ========================================
     // Initialize the RRI barrier graph
     //   in the process, this initializes the hybrid ensemble model
@@ -276,7 +277,7 @@ main(int argc, char **argv)
 		       gradient,
 		       verbose,
 		       debug_out);
-    
+
     stopwatch.stop("initialize");
 
     if (track) {
@@ -289,9 +290,9 @@ main(int argc, char **argv)
     if (verbose) {
 	std::cerr << "Construct barrier graph." << std::endl;
     }
-    
+
     stopwatch.start("construct");
-    
+
     try {
         //! (@todo CHECK do we need '| std::ios::binary') if binary?
 	std::ifstream in(inputfile.c_str(),std::ios::in);
@@ -304,9 +305,9 @@ main(int argc, char **argv)
     }
 
     stopwatch.stop("construct");
-    
+
     size_t num_total_basins = bg.num_basins();
-    
+
 
     if (verbose) {
 	if (bg.model().is_homodimer()) {
@@ -315,7 +316,7 @@ main(int argc, char **argv)
 	std::cerr << "Generated "<<num_total_basins<<" basins." << std::endl;
 	bg.print_stats(std::cerr);
     }
-    
+
     //stopwatch.start("write");
     if (verbose) {
 	std::cerr<<"Write output to "<<outputfile<<std::endl;
