@@ -2,8 +2,8 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
-AC_INIT([RRIKin], [0.9.3], [])
+AC_PREREQ([2.71])
+AC_INIT([RRIKin],[0.9.4],[])
 
 # special dir for aux config files 
 AC_CONFIG_AUX_DIR(config)
@@ -16,10 +16,6 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AC_PROG_CC
 
-AC_LANG_CPLUSPLUS
-
-# Checks for header files.
-AC_HEADER_STDC
 
 ## for compiling modified ViennaRNA code
 if test "$GCC" = yes; then
@@ -53,10 +49,8 @@ CXXFLAGS="-std=c++14 $CXXFLAGS"
 AC_MSG_CHECKING([whether to build with debug information])
 debuger=no
 AC_ARG_ENABLE([debug],
-    AC_HELP_STRING(
-        [--enable-debug],
-        [enable debug data generation (def=no)]
-    ),
+    AS_HELP_STRING([--enable-debug],[enable debug data generation (def=no)
+    ]),
     debuger="$enableval"
 )
 AC_MSG_RESULT($debuger)
@@ -132,10 +126,8 @@ CXXFLAGS="$OPENMP_CXXFLAGS $CXXFLAGS"
 AC_MSG_CHECKING([whether to link statically])
 static_linkage=no
 AC_ARG_ENABLE([static],
-    AC_HELP_STRING(
-        [--enable-static],
-        [link statically (def=no)]
-    ),
+    AS_HELP_STRING([--enable-static],[link statically (def=no)
+    ]),
     static_linkage="$enableval"
 )
 AC_MSG_RESULT($static_linkage)

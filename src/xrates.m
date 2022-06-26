@@ -273,7 +273,6 @@ def_args = struct(
 		  "t0", 1e-1,
 		  "t8", 1e16,
 		  "tinc", 1.2,
-		  "binary", true,
 		  "mode", "expm",
 		  "p0", 2,
 		  "absorb", -1,
@@ -395,12 +394,13 @@ endif
 # Read and check pfs, preprocess
 
 if (!binary)
-   printf("Read text input from file %s\n",pffilename);
+  printf("Read text input from file %s\n",pffilename);
   pfs = load("-ascii",pffilename)
   dim=size(pfs,1);
 else
+  printf("Read binary input from file %s\n",pffilename);
   fh=fopen(pffilename);
-  dim = fread(fh,1,"unsigned long");
+  dim = fread(fh,1,"uint64");
   pfs = fread(fh,[dim,dim],"double");
   fclose(fh);
 endif
@@ -409,6 +409,7 @@ endif
 ## get basin pfs (from input pfs matrix)
 #
 basin_pfs = diag(pfs);
+
 
 ##############################
 ## symmetry check

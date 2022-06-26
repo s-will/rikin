@@ -287,8 +287,6 @@ void
 HybridPF::compute_hybrid_pf() { 
     initialize_hybrid_pf();
     
-    std::cerr << "HybridPF::compute_hybrid_pf "<<std::endl;
-	
     for (size_t i1=region_endA_; i1>=region_startA_; i1--) {
 	for (size_t i2=region_endB_; i2>=region_startB_; i2--) {
 	    //std::cerr << i1 <<" "<< i2 << "\r";
