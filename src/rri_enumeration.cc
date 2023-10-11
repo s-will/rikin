@@ -159,9 +159,6 @@ RRIEnumeration::enumerate_double_sites(bool in_memory,std::ostream &out) const {
     //  ---/        \-------/         \------------
     
     size_t count_double_states=0;
-
-    const std::string &seqA = model_.seqA();
-    const std::string &seqB = model_.seqB();
 	
     //cout << "Double Hybridizations:" << endl;
     for (size_t i1=model_.region_startA(); i1<=model_.region_endA(); i1++) {

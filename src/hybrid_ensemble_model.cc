@@ -327,6 +327,7 @@ HybEnsModel::energy(const StateDescription &sd) const {
 	return energy_unpair(sd[0],sd[1]) + energy_hybrid(sd[0]) + energy_hybrid(sd[1]);
     default:
 	assert(false);
+        return 0;
     }
 }
 

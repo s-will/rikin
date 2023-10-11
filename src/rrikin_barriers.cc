@@ -189,16 +189,6 @@ main(int argc, char **argv)
 	HybEnsModel::normalize_RNA_sequence(seqB);
     }
 
-    // @todo the maxsitesize is thrown away!!!
-    // since we use std::max(seqA.length(),seqB.length()) in the model construction.
-    // when did I change this?
-    // why ist this happening?
-    //
-    const size_t maxsitesize =
-    	(args_info.max_hyb_length_arg>=0)
-    	? args_info.max_hyb_length_arg
-    	: std::max(seqA.length(),seqB.length());
-
     const size_t maxsitesize_diff =
 	(args_info.max_hyb_length_diff_arg>=0)
 	? args_info.max_hyb_length_diff_arg

@@ -751,12 +751,11 @@ HybEnsModel::NewSiteMoveF::first() {
 HybEnsModel::energy_t
 HybEnsModel::NewSiteMoveF::transitionEnergy() const {
     const HybEnsModel &model=mi.model();
-    const StateDescription &o=mi.origin();
         
     energy_t E_loop =
 	model.energy_hybrid_loop(is.i1,is.i2,is.j1,is.j2);
     
-    assert (o.size()==0);
+    assert (mi.origin().size()==0);
     
     energy_t E_unp =
 	model.energy_unpair(is);
@@ -822,7 +821,7 @@ HybEnsModel::NewSiteMoveL::transitionEnergy() const {
     
     const HybEnsModel &model=mi.model();
     
-    const StateDescription::ISite &is_old=mi.origin()[0];
+    const StateDescription::ISite &is_old=o[0];
     
     energy_t E_loop =
 	model.energy_hybrid_loop(is.i1,is.i2,is.j1,is.j2);
@@ -884,7 +883,7 @@ HybEnsModel::NewSiteMoveR::transitionEnergy() const {
     
     const HybEnsModel &model=mi.model();
     
-    const StateDescription::ISite &is_old=mi.origin()[0];
+    const StateDescription::ISite &is_old=o[0];
     
     energy_t E_loop =
 	model.energy_hybrid_loop(is.i1,is.i2,is.j1,is.j2);
