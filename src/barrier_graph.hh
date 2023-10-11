@@ -262,6 +262,8 @@ public:
      * @param min_rate minimum rate; transitions with lower rate (in
      * both directions!) are removed during the merging
      *
+     * @note no specific order of states is assumed as precondition
+     *
      * @note ATTENTION: the min_rate criterion is applied during the
      * merging phase, where rates can still be increased due to
      * merging of larger states.  However merges from larger states
