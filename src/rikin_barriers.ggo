@@ -6,7 +6,7 @@ description "Reads energy-sorted list of states of RNA-RNA-interaction in the RR
 and combines them into basin macrostates. Furthermore, computes rates between macro-states. \
 States are modelled as equilibrated partitions of the whole interaction ensemble."
 
-args "-F rrikin_barriers_cmdline -u"
+args "-F rikin_barriers_cmdline -u"
 
 option "max-hyb-length" - "Maximum length hybridization site length to be precomputed" int default="-1" optional
 

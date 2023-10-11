@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 #
-# draw dot plots for all states in a rrikin (i)pp file
+# draw dot plots for all states in a rikin (i)pp file
 #
 
 args <- commandArgs(trailingOnly=T)

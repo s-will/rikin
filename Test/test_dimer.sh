@@ -49,15 +49,15 @@ function call_redirect {
     $* > $tgt
 }
 
-call_redirect $TFILE $RRIKDIR/_inst/bin/rrikin_enum $seqA $seqB --no-double --verbose $ENUM_OPTS $COMMON_OPTS
+call_redirect $TFILE $RRIKDIR/_inst/bin/rikin_enum $seqA $seqB --no-double --verbose $ENUM_OPTS $COMMON_OPTS
 
 LC_ALL=C sort -g -k1 $TFILE > $TFILE.s
 
-call $RRIKDIR/_inst/bin/rrikin_barriers $seqA $seqB -i $TFILE.s -o $TFILE.bg --track $TFILE.barriers_track.gz --no-double --verbose $COMMON_OPTS
+call $RRIKDIR/_inst/bin/rikin_barriers $seqA $seqB -i $TFILE.s -o $TFILE.bg --track $TFILE.barriers_track.gz --no-double --verbose $COMMON_OPTS
 
-# call_redirect $TFILE.out $RRIKDIR/_inst/bin/rrikin_prune $TFILE.bg --pffile $TFILE.pf  --min-rate 1e-10 --num-out 50 --num-pequ 100 --track $TFILE.prune_track.gz --verbose --barfile $TFILE.bar --ratesfile $TFILE.rates
+# call_redirect $TFILE.out $RRIKDIR/_inst/bin/rikin_prune $TFILE.bg --pffile $TFILE.pf  --min-rate 1e-10 --num-out 50 --num-pequ 100 --track $TFILE.prune_track.gz --verbose --barfile $TFILE.bar --ratesfile $TFILE.rates
 
-call_redirect $TFILE.out $RRIKDIR/_inst/bin/rrikin_prune $TFILE.bg --pffile $TFILE.pf  --min-rate 1e-7 --num-out 10 --num-pequ 60 --track $TFILE.prune_track.gz --verbose --barfile $TFILE.bar --ratesfile $TFILE.rates
+call_redirect $TFILE.out $RRIKDIR/_inst/bin/rikin_prune $TFILE.bg --pffile $TFILE.pf  --min-rate 1e-7 --num-out 10 --num-pequ 60 --track $TFILE.prune_track.gz --verbose --barfile $TFILE.bar --ratesfile $TFILE.rates
 
 
 tcall $RRIKDIR/_inst/bin/xrates.m $TFILE.pf --out $TFILE.kin --t8 1e15 --mfpts

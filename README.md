@@ -23,9 +23,13 @@ or alternatively conda
 
 ### Compilation/installation from the source repository
 
-After cloning the source repository, the tools can be compiled and installed as follows. We describe the installation in a conda environment (and get the dependencies from bioconda).
+The tools can be compiled and installed after cloning the source repository. This requires a build toolchain with C++ compiler and autotools. We describe the installation in a conda environment (and get further specific dependencies from bioconda).
 
-```mamba create -n rikin -c bioconda -c conda-forge viennarna locarna```
+```mamba create -n rikin -c bioconda -c conda-forge viennarna locarna
+
+./configure --prefix=$CONDA_PREFIX PKG_CONFIG_PATH=$CONDA_PREFIX/lib/pkgconfig
+
+```
 
 
 ## Usage

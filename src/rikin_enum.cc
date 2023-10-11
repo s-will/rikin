@@ -20,7 +20,7 @@ bool verbose;
 // #include <omp.h>
 // #endif
 
-#include "rrikin_enum_cmdline.h"
+#include "rikin_enum_cmdline.h"
 #include "rri_enumeration.hh"
 #include "hybrid_ensemble_model.hh"
 

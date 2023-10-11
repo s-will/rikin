@@ -1,7 +1,7 @@
 /**
- * @file rrikin_prune.cc
+ * @file rikin_prune.cc
  *
- * Defines main() of the program rrikin_prune
+ * Defines main() of the program rikin_prune
  */
 
 #include "basin_transition.hh"
@@ -36,7 +36,7 @@ bool consider_double_sites;
 // #include <omp.h>
 // #endif
 
-#include "rrikin_prune_cmdline.h"
+#include "rikin_prune_cmdline.h"
 
 int
 main(int argc, char **argv)

@@ -18,7 +18,7 @@ extern "C" {
 }
 
 /**
- * Enumeration of rrikin states: generate, write and read states
+ * Enumeration of rikin states: generate, write and read states
  *
  * @todo Implement storing of states in memory; read and write
  * methods; in memory sorting

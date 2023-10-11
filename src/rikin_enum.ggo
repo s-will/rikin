@@ -7,7 +7,7 @@ description "Enumerates states of RNA-RNA-interaction in the RRI hybrid ensemble
 States are modelled as equilibrated partitions of the whole interaction ensemble. \
 Supports states with single and double hybridization sites."
 
-args "-F rrikin_enum_cmdline -u"
+args "-F rikin_enum_cmdline -u"
 
 option "max-hyb-energy" - "Threshold for single hybridization site energy" double default="1e12" optional
 

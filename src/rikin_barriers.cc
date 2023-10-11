@@ -7,11 +7,11 @@
  */
 
 /**
- * @file rrikin_barriers.cc
+ * @file rikin_barriers.cc
  *
- * Defines main() of the program rrikin_barriers
+ * Defines main() of the program rikin_barriers
  *
- * rrikin_barriers constructs the barrier tree/graph and rate matrix for the
+ * rikin_barriers constructs the barrier tree/graph and rate matrix for the
  * macro state process that moves between gradient basins in the energy
  * landscape.
  *
@@ -109,7 +109,7 @@ bool consider_double_sites;
 // #include <omp.h>
 // #endif
 
-#include "rrikin_barriers_cmdline.h"
+#include "rikin_barriers_cmdline.h"
 
 
 int

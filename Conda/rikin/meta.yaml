@@ -1,0 +1,29 @@
+package:
+  name: rikin
+  version: "0.9.4"
+
+about:
+  license: GPL
+  license_file: COPYING
+  summary: RNA-RNA interaction kinetics
+
+build:
+  number: 0
+
+source:
+  url: "rikin-$(version)).tar.gz"
+  sha256: 
+
+requirements:
+  build: 
+    - viennarna
+    - locarna
+    - gcc
+  run: 
+    - viennarna
+    - locarna
+    - libgcc
+
+test:
+  commands:
+    rikin_enum --help >/dev/null 2>&1
