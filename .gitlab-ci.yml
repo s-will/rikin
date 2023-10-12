@@ -10,3 +10,4 @@ pages:
   artifacts:
     paths:
       - Doc/html
+  publish: Doc/html
