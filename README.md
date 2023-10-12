@@ -1,9 +1,10 @@
 # RIkin
 
-Rikin implements tools for the fast computation of detailed RNA-RNA interaction kinetics
+Rikin implements tools for the fast computation of RNA-RNA interaction kinetics
 in a detailed RNAup/Intarna-inspired interaction model.
 
 It features accurate modeling of RNA structures and interaction complexes based on their secondary structure and the full Turner nearest neighbor energy model.
+
 
 ## Example
 
@@ -24,6 +25,34 @@ for the most prominent states.
 
 ![](Doc/example.png)
 
+## Methods
+
+The prediction of RNA kinetics is computationally challenging, and
+the dynamics of RNA-RNA interaction is even substantially more demanding,
+due to the huge space of possible conformations.
+
+Rikin takes a series of measures to tackle the computational
+problems:
+
+* RNA interactions are studied at the level of secondary structure with
+  elementary step conformation changes (transitions).
+
+* Secondary structure interaction states are abstracted as RNAup/Intarna
+  like states that each represent an ensemble of interactions. The induced
+  transitions between these states are directly computed by efficient
+  algorithms. 
+
+* Sparsification techniques and constraints are applied to
+  further restrict the size of the computational problem in controlled ways.
+
+* The energy landscape of these states is further coarse-grained in two
+  steps: a fast discrete coarse graining is followed by a novel continuous
+  coarse-graining.
+
+* The Master Equation of the corresponding Markov process is solved by the
+  matrix exponentiation method of Padé.
+
+
 ## Installation
 
 ### Installation from Conda package
@@ -38,11 +67,15 @@ conda activate rikin
 
 Then, install by
 
-```mamba install -c bioconda rikin```
+```
+mamba install -c bioconda rikin
+```
 
 or alternatively conda
 
-```conda install -c bioconda rikin```
+```
+conda install -c bioconda rikin
+```
 
 Then, activate the environment 
 
@@ -61,7 +94,8 @@ Rscript -e "install.packages(c('argparse','shape','RColorBrewer'))"
 
 The tools can be compiled and installed after cloning the source repository. This requires a build toolchain with C++ compiler and autotools. We describe the installation in a conda environment (and get further specific dependencies from bioconda).
 
-```mamba create -n rikin -c bioconda -c conda-forge viennarna locarna r-base
+```
+mamba create -n rikin -c bioconda -c conda-forge viennarna locarna r-base
 
 conda activate rikin
 
@@ -81,7 +115,7 @@ RIkin computes kinetics of RNA-RNA interaction in several stages. The
 complete pipeline consists of the stages
 
 * state enumeration (rikin_enumerate)
-* sorting of states
+* sorting of states (sort)
 * first coarse graining (rikin_barriers)
 * second coarse graining (rikin_prune)
 * solving of the master equation (rikin_xrates.m)
@@ -106,3 +140,15 @@ All command line tools can be further configured and provide detailed help
 with options --help or -h.
 
 
+Related publications
+--------------------
+
+A manuscript describing RIkin is in preparation.
+
+
+Authors and Contacts
+--------------------
+
+* Rolf Backofen, University of Freiburg
+
+* Sebastian Will, École Polytechnique
