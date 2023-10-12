@@ -7,6 +7,22 @@ It features accurate modeling of RNA structures and interaction complexes based 
 
 ## Example
 
+Our methods studies the dynamics of the interaction of two RNAs, given as
+sequences, e.g.
+```
+CGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGACAGAUACUAGUUUCAAAACUUCCUUGACAGAACCAUUUCAUGUUCAAUAAUGAAAAUUACUUUCACAUGUUUUAGUGGAAAACGUACGUACGUAUCGUAGCGGUUGGACUUACGUAUAC 
+```
+and
+```
+GCUGCGAUGCAUGCCUCGAU 
+```
+
+Figure: Kinetics of RNAs can be analyzed and visualized in many ways. The
+most direct result of the analysis are predicted probabilities over time of
+single interaction states. These probability progressions can be visualized
+for the most prominent states.
+
+![](Doc/example.png)
 
 ## Installation
 
@@ -60,5 +76,33 @@ Finally, see above (installation from conda package) how to install the required
 
 
 ## Usage
+
+RIkin computes kinetics of RNA-RNA interaction in several stages. The
+complete pipeline consists of the stages
+
+* state enumeration (rikin_enumerate)
+* sorting of states
+* first coarse graining (rikin_barriers)
+* second coarse graining (rikin_prune)
+* solving of the master equation (rikin_xrates.m)
+* plotting (rikin_kinetics.R)
+
+We provide the script rikin_pipeline.sh to perform all these pipeline
+stages in coordination for a pair of given RNAs. 
+
+For example
+```
+rikin_pipeline.sh -j example \
+CGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGACAGAUACUAGUUUCAAAACUUCCUUGACAGAACCAUUUCAUGUUCAAUAAUGAAAAUUACUUUCACAUGUUUUAGUGGAAAACGUACGUACGUAUCGUAGCGGUUGGACUUACGUAUAC \
+GCUGCGAUGCAUGCCUCGAU \
+| tee example.out
+```
+predicts the kinetics of the interaction between the two given
+sequences using a set of default parameters. The results are written to
+subdirectory example and text output is redirected to example.out.
+In particular, we produce a plot of the dynamics of state probabities in example/example.pdf. This plot was already shown as example above.
+
+All command line tools can be further configured and provide detailed help
+with options --help or -h.
 
 
