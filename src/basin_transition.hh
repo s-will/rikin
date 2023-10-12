@@ -8,10 +8,7 @@
 /**
  * @brief A transition between two basins
  *
- * @note Use this class to store information (barrier, Z) for
- * transitions between two basins in the map of transitions stored in
- * each basin. In contrast, Basin::transition_t stores transitions
- * between (micro)states.
+ * Encapsulates the partition function of the transition state between two 'basins'
  */
 class BasinTransition {
     
@@ -32,14 +29,12 @@ public:
     {}
 
     /** 
-     * Update transition by partition function of additional transition
+     * Adds a term to the transition by partition function
      *
-     * @param Z_ partition functions
-     *
+     * @param Z additional term for partition function
      */
-    // obsolete note: does not correctly update the barrier
     void
-    update(double Z) {
+    add(double Z) {
 	Z_ += Z;
     }
 
@@ -47,7 +42,6 @@ public:
      * Multiply transition partition function
      *
      * @param f multiplication factor
-     *
      */
     void
     multiply(double f) {

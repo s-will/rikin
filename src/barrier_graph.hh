@@ -52,15 +52,19 @@ protected:
     bool debug_out_;
     
     /**
-     * @brief map of all transitions from one basin to other basins,
-     * keys=basin indices of source and target 
-     * 
-     * @note this matrix is
-     * symmetric, we maintain the equivalence of symmetric pairs
-     * transitions[i][j] and transitions[j][i].
+     * @brief state transitions (partition functions)
      *
-     * @note transitions[i][j] and transitions[j][i] are two different
-     * doubles! So, the symmetrty has to be maintained actively.
+     * Sparse data structure (map) of all transitions between basins.
+     * We use the state indices as keys 
+     * 
+     * @note This matrix is
+     * symmetric, we maintain the equivalence of symmetric pairs
+     * transitions_[i][j] and transitions_[j][i].
+     *
+     * @note transitions_[i][j] and transitions_[j][i] are two different
+     * objects! So, the symmetrty has to be maintained actively. For
+     * example, if we increase one of them, we need to increase the other
+     * one as well...
      */
     transitions_map_t transitions_;
 
@@ -216,6 +220,9 @@ public:
 private:
     /**
      * @brief Merge one basin into another
+     *
+     * This adds a fraction of x0's pf to y's pf;
+     * if track_pruning_, it keeps track of this partial merge.
      *
      * @param x0 target basin of merge
      * @param y  basin merged into target 

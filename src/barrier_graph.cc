@@ -101,22 +101,11 @@ BarrierGraph::multiply_transitions_from_to(int basin_idx,
         for(auto &x: transitions_[basin_idx]) {
             size_t j=x.first;
             
-            // std::cerr << "mult "
-            //      <<basin_idx<<" "<<j<<" "
-            //      << x.second.Z() <<" "
-            //      << transitions_[j][basin_idx].Z() << " ";
-            
             // multiply 'from' transition basin_idx -> j
             x.second.multiply(factor);
             
             // multiply 'to' transition j -> basin_idx
             transitions_[j][basin_idx].multiply(factor);
-            
-            // std::cerr
-            //     << x.second.Z() <<" "
-            //     << transitions_[j][basin_idx].Z() << " "
-            //      << std::endl;
-
         }
     }
 }
@@ -263,56 +252,76 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 	}
 	
 	// 2) distribute the partition function of the
-	//    transitions x0->y to transitions x->y between neighbors of x0 
+	//    transitions between x0 and its neighbors to transitions between neighbors of x0 
 	for (transitions_map_row_t::iterator it2=trs_x0.begin();
 	     trs_x0.end()!=it2; ++it2) {
 		    
 	    Basin &x = basins_[it2->first];
 	    if (x.merged()) continue;
 	    
-	    // handle both directions x->y and y->x in the same loop iteration
-	    // Thus, make sure that we don't see the pair (x,y) twice:
-	    if (x.idx()<=y.idx()) continue;
-	    
-	    assert(x0.idx()!=x.idx());
-	    //if (x0.idx()==x.idx()) continue;
+	    // make sure we see only one of the symmetric cases x,y and y,x
+            // note that we cover x==y !
+	    if (x.idx()<y.idx()) continue;
             
 	    // update the transition from x to y (via x0) and vice versa
 	    
 	    double Z_xx0 = transitions_[x.idx()][x0.idx()].Z();
-	    // Z_yx0 is known from above
 	    
 	    double fraction_xx0 = Z_xx0/total_out_x0;
 
+            double Z_x0x0 = transitions_[x0.idx()][x0.idx()].Z();
+
 	    if (debug_out_) {
 		std::cerr << "Transfer " << fraction_yx0*100 << "% of "
-			  << x.idx() <<"->"<< x0.idx() << " to " << x.idx() 
-			  << "->"<< y.idx()<<std::endl;
+			  << x.idx() <<"-"<< x0.idx() << " to " << x.idx() 
+			  << "-"<< y.idx()<<std::endl;
 		std::cerr << "Transfer " << fraction_xx0*100 << "% of "
-			  << y.idx() <<"->"<< x0.idx() << " to " << y.idx() 
-			  << "->"<< x.idx()<<std::endl;
+			  << y.idx() <<"-"<< x0.idx() << " to " << y.idx() 
+			  << "-"<< x.idx()<<std::endl;
+		std::cerr << "Transfer " << fraction_yx0*fraction_xx0*100 << "% of "
+			  << x0.idx() <<"-"<< x0.idx() << " to " << y.idx() 
+			  << "-"<< x.idx()<<std::endl;
 	    }
 	    
+            double Z_add_x = Z_xx0 * fraction_yx0;
+            double Z_add_y = Z_yx0 * fraction_xx0;
+            double Z_add_x0 = Z_x0x0 * fraction_yx0 * fraction_xx0;
+
 	    // HEURISITC SPARSIFICATION; IMPORTANT FOR EFFICIENCY:
-	    // update rate only if transition exists or the single
-	    // /increment/ is larger than min_rate (again
-	    // symmetrically).  Without this optimization, the pruning
-	    // produces a lot of additional very small transitions.
-	    if ( Z_xx0 * fraction_yx0 / x.Z()  > min_rate /* x->x0->y */
+	    // update transitions pf only if one of the
+	    // increments to the x,y transition
+            // corresponds to a rate larger than min_rate.
+            //
+            // Without this heuristic, the pruning procedure
+	    // produces a lot of very small transitions.
+	    if ( Z_add_x <= x.Z() * min_rate /* x->x0->y */
 		 ||
-		 Z_yx0 * fraction_xx0 / y.Z()  > min_rate /* y->x0->x */
-		 )  {
-	      	transitions_[x.idx()][y.idx()].update(Z_xx0 * fraction_yx0);
-	      	transitions_[y.idx()][x.idx()].update(Z_yx0 * fraction_xx0);
-	    } else {
-	    	if (debug_out_) {std::cerr << "Transition pf not updated."<<std::endl;}
-	    }
+		 Z_add_y <= y.Z() * min_rate /* y->x0->x */
+		 ||
+                 Z_add_x0 <= x0.Z() * min_rate /* x0-x0 */
+                 )  {
+	    	    if (debug_out_) {std::cerr << "Transition pf not updated."<<std::endl;}
+                    continue;
+                }
+            }
+	    
+            // Increase the transition pf between x and y due to dissolved
+            // basin x0
+
+            
+            // contribution from dissolved transition between x and x0
+            transitions_[x.idx()][y.idx()].add(Z_add_x);
+            // contribution from dissolved transition between y and x0
+	    transitions_[y.idx()][x.idx()].add(Z_add_y);
+            // contribution from dissolved self-transition of x0
+	    transitions_[y.idx()][x.idx()].add(Z_add_x0);
+
 	} // end for it2 (over neighbors of x0)
 		
     } // end for it (over neighbors of x0)
 
 	    
-        // finally, mark as merged
+    // finally, mark x0 as merged
     if (debug_out_) {
 	std::cerr << "Mark "<<x0.idx()<<" as merged."<<std::endl;
     }
@@ -325,7 +334,7 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 	 trs_x0.end()!=it; ++it) {
 	transitions_[it->first].erase(x0.idx());
     }
-    //   2) delete all transitions from x0 to other basins 
+    //   2) delete all transitions from x0 to other basins
     transitions_.erase(x0.idx());
     
 }

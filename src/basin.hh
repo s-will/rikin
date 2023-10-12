@@ -74,30 +74,47 @@ public:
 	Z_ += weight;
     }
     
+    /**
+     * @brief Adds a fraction of a second basin
+     *
+     * Accounts for pf and number of states
+     *
+     * @param x the other basin
+     * @param fraction the fraction of this basin
+     */
     void 
     merge_in(const Basin &x, double fraction) {
 	Z_      += x.Z_ * fraction;
 	states_ += x.states_ * fraction;
     }
 
+    /**
+     * @brief Get partition function
+     */
     double
     Z() const {
 	return Z_;
     }
     
+    /**
+     * @brief Test whether basin is flagged as merged
+     */
     bool
     merged() const {
 	return merged_;
     }
 
 
-    /** @brief mark as merged
+    /** @brief Mark as merged
      */
     void
     mark_merged() {
 	merged_ = true;
     }
     
+    /**
+     * @brief Get (fractional) number of states
+     */
     size_t
     number_of_states() const {
 	return states_; 

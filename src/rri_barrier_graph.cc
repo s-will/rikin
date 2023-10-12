@@ -599,7 +599,7 @@ RRIBarrierGraph::add_transition( const transition_t &tr ) {
 	transitions_[tr.source_basin_index][tr.target_basin_index] = 
 	    BasinTransition( model_.boltzmann_weight(tr.barrier_energy()));
     } else {
-	transitions_[tr.source_basin_index][tr.target_basin_index].update(model_.boltzmann_weight(tr.barrier_energy()));
+	transitions_[tr.source_basin_index][tr.target_basin_index].add(model_.boltzmann_weight(tr.barrier_energy()));
     }
 }
 
