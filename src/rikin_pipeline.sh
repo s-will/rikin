@@ -187,9 +187,9 @@ call rikin_barriers $SEQA $SEQB -i $FILENAME.s -o $FILENAME.bg --track $FILENAME
 call_redirect $FILENAME.out rikin_prune $FILENAME.bg --pffile $FILENAME.pf  --min-rate 1e-7 --num-out 10 --num-pequ 60 --track $FILENAME.prune_track.gz --verbose --barfile $FILENAME.bar --ratesfile $FILENAME.rates
 
 
-tcall xrates.m $FILENAME.pf --out $FILENAME.kin --t8 1e15 --mfpts
+tcall rikin_xrates.m $FILENAME.pf --out $FILENAME.kin --t8 1e15 --mfpts
 
-call kinetics.R $FILENAME.kin -o $FILENAME.pdf
+call rikin_kinetics.R $FILENAME.kin -o $FILENAME.pdf
 
 
 cat <<+++END_MESSAGE

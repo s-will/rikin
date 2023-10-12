@@ -128,7 +128,7 @@ plotBg=grey(0.975)
 ########################################
 ## source kinetics plotting and evaluation functions
 #
-source((file.path(bindir(),"kinetics_lib.R")))
+source((file.path(bindir(),"rikin_kinetics_lib.R")))
 ########################################
 
 ## setup graphics output
