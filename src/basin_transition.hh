@@ -1,6 +1,9 @@
 #ifndef BASIN_TRANSITION
 #define BASIN_TRANSITION
 
+//#undef NDEBUG
+
+#include <cassert>
 #include <unordered_map>
 #include <iostream>
 #include <vector>
@@ -91,10 +94,21 @@ public:
     erase_basin(size_t i) {
         // 1) go through neighbors and delete their transition to i
         auto &trs = neighbors(i);
+        if (trs.empty()) return;
+
         for (auto it=trs.begin(); trs.end()!=it; ++it) {
+            assert(transitions_.find(it->first) != transitions_.end());
+            assert(transitions_[it->first].find(i) != transitions_[it->first].end());
+            if (it->first==i) {
+                 // we cannot delete in list of i, since this invalidates the iterator!
+                 // but, we can just skip, since the entire list of i is erased
+                 // below.
+                 continue;
+            }
     	    transitions_[it->first].erase(i);
         }
         // 2) delete all transitions from i
+        assert(transitions_.find(i) != transitions_.end());
         transitions_.erase(i);
     }
 
@@ -194,6 +208,20 @@ public:
             }
         }
     }
+
+
+    void 
+    assert_consistency () {
+#ifndef NDEBUG
+        // check symmetry of data structure
+        for(auto it=transitions_.begin(); transitions_.end()!=it; ++it) {
+            for (auto it2=it->second.begin(); it->second.end()!=it2; ++it2) {
+                assert( it2->second == get(it2->first, it->first) );
+            }
+        }
+#endif
+    }
+
 
 private:
     transitions_map_t transitions_;

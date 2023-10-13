@@ -17,11 +17,7 @@ Run the Rikin pipeline
 USAGE: rikin_pipeline.sh [-h|--help] [--jobid jobname] [--config file] SEQA SEQB
 
 EXAMPLE CALL:
-rikin_pipeline.sh -j example \
-CGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGACAGAUACUAGUUUCAAAACUUCCUUGACAGAACCAUUUCAUGUUCAAUAAUGAAAAUUACUUUCACAUGUUUUAGUGGAAAACGUACGUACGUAUCGUAGCGGUUGGACUUACGUAUAC \
-GCUGCGAUGCAUGCCUCGAU \
-| tee example.out
-
+rikin_pipeline.sh -j example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC 2>&1 | tee example.out
 
 --jobid defines identifier for the job; it must be a valid file and directory name; output is written to files jobname/jobname*
 
@@ -187,10 +183,7 @@ LC_ALL=C sort -g -k1 $FILENAME > $FILENAME.s
 
 call rikin_barriers $SEQA $SEQB -i $FILENAME.s -o $FILENAME.bg --track $FILENAME.barriers_track.gz --no-double --verbose $COMMON_OPTS
 
-# call_redirect $FILENAME.out $RIKDIR/_inst/bin/rikin_prune $FILENAME.bg --pffile $FILENAME.pf  --min-rate 1e-10 --num-out 50 --num-pequ 100 --track $FILENAME.prune_track.gz --verbose --barfile $FILENAME.bar --ratesfile $FILENAME.rates
-
-call_redirect $FILENAME.out rikin_prune $FILENAME.bg --pffile $FILENAME.pf  --min-rate 1e-7 --num-out 10 --num-pequ 60 --track $FILENAME.prune_track.gz --verbose --barfile $FILENAME.bar --ratesfile $FILENAME.rates
-
+call_redirect $FILENAME.out rikin_prune $FILENAME.bg --pffile $FILENAME.pf  --min-rate 1e-7 --num-out 15 --num-pequ 15 --track $FILENAME.prune_track.gz --verbose --barfile $FILENAME.bar --ratesfile $FILENAME.rates
 
 tcall rikin_xrates.m $FILENAME.pf --out $FILENAME.kin --t8 1e15 --mfpts
 

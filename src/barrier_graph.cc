@@ -141,7 +141,7 @@ BarrierGraph::outflow_pf(const Basin &x) const {
 
     for (auto it=trs_x.begin(); trs_x.end()!=it; ++it) {
 	if (basins_[it->first].merged()) continue;
-	if (it->first==x.idx()) continue;
+	if (it->first==x.idx()) continue; // never include self transitions
 
 	total_out += it->second;
     }
@@ -154,15 +154,12 @@ BarrierGraph::max_outflow(const Basin &x) const {
 
     const auto &trs_x = transitions_.neighbors(x.idx());
 
-    for (auto it=trs_x.begin();
-	 trs_x.end()!=it; ++it) {
-
+    for (auto it=trs_x.begin(); trs_x.end()!=it; ++it) {
 	if (basins_[it->first].merged()) continue;
-	if (it->first==x.idx()) continue;
+	if (it->first==x.idx()) continue; // never include self transitions
 
 	max_outflow = std::max(max_outflow, it->second);
     }
-
     return max_outflow/x.Z();
 }
 
@@ -183,6 +180,8 @@ BarrierGraph::merge_in_basin(Basin &x0, Basin &y, double fraction) {
 void
 BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 
+    transitions_.assert_consistency();
+
     // compute total outflow
     double total_out_x0 = outflow_pf(x0);
 
@@ -196,19 +195,20 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 
 	// skip merged basins, and x0 itself
 	if (y.merged()) continue;
-	assert(x0.idx()!=y.idx());
-	//if (x0.idx()==y.idx()) continue;
+	if (x0.idx()==y.idx()) continue;
 
 	// 1) distribute the pf of x0 to its neighbors y
 	double Z_yx0 =  it->second; // transition pf between x0 and y
 	double fraction_yx0 = Z_yx0/total_out_x0; // fraction of the x0 outflow that flows to y
 
-	merge_in_basin(x0,y,fraction_yx0); // merge fraction of x0's pf into y's pf
+        if (x0.idx() != y.idx()) {
+	    merge_in_basin(x0,y,fraction_yx0); // merge fraction of x0's pf into y's pf
 
-	if (debug_out_) {
-	    std::cerr << "Transfer " << fraction_yx0*100 << "% of " << x0.idx()
-		      << "'s pf to " << y.idx()<<std::endl;
-	}
+	    if (debug_out_) {
+	        std::cerr << "STATE Transfer " << fraction_yx0*100 << "% of " << x0.idx()
+		          << "'s pf to " << y.idx()<<std::endl;
+	    }
+        }
 
 	// 2) distribute the partition function of the
 	//    transitions between x0 and its neighbors to transitions between neighbors of x0
@@ -216,6 +216,8 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 
 	    Basin &x = basins_[it2->first];
 	    if (x.merged()) continue;
+
+	    if (x0.idx()==y.idx()) continue;
 
 	    // make sure we see only one of the symmetric cases x,y and y,x
             // note that we cover x==y !
@@ -227,10 +229,17 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 
 	    double fraction_xx0 = Z_xx0/total_out_x0;
 
+
+            double Z_add_x = Z_xx0 * fraction_yx0;
+            double Z_add_y = Z_yx0 * fraction_xx0;
+            double Z_add_x0 = Z_x0x0 * fraction_yx0 * fraction_xx0;
+
+	    double Z_add = Z_add_x + Z_add_y + Z_add_x0;
+
 	    if (debug_out_) {
 		std::cerr << "Transfer " << fraction_yx0*100 << "% of "
-			  << x.idx() <<"-"<< x0.idx() << " to " << x.idx()
-			  << "-"<< y.idx()<<std::endl;
+			  << x.idx() <<"-"<< x0.idx() << " to " << y.idx()
+			  << "-"<< x.idx()<<std::endl;
 		std::cerr << "Transfer " << fraction_xx0*100 << "% of "
 			  << y.idx() <<"-"<< x0.idx() << " to " << y.idx()
 			  << "-"<< x.idx()<<std::endl;
@@ -238,12 +247,6 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 			  << x0.idx() <<"-"<< x0.idx() << " to " << y.idx()
 			  << "-"<< x.idx()<<std::endl;
 	    }
-
-            double Z_add_x = Z_xx0 * fraction_yx0;
-            double Z_add_y = Z_yx0 * fraction_xx0;
-            double Z_add_x0 = Z_x0x0 * fraction_yx0 * fraction_xx0;
-
-	    double Z_add = Z_add_x + Z_add_y + Z_add_x0;
 
             //double Z_xy = transitions_[x.idx()][y.idx()].Z();
 
@@ -254,7 +257,7 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
             // Without this heuristic, the pruning procedure
 	    // produces a lot of very small transitions.
 	    if ( transitions_.get(x.idx(), y.idx()) + Z_add < std::min(x.Z(),y.Z()) * min_rate )  {
-	    	if (debug_out_) {std::cerr << "Transition pf not updated."<<std::endl;}
+	    	if (debug_out_) {std::cerr << "Transition pf not updated due to sparsification"<<std::endl;}
                 continue;
             }
 

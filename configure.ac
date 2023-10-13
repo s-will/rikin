@@ -55,7 +55,7 @@ AC_ARG_ENABLE([debug],
 )
 AC_MSG_RESULT($debuger)
 if test x"$debuger" = x"yes"; then
-    AC_DEFINE([DEBUG], [], [Define to 1 for turning on debugging])
+    AC_DEFINE([DEBUG], [1], [Define to 1 for turning on debugging])
     CXXFLAGS="$CXXFLAGS -g -Wall"
 else
     AC_DEFINE([NDEBUG], [], [Define to 1 for turning off debugging])
