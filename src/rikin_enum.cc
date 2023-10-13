@@ -64,14 +64,14 @@ main(int argc, char **argv)
 
     if (homodimer) {
 	seqB = seqA;
-	HybEnsModel::reverse(seqB);
     } else if (antisense) {
 	seqB = seqA;
-	HybEnsModel::complement(seqB);
+	HybEnsModel::reverse_complement(seqB);
     } else {
 	seqB = args_info.inputs[1];
 	HybEnsModel::normalize_RNA_sequence(seqB);
     }
+
 
     // set some global variables for Vienna libRNA
     dangles     = 2;
@@ -89,13 +89,13 @@ main(int argc, char **argv)
 	? args_info.max_hyb_length_diff_arg
 	: std::max(seqA.length(),seqB.length());
 
-    size_t region_startA=1;
-    size_t region_endA=seqA.length();
-    size_t region_startB=1;
-    size_t region_endB=seqB.length();
+    size_t region_5_A=1;
+    size_t region_3_A=seqA.length();
+    size_t region_5_B=1;
+    size_t region_3_B=seqB.length();
 
-    parse_region(args_info.regionA_arg,region_startA,region_endA);
-    parse_region(args_info.regionB_arg,region_startB,region_endB);
+    parse_region(args_info.regionA_arg,region_5_A,region_3_A);
+    parse_region(args_info.regionB_arg,region_5_B,region_3_B);
 
     const size_t span =
 	args_info.span_arg>=0
@@ -118,17 +118,21 @@ main(int argc, char **argv)
 
     if (verbose) std::cerr << "Initialize model (precomputing energies for sequences of length "
 			   <<seqA.size()<<" and "<<seqB.size()
-			   << "; region A " << region_startA << "-" << region_endA
-			   << "; region B " << region_startB << "-" << region_endB
+			   << "; region A " << region_5_A << "-" << region_3_A
+			   << "; region B " << region_5_B << "-" << region_3_B
 			   <<")" << std::endl;
 
-    HybEnsModel model(seqA,seqB,
+    std::string seqBrev = seqB;
+    HybEnsModel::reverse(seqBrev);
+    
+    HybEnsModel model(seqA,
+                      seqBrev,
 		      maxsitesize,
 		      maxsitesize_diff,
-		      region_startA,
-		      region_endA,
-		      region_startB,
-		      region_endB,
+		      region_5_A,
+		      region_3_A,
+		      seqB.length()+1-region_3_B,
+		      seqB.length()+1-region_5_B,
 		      span,
 		      window,
 		      enum_double_sites);

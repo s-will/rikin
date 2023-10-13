@@ -387,8 +387,12 @@ public:
     /**
      * @brief construct from sequences
      *
-     * @param seqA sequence A
-     * @param seqB sequence B
+     * @param seqA sequence A in 5'->3'
+     * @param seqB sequence B in 3'->5'
+     * @param region_startA 5' end of region in A
+     * @param region_endA   3' end of region in A
+     * @param region_startA 3' end of region in B
+     * @param region_endA   5' end of region in B
      * @param maxsitesize maximum length of a unpaired site
      * @param model_double_sites whether to model double sites
      */

@@ -26,9 +26,9 @@ option "binary" - "Binary encoding of states in output" optional
 option "homodimer" - "Enumerate conformations of homodimer (only one sequence accepted)" optional
 option "antisense" - "Enumerate conformations of sense/antisense pair (only one sequence accepted)" optional
 
-option "regionA" - "Restrict region for interaction <n> bases at head (>0) or tail (<0) of sequence A; use i-j for region (0=no restriction)." string default="0" optional
+option "regionA" - "Restrict region for interaction <n> bases at 5' head (>0) or 3' tail (<0) of sequence A; use i-j for region (0=no restriction)." string default="0" optional
 
-option "regionB" - "Restrict region for interaction <n> bases at head (>0) or tail (<0) of sequence B; use i-j for region (0=no restriction)." string default="0" optional
+option "regionB" - "Restrict region for interaction <n> bases at 5' head (>0) or 3' tail (<0) of sequence B; use i-j for region (0=no restriction)." string default="0" optional
 
 option "span" - "Base pair span for local folding. Set this to turn on local folding." int default="-1" optional
 
@@ -37,5 +37,5 @@ option "temperature" - "Folding temperature" double default="37.0" optional
 option "verbose" - "Turn on verbose output" optional
 
 text "\nInput sequences:\n"
-text "  seq1 first sequence in forward orientation\n"
-text "  seq2 second sequence in reverse(!) orientation"
+text "  seq1 first sequence in 5'->3' orientation\n"
+text "  seq2 second sequence in 5'->3' orientation"

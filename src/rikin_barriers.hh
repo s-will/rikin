@@ -5,8 +5,6 @@
 #include  <string>
 #include <LocARNA/stopwatch.hh>
 
-#include <tr1/unordered_map>
-
 #include <limits>
 
 #include "hybrid_ensemble_model.hh"

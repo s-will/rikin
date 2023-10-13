@@ -2,7 +2,7 @@
 #define BASIN_PRUNING_INFO_HH
 
 #include <iosfwd>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <limits>
 
 //! Additional information about a basin
@@ -11,7 +11,7 @@ class BasinPruningInfo {
     
     size_t orig_index_;
     
-    typedef std::tr1::unordered_map<size_t,double> contributions_t;
+    typedef std::unordered_map<size_t,double> contributions_t;
     typedef contributions_t::const_iterator const_iterator;
 
     //! contributions from this and other basins

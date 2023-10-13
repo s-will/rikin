@@ -26,10 +26,10 @@ class RRIBarrierGraph: public BarrierGraph {
     
 private:
     //! type of state hash, key=encoded state, value=index of assigned basin
-    typedef std::tr1::unordered_map< code_t,
-				     size_t,
-				     HybEnsModel::StateDescription::code_t_hash
-				     > state_hash_t;
+    typedef std::unordered_map< code_t,
+        size_t,
+	HybEnsModel::StateDescription::code_t_hash
+	> state_hash_t;
     
     //! hybrid ensemble model
     const HybEnsModel &model_;
@@ -70,17 +70,13 @@ public:
     /** 
      * @brief Construct and initialize (e.g. precompute energies)
      * 
-     * @param seqA sequence A
-     * @param seqB sequence B
      * @param special_open_state whether open state is treated as special state 
      * (that is never merged with other states)
-     * @param maxsitesize maximum size of a sequence in an interaction site
-     * @param maxsitesize_diff maximum size difference of sequences in an interaction site
      * @param max_recover_energy maximum energy, where neighbors of a state are still recovered
-     * @param region_start smallest left end of interaction site
-     * @param region_end largest right end of interaction site
-     * @param span base pair span for local folding
-     * @param window window size for local folding
+     * @param region_startA 5' end of region in A
+     * @param region_endA   3' end of region in A
+     * @param region_startA 3' end of region in B
+     * @param region_endA   5' end of region in B
      * @param consider_double_sites whether double interaction sites are allowed
      * @param gradient whether to combine states into basins due to gradient walks
      * @param verbose turns on verbose output 
@@ -90,18 +86,12 @@ public:
      * avoids passing through of model specific parameters
      */
     RRIBarrierGraph(const HybEnsModel &model,
-                    //const std::string &seqA, 
-		    //const std::string &seqB,
 		    bool special_open_state,
-		    //size_t maxsitesize,
-		    //size_t maxsitesize_diff,
 		    double max_recover_energy,
 		    size_t region_startA,
 		    size_t region_endA,
 		    size_t region_startB,
 		    size_t region_endB,
-		    //size_t span,
-		    //size_t window,
 		    bool consider_double_sites,
 		    bool gradient,
 		    bool verbose,
