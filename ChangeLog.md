@@ -5,6 +5,7 @@ ChangeLog
 0.9.4 (Oct, 2023)
 -----------------
 * Update continuous coarse graining
+* Refactorize code for basin transitions in pruning
 * Add rikin_pipeline script
 * Rename tool to RIkin
 * Doxygen awesome style for generated documentation
