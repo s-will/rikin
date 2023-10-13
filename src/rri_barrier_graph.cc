@@ -268,14 +268,7 @@ RRIBarrierGraph::register_transitions(size_t source_basin_index,
 			  << it->barrier_energy() << " "
 			  << std::endl;
 	
-
-	    // note: each transition between source and target is
-	    // registered only once, namely when the source index is
-	    // larger, therefore we add transitions in both directions
-	    // (finally, this produces a symmetric matrix <transitions>
-	    add_transition(*it);
-	    add_transition(it->reverse());
-	    
+	    add_transition(*it); // note: this keeps symmetry
 	}
     } // end iterate trans
 }
@@ -594,13 +587,8 @@ void
 RRIBarrierGraph::add_transition( const transition_t &tr ) {
     // add transition to partition function for the transition
     // between the source and target basin
-    if (transitions_[tr.source_basin_index].find(tr.target_basin_index)
-	== transitions_[tr.source_basin_index].end()) {
-	transitions_[tr.source_basin_index][tr.target_basin_index] = 
-	    BasinTransition( model_.boltzmann_weight(tr.barrier_energy()));
-    } else {
-	transitions_[tr.source_basin_index][tr.target_basin_index].add(model_.boltzmann_weight(tr.barrier_energy()));
-    }
+
+    transitions_.add(tr.source_basin_index, tr.target_basin_index, model_.boltzmann_weight(tr.barrier_energy()));
 }
 
 

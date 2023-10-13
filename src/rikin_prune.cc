@@ -337,12 +337,6 @@ main(int argc, char **argv)
 	      << std::endl;
     bg.print_barrier_graph(std::cout);
 
-
-	    
-    double max_diff = bg.check_rates();
-    if (max_diff > 1e-12) {
-	std::cerr << "WARNING: maximal deviation from detailed balance:"<<max_diff<<std::endl;
-    }
     
     if (barfile != "") {
     	if (verbose) {

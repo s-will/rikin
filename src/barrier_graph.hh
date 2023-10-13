@@ -16,7 +16,7 @@
 
 /**
  * @brief Graph of basins and barriers
- * 
+ *
  * Basins and barriers are characterized by their respective partition
  * functions.  Supports merge of basins by distributing merged basins
  * to their neighbors proportionally to the flow into each neighbor
@@ -24,25 +24,13 @@
  */
 class BarrierGraph
 {
-    
-protected:
 
-    //! a row of a transition map "matrix"
-    typedef 
-    std::tr1::unordered_map<size_t,BasinTransition> 
-    transitions_map_row_t;
-    
-    //! map from basin indices to basin transition define as map of
-    //! maps, such that we can iterate over first index (equivalently,
-    //! second index, in the case of a symmetric matrix; see below!)
-    typedef
-    std::tr1::unordered_map<size_t,transitions_map_row_t>
-    transitions_map_t;
+protected:
 
     //! whether first state is special or treated like all other input
     //! states.  This is used to keep the open state basin.
     bool special_first_state_;
-    
+
     /* control output */
 
     //! verbose output
@@ -50,23 +38,14 @@ protected:
 
     //! debugging output
     bool debug_out_;
-    
+
     /**
      * @brief state transitions (partition functions)
      *
      * Sparse data structure (map) of all transitions between basins.
-     * We use the state indices as keys 
-     * 
-     * @note This matrix is
-     * symmetric, we maintain the equivalence of symmetric pairs
-     * transitions_[i][j] and transitions_[j][i].
-     *
-     * @note transitions_[i][j] and transitions_[j][i] are two different
-     * objects! So, the symmetrty has to be maintained actively. For
-     * example, if we increase one of them, we need to increase the other
-     * one as well...
+     * We use the state indices as keys
      */
-    transitions_map_t transitions_;
+    BasinTransitions transitions_;
 
     //! vector storing basins of all local minima
     std::vector<Basin> basins_; // 0-based, note: also basin indices are 0-based
@@ -76,15 +55,15 @@ protected:
 
     //! number of input states
     size_t num_input_states_;
-    
+
     //! minimum contribution that is recorded in pruning info
     double min_contribution_;
-    
+
     typedef std::vector<BasinPruningInfo> basin_pruning_infos_t;
 
     //! vector of basin pruning information
-    basin_pruning_infos_t basin_pruning_infos_; 
-    
+    basin_pruning_infos_t basin_pruning_infos_;
+
     //! count removed transitions due to transition rate filter (only
     //! for statisistics)
     size_t
@@ -94,7 +73,7 @@ protected:
     //! for statisistics)
     size_t
     considered_transitions_;
-    
+
     /**
      * @brief append new basin to basin list
      */
@@ -102,9 +81,9 @@ protected:
     push_back_basin(size_t index, double pf);
 
 
-        
+
 protected:
-    
+
     /**
      * @brief minimal constructor for derived classes
      *
@@ -116,7 +95,7 @@ protected:
 		  bool verbose,
 		  bool debug_out
 		  );
-    
+
 public:
 
     /**
@@ -141,7 +120,7 @@ public:
 		 bool debug_out,
 		 bool track_pruning
 		 );
-    
+
     /**
      * @brief modify transitions from and to state
      *
@@ -152,10 +131,10 @@ public:
      */
     void
     multiply_transitions_from_to(int basin_idx, double factor);
-    
+
     /**
      * @brief write barrier graph to stream in binary "pf" format
-     * 
+     *
      * @param out output stream
      * @param min_rate minimum rate (for sparse output)
      *
@@ -197,20 +176,20 @@ public:
     double
     max_outflow(const Basin &x) const;
 
-    /** 
-     * @brief compute partition function of all basins 
-     * 
-     * @return partition function 
+    /**
+     * @brief compute partition function of all basins
+     *
+     * @return partition function
      */
     double
     compute_Z() const;
-    
+
     //! compare basin indices by their associated pfs
     class compBasinIdxs {
 	const BarrierGraph &bg_;
     public:
 	compBasinIdxs(const BarrierGraph &bg): bg_(bg) {}
-	
+
 	bool
 	operator() (size_t a,size_t b) const {
 	    return bg_.basins_[a].Z() < bg_.basins_[b].Z();
@@ -225,22 +204,22 @@ private:
      * if track_pruning_, it keeps track of this partial merge.
      *
      * @param x0 target basin of merge
-     * @param y  basin merged into target 
+     * @param y  basin merged into target
      * @param fraction fraction to which y is merged into x0
      */
     void
     merge_in_basin(Basin &x0, Basin &y, double fraction);
-    
-    /** 
-     * @brief select basins to be merged bases on their outflow and minimum probability 
-     * 
+
+    /**
+     * @brief select basins to be merged bases on their outflow and minimum probability
+     *
      * @param x0 basin
      * @param max_outflow maximal outflow (sum of rates) where basin
      * is retained; otherwise it is distributed to its neighbors
      *
      * @param min_p_equ minimum equilibrium probability; basins with
      * lower probability are distributed to their neighbors
-     * 
+     *
      * @returns whether basin should be merged
      */
     bool
@@ -283,11 +262,11 @@ public:
      */
     void
     prune(double max_outflow, double min_p_equ, double min_rate);
-    
 
-    /** 
+
+    /**
      * Reduce the set of basins to those in keep set
-     * 
+     *
      * @param to_keep set of indices of basins to keep
      * @param min_rate minimal rate (for merging)
      *
@@ -295,7 +274,7 @@ public:
      */
     void
     reduce_basin_set(const std::set<size_t> &to_keep, double min_rate);
-    
+
 
     /**
      * @brief filter transitions of a single basin by minimum rate, also remove self-transitions
@@ -306,9 +285,9 @@ public:
     void
     filter_basin_transitions(const Basin &x0, double min_rate);
 
-    /** 
-     * @brief Print the list of all basins of the barriers graph 
-     * 
+    /**
+     * @brief Print the list of all basins of the barriers graph
+     *
      * Output is sorted by basin index
      *
      * @param out output stream
@@ -323,7 +302,7 @@ public:
        @brief print representation of barrier graph with weights of basins and transitions
        @param ostream output stream
     */
-    void 
+    void
     print_barrier_graph(std::ostream &out) const;
 
     /**
@@ -338,26 +317,18 @@ public:
     size_t
     num_transitions() const;
 
-    
+
     //! @brief destructor
     ~BarrierGraph() {
     }
 
     /** @brief print some statistics of the barrier graph
 	@param ostream output stream
-     */ 
+     */
     std::ostream &
     print_stats(std::ostream &out) const;
-        
-    /** 
-     * @brief check validity of rates
-     * @note assume there are no merged basins, e.g. after reindex()
-     * @returns maximum difference between Zs of transitions_[i][j] and transitions_[j][i] 
-     */ 
-    double
-    check_rates() const;
-    
-    /** 
+
+    /**
      * @brief determine connected components
      * @param[out] components mapping of each basin index to a (1-based) component index
      * @param[out] component_sizes  vector of component sizes (number of states)
@@ -370,9 +341,9 @@ public:
                          std::vector<double> &component_pfs
                          ) const;
 
-    /** 
+    /**
      * @brief keep only a single component
-     * @param c index of component to keep 
+     * @param c index of component to keep
      * @param components mapping of each basin index to its component index
      *
      * Removes all basins i where components[i]!=c
@@ -380,7 +351,7 @@ public:
     void
     keep_single_component(size_t c,const std::vector<size_t> &components);
 
-    /** 
+    /**
      * @brief heuristically connect the components
      * @param component_num number of components
      * @param components mapping of each basin index to its component index
@@ -396,44 +367,44 @@ public:
     connect_components(size_t component_num,
                        const std::vector<size_t> &components,
                        double rate);
-    
+
 private:
     bool
     write_treekin_ratesmatrix_row(std::ostream &out, size_t i) const;
 
 public:
-    
-    /** 
-     * @brief write treekin-compatible rates matrix to stream 
-     * 
-     * @param out output stream 
+
+    /**
+     * @brief write treekin-compatible rates matrix to stream
+     *
+     * @param out output stream
      */
     void
-    write_treekin_ratesmatrix(std::ostream &out) const;    
+    write_treekin_ratesmatrix(std::ostream &out) const;
 
-    /** 
-     * @brief write treekin-compatible rates matrix to stream 
-     * 
+    /**
+     * @brief write treekin-compatible rates matrix to stream
+     *
      * @param fh gz output file handle
      * @return fh, NULL on error
      */
     gzFile
     gzwrite_treekin_ratesmatrix(gzFile fh) const;
 
-    /** 
-     * @brief print partition functions of basins and transitions to stream 
-     * 
-     * Prints full matrix of transition pfs and sets diagonal to basin pfs 
+    /**
+     * @brief print partition functions of basins and transitions to stream
      *
-     * @param out output stream 
+     * Prints full matrix of transition pfs and sets diagonal to basin pfs
+     *
+     * @param out output stream
      * @param binary write binary data
      */
     void
     print_pfs(std::ostream &out,bool binary=false) const;
 
-    /** 
+    /**
      * @brief print reactions to stream
-     * 
+     *
      * Prints reactions in format 'rxns' (compatible to Stochastinator)
      *
      * @param out output stream
@@ -447,9 +418,9 @@ public:
 	       const std::string &nameB,
 	       const std::string &nameAB) const;
 
-    /** 
+    /**
      * @brief print species to stream
-     * 
+     *
      * Prints reactions in format 'spcs' (compatible to Stochastinator)
      *
      * @param out output stream
@@ -471,20 +442,20 @@ private:
      *
      * Overwrites information of the basin with index new_index.  If
      * pruning information is to be tracked, it is updated.
-     */    void 
+     */    void
     reindex_basin(Basin &x, size_t new_index);
-    
+
 
 public:
 
-    /** 
+    /**
      * Swap two basin indices
-     * 
+     *
      * @param x first index
      * @param y second index
      */
     void swap_indices(size_t x, size_t y);
-    
+
     /** @brief reindex basins, remove merged basins
      */
     void
@@ -497,10 +468,10 @@ public:
 
 
 
-    /** 
-     * @brief print treekin-compatible barriers list to stream 
-     * 
-     * @param out output stream 
+    /**
+     * @brief print treekin-compatible barriers list to stream
+     *
+     * @param out output stream
      */
     void
     print_treekin_barriers(std::ostream &out, std::string header, double RT) const;
@@ -509,70 +480,70 @@ public:
 private:
     /** @brief print a double suited as rate in the ratematrix file for treekin
      */
-    static 
+    static
     std::string
     format_rate_for_treekin(double x);
 
-    
-    /** 
+
+    /**
      * @brief determine outflow distribution
-     * 
+     *
      * @param outflows[out] vector of sorted outflows
      */
     void
-    outflow_distribution(std::vector<double> &outflows) const;    
-    
-    /** 
+    outflow_distribution(std::vector<double> &outflows) const;
+
+    /**
      * @brief determine equilibrium probability distribution
-     * 
+     *
      * @param pequs[out] vector of sorted p_equs
      */
     void
     pequ_distribution(std::vector<double> &pequs) const;
 
 public:
-    /** 
+    /**
      * @brief maximum outflow by quantile
-     * 
+     *
      * @param q quantile of basins to keep
-     * 
+     *
      * @return max outflow
      */
     double
     max_outflow_by_quantile(double q) const;
-    
-    /** 
+
+    /**
      * @brief maximum outflow by number
-     * 
+     *
      * @param n number of basins to keep
-     * 
+     *
      * @return max outflow
      */
     double
     max_outflow_by_number(size_t n) const;
-    
-    /** 
+
+    /**
      * @brief mimum p_equ by quantile
-     * 
+     *
      * @param q quantile of basins to keep
-     * 
+     *
      * @return min pequ
      */
     double
-    min_pequ_by_quantile(double q) const; 
-    
-    /** 
+    min_pequ_by_quantile(double q) const;
+
+    /**
      * @brief mimum p_equ by number
-     * 
+     *
      * @param q number of basins to keep
-     * 
+     *
      * @return min pequ
      */
     double
     min_pequ_by_number(size_t n) const;
-    
+
     /**
-     * @brief Write tracking information about pruning 
+     * @brief Write tracking information about pruning
      *
      * @param out output stream
      * @param sparse if true, write only non-null entries
@@ -586,9 +557,9 @@ public:
      */
     std::ostream &
     write_pruning_track(std::ostream &out, bool sparse) const;
-    
+
     /**
-     * @brief Write tracking information about pruning 
+     * @brief Write tracking information about pruning
      *
      * @param fh file handle to open gz file
      * @param sparse if true, write only non-null entries
@@ -597,15 +568,15 @@ public:
     gzFile
     gzwrite_pruning_track(gzFile fh, bool sparse) const;
 
-    
-    /** 
+
+    /**
      * @brief compute pps for pruning; single state
-     * 
+     *
      * @param ms_idx       macrostate index
      * @param ppfs         pair partition functions for all basins
      * @param[out] ms_Z    macrostate partition function
      * @param[out] ms_ppfs macrostate pair partition functions
-     * 
+     *
      * @return true, unless macrostate is merged
      */
     bool
@@ -613,7 +584,7 @@ public:
 			 const PairPfs &ppfs,
 			 double &ms_Z,
 			 LocARNA::SparseMatrix<double> &ms_ppfs) const;
-    
+
     /**
      * @brief Write interaction pair probability information
      *
@@ -624,10 +595,10 @@ public:
      *
      */
     std::ostream &
-    write_pruning_pps(std::ostream &out, 
+    write_pruning_pps(std::ostream &out,
 		      const PairPfs &ppfs,
 		      double min_prob) const;
-    
+
     /**
      * @brief Write compressed interaction pair probability information
      *
@@ -641,7 +612,7 @@ public:
     gzwrite_pruning_pps(gzFile fh,
 			const PairPfs &ppfs,
 			double min_prob) const;
-    
+
 };
 
 
