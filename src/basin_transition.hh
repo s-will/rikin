@@ -158,25 +158,26 @@ public:
             if (components[i] > 0) continue;
             c++;
 
-            stack.push(stack_entry(i,transitions_.find(i)->second.begin()));
+            stack.push(stack_entry(i,neighbors(i).begin()));
             components[i]=c;
             component_sizes.push_back(1);
             component_pfs.push_back(0);
 
             while (!stack.empty()) {
-               stack_entry &top = stack.top();
+                stack_entry &top = stack.top();
 
-               while (top.second != transitions_.find(top.first)->second.end()
+                while (top.second != neighbors(top.first).end()
            	   && components[top.second->first]>0) {
            	   top.second++;
                 }
-                if (top.second == transitions_.find(top.first)->second.end()) {
+
+                if (top.second == neighbors(top.first).end()) {
                     stack.pop();
                     continue;
                 }
 
                 size_t j=top.second->first;
-                stack.push(stack_entry(j,transitions_.find(j)->second.begin()));
+                stack.push(stack_entry(j,neighbors(j).begin()));
 
                 components[j]=c;
                 component_sizes[c-1]++;
@@ -210,7 +211,7 @@ public:
     }
 
 
-    void 
+    void
     assert_consistency () {
 #ifndef NDEBUG
         // check symmetry of data structure
