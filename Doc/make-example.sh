@@ -1,8 +1,8 @@
 #!/bin/bash
 
-rikin_pipeline.sh -j example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC | tee example.out
+rikin_pipeline.sh -o example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC 2>&1 | tee example.out
 
-convert example/example.pdf example.png
+convert example/kinetics.pdf example.png
 
 if [ ! -e html/Doc ] ; then mkdir html/Doc ; fi
 cp example.png html/Doc
