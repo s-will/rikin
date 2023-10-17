@@ -108,7 +108,7 @@ main(int argc, char **argv)
 	: std::numeric_limits<size_t>::max();
 
     verbose        = args_info.verbose_given;
-    bool enum_double_sites        = ! args_info.no_double_sites_given;
+    bool enum_double_sites        = args_info.double_sites_given;
     bool binary        = args_info.binary_given;
     bool add_open_state        = args_info.add_open_state_given;
 

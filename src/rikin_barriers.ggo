@@ -16,7 +16,7 @@ option "max-recover-energy" - "Recover states with smaller or equal energy; def=
 
 option "min-rate" - "Minimum transition rate; otherwise ignore (sparsifies edges)" double default="1e-12" optional
 
-option "no-double-sites" - "Don't consider double hybridization sites" optional
+option "double-sites" - "Include double hybridization site configurations" optional
 
 option "no-special-open-state" - "Treat open state like other states" optional
 

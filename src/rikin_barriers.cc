@@ -152,7 +152,7 @@ main(int argc, char **argv)
     bool special_open_state = ! args_info.no_special_open_state_given;
     bool gradient       = ! args_info.no_gradient_given;
 
-    consider_double_sites = ! args_info.no_double_sites_given;
+    consider_double_sites = args_info.double_sites_given;
 
     verbose             = args_info.verbose_given;
     debug_out           = args_info.debug_given;
