@@ -23,11 +23,13 @@ USAGE: rikin_pipeline.sh [-h|--help] [options] SEQA SEQB
 EXAMPLE CALL:
 rikin_pipeline.sh -j example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC 2>&1 | tee example.out
 
---outdir output directory
+-o,--outdir output directory
  
---config The given config file defines the pipeline configuration. It must be a valid bash file that is sourced such that it can define environment variables to control the pipeline. These comprise, COMMON_OPTS, ENUM_OPTS. The file is sourced after the global configuration file rikin_pipeline.cfg.
+-c,--config The given config file defines the pipeline configuration. It must be a valid bash file that is sourced such that it can define environment variables to control the pipeline. These comprise, COMMON_OPTS, ENUM_OPTS. The file is sourced after the global configuration file rikin_pipeline.cfg.
 
 --dryrun don't run commands and/or write files
+
+--reuse reuse existing partial results in the output directory
 
 SEQA, SEQB: RNA sequences as words over A,C,G,U
 ============================================================
@@ -57,7 +59,7 @@ SEQB_NAME=seqB
 # Parse arguments
 # ---------------
 
-VALID_ARGS=$(getopt -o hj:c:o: --long help,jobid:,configuration:,outdir:,dryrun,reuse -- "$@")
+VALID_ARGS=$(getopt -o hc:o: --long help,config:,outdir:,dryrun,reuse -- "$@")
 if [[ $? -ne 0 ]]; then
     echo "Argument parsing failed."
     usage
@@ -75,11 +77,7 @@ while [ : ]; do
         OUTDIR="$2"
         shift 2
         ;;
-    -j | --jobid)
-        JOBID="$2"
-        shift 2
-        ;;
-    -c | --configuration)
+    -c | --config)
         CONFIGURATION="$2"
         shift 2
         ;;
@@ -87,7 +85,6 @@ while [ : ]; do
         DRYRUN=true
         shift
         ;;
-
     --reuse)
         REUSE=true
         shift
@@ -96,13 +93,11 @@ while [ : ]; do
         shift;
         break
         ;;
-
     :)
       echo "Option requires an argument."
       usage
       exit 1
       ;;
-
     ?)
       echo -e "Invalid command option."
       usage
@@ -133,10 +128,9 @@ if [ ! -e "$OUTDIR" ] ; then
     mkdir "$OUTDIR"
 fi
 
-if [ "$CONFIGUATION" != "" ]; then
+if [ "$CONFIGURATION" != "" ]; then
     if [ -e "$CONFIGURATION" ]; then
-        . "$CONFIGURATION"
-        cp "$CONFIGURATION" "$JOBID"
+        cp "$CONFIGURATION" "$OUTDIR"
     else
         echo "ERROR: configuration file $CONFIGURATION does not exist."
         exit -1
@@ -151,12 +145,13 @@ fi
 GLOBAL_CONFIGURATION_FULL="$BINDIR/$GLOBAL_CONFIGURATION"
 if [ -e "$GLOBAL_CONFIGURATION_FULL" ] ; then
     . "$GLOBAL_CONFIGURATION_FULL"
+    cp "$GLOBAL_CONFIGURATION_FULL" "$OUTDIR" 
 else
     echo "WARNING: Cannot find global config at \"$GLOBAL_CONFIGURATION_FULL\"."
 fi
 
 # b) optional config
-if [ "$CONFIGUATION" != "" ]; then
+if [ "$CONFIGURATION" != "" ]; then
     . "$CONFIGURATION"
 fi
 
@@ -171,11 +166,9 @@ cat <<+++INPUT_SUMMARY
 RIkin Pipeline ver $VERSION
 
 Input:
-  Arguments: $*
-  Job ID:    $JOBID
-  SeqA:      $SEQA
-  SeqB:      $SEQB
-  Outdir:    $OUTDIR
+  SeqA:   $SEQA
+  SeqB:   $SEQB
+  Outdir: $OUTDIR
 
 Environment:
   Working dir: $(pwd)
