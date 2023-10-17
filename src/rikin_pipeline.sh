@@ -176,12 +176,12 @@ Environment:
   RIkin version $($BINDIR/rikin_enum --version)
 
 Options:
-  COMMON_OPTS="$COMMON_OPTS" (controls rikin_enum and rikin_barriers)
-  ENUM_OPTS="$ENUM_OPTS" (controls rikin_enum)
-  BARRIERS_OPTS="$BARRIERS_OPTS" (controls rikin_barriers)
-  PRUNE_OPTS="$PRUNE_OPTS" (controls rikin_prune)
-  XRATES_OPTS="$XRATES_OPTS" (conrols solving of master equation by rikin_xrates.m)
-  KINETICS_OPTS="$KINETICS_OPTS" (controls plotting by rikin_kinetics.R)
+  COMMON_OPTS="$COMMON_OPTS" #(controls rikin_enum and rikin_barriers)
+  ENUM_OPTS="$ENUM_OPTS" #(controls rikin_enum)
+  BARRIERS_OPTS="$BARRIERS_OPTS" #(controls rikin_barriers)
+  PRUNE_OPTS="$PRUNE_OPTS" #(controls rikin_prune)
+  XRATES_OPTS="$XRATES_OPTS" #(controls solving of master equation by rikin_xrates.m)
+  KINETICS_OPTS="$KINETICS_OPTS" #(controls plotting by rikin_kinetics.R)
 
 Start date:  $(date)
 ============================================================
