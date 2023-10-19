@@ -32,11 +32,11 @@ parser$add_argument("--nameB", default="",
 parser$add_argument("--restrict-dp", action="store_true", default=FALSE,
                     help="restrict dot plot to region of probabilities above threshold [default: off]")
 
-parser$add_argument("--relative-dp", action="store_true", default=FALSE,
+parser$add_argument("--absolute-dp", action="store_true", default=FALSE,
                     help="additionally weight dots by maximum probability of macrostate [default: off]")
 
-parser$add_argument("--dproot", default="2",
-                    help="transformation of probability to dot-size [default: 2 (circle area); e.g. use 3 for sphere volume]")
+parser$add_argument("--dproot", default="3",
+                    help="Dot radius is k-th root of probability. Default: 3")
 
 parser$add_argument("--evalplot", action="store_true", default=FALSE, help="draw evaluation plot [default: off]")
 
@@ -73,7 +73,7 @@ nameA     <- args$nameA
 nameB     <- args$nameB
 evalplot <- args$evalplot
 restrictdp <- args$restrict_dp
-relativedp <- args$relative_dp
+absolutedp <- args$absolute_dp
 dproot <- as.numeric(args$dproot)
 
 intStartA <- as.integer(args$int_startA);
@@ -168,7 +168,7 @@ title=paste(title,instanceName)
 
 niceidxs <- kinetics_plot(input_tab,title)
 
-if (relativedp) {
+if (! absolutedp) {
     niceweights <- c()
     for (i in 1:length(niceidxs)) {
         niceweights[i]=max(input_tab[[niceidxs[i]+1]])

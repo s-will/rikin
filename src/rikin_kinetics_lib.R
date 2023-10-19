@@ -394,7 +394,6 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA,intS
     maxTime = 5e11 ## maximum time in the plot
 
     lenA=nchar(seqA)
-    lenIdxs=length(niceidxs)
     
     time<-kintab[[1]] ## vector of time points in kinetics table
     statesnum <- length(kintab)-1 # number of states in kinetics table
@@ -498,9 +497,9 @@ time_interaction_probability_plot <- function(kintab,ppfile,idxs,seqA,nameA,intS
             
             p=accp^(1/dproot)
             mycol=as.integer(p*numColors+1)
-            
             if (mycol>1) {
-                #print(c(theTime,i,p))
+                if (mycol>numColors) {mycol=numColors;}
+                # print(c(theTime,i,p,mycol))
                 ## points(theTime,i,cex=1,pch=15,col=pal[mycol])
                 xs[[mycol]] <- c(xs[[mycol]],theTime)
                 ys[[mycol]] <- c(ys[[mycol]],i)
