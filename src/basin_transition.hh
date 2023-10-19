@@ -124,7 +124,9 @@ public:
     	        //remove transition
     	        removed_transitions++;
 
-                transitions_[it->first].erase(i);
+                if (it->first != i) {
+                    transitions_[it->first].erase(i);
+                }
                 it=trs.erase(it);
     	    } else {
     	        ++it;

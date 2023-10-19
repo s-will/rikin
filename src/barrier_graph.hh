@@ -12,7 +12,12 @@
 #include "basin.hh"
 #include "basin_pruning_info.hh"
 #include "basin_transition.hh"
-#include "pair_pfs.hh"
+
+class PairPfs;
+
+namespace LocARNA {
+template <class T> class SparseMatrix;
+}
 
 /**
  * @brief Graph of basins and barriers

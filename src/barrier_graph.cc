@@ -1,6 +1,3 @@
-#include "basin_transition.hh"
-#include "barrier_graph.hh"
-
 #include <iostream>
 #include <cstdio>
 #include <iomanip>
@@ -14,6 +11,10 @@
 #include <cassert>
 
 #include <zlib.h>
+
+#include "basin_transition.hh"
+#include "barrier_graph.hh"
+#include "pair_pfs.hh"
 
 BarrierGraph::BarrierGraph( bool special_first_state,
 			    bool verbose,
@@ -84,7 +85,9 @@ BarrierGraph::BarrierGraph(std::istream &in,
 	    in.read(reinterpret_cast<char *>(&tpf),sizeof(tpf));
 
 	    num_rates++;
-	    transitions_.set(i,j,tpf);
+	    if (i!=j) { // ignore any i==j pfs in the input
+                transitions_.set(i,j,tpf);
+            }
 	}
     }
 
@@ -217,7 +220,7 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 	    Basin &x = basins_[it2->first];
 	    if (x.merged()) continue;
 
-	    if (x0.idx()==y.idx()) continue;
+	    if (x0.idx()==x.idx()) continue;
 
 	    // make sure we see only one of the symmetric cases x,y and y,x
             // note that we cover x==y !
@@ -248,15 +251,13 @@ BarrierGraph::dissolve_basin(Basin &x0, double min_rate) {
 			  << "-"<< x.idx()<<std::endl;
 	    }
 
-            //double Z_xy = transitions_[x.idx()][y.idx()].Z();
-
 	    // HEURISITC SPARSIFICATION; IMPORTANT FOR EFFICIENCY:
 	    // update transitions pf only if it exceeds minrate in one of
             // the directions
 	    //
             // Without this heuristic, the pruning procedure
 	    // produces a lot of very small transitions.
-	    if ( transitions_.get(x.idx(), y.idx()) + Z_add < std::min(x.Z(),y.Z()) * min_rate )  {
+	    if ( (transitions_.get(x.idx(), y.idx()) + Z_add) / std::min(x.Z(),y.Z()) < min_rate )  {
 	    	if (debug_out_) {std::cerr << "Transition pf not updated due to sparsification"<<std::endl;}
                 continue;
             }
