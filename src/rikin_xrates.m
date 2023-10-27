@@ -663,7 +663,7 @@ while(time<endtime)
   
   diff=transpose(abs(pi-pi8))*ones(dim,1);
   #disp(diff)
-  if (diff(1,1) < 1e-3)
+  if (diff(1,1) < 5e-3)
     printf("Convergence at time %g.\n",time);
     break;
   endif
