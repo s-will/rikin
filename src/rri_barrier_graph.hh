@@ -71,7 +71,7 @@ public:
      * @brief Construct and initialize (e.g. precompute energies)
      * 
      * @param special_open_state whether open state is treated as special state 
-     * (that is never merged with other states)
+     * (that is never disolved into other states)
      * @param max_recover_energy maximum energy, where neighbors of a state are still recovered
      * @param region_startA 5' end of region in A
      * @param region_endA   3' end of region in A
