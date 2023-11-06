@@ -15,7 +15,7 @@ const bool RECOVER_MISSING_STATES=true;
 
 
 RRIBarrierGraph::RRIBarrierGraph(const HybEnsModel &model,
-                                 //const std::string &seqA, 
+                                 //const std::string &seqA,
 				 //const std::string &seqB,
 				 bool special_open_state,
 				 //size_t maxsitesize,
@@ -52,45 +52,45 @@ RRIBarrierGraph::track_basins() {
 
 std::ostream &
 RRIBarrierGraph::write_basin_track(std::ostream &out) const {
-    
+
     for (size_t i=0; i<basin_infos_.size(); i++) {
-	out << i 
+	out << i
 	    << "\t" << basins_[i].number_of_states()
 	    << "\t" << (-model_.RT()*log(basins_[i].Z()))
 	    << "\t" << basin_infos_[i]
 	    << '\n';
     }
-    
+
     return out;
 }
 
 gzFile
 RRIBarrierGraph::gzwrite_basin_track(gzFile fh) const {
-    
+
     for (size_t i=0; i<basin_infos_.size(); i++) {
 	std::stringstream out;
-	out << i 
+	out << i
 	    << "\t" << basins_[i].number_of_states()
 	    << "\t" << (-model_.RT()*log(basins_[i].Z()))
 	    << "\t" << basin_infos_[i]
 	    << '\n';
 	gzputs(fh,out.str().c_str());
     }
-    
+
     return fh;
 }
 
 std::ostream &
 RRIBarrierGraph::
-write_basin_ipps_single_basin(std::ostream &out, 
-			      double min_prob, 
+write_basin_ipps_single_basin(std::ostream &out,
+			      double min_prob,
 			      size_t basin_idx) const {
     BasinInfo::pf_matrix_t pfs;
     const BasinInfo &bi=basin_infos_[basin_idx];
     bi.interaction_pair_pfs(model_, pfs);
-    
+
     auto basin_pf = basins_[basin_idx].Z();
-        
+
     return PairPfs::write_state(out,
 				basin_idx,
 				basin_pf,
@@ -127,10 +127,10 @@ RRIBarrierGraph::process_move(const HybEnsModel::Move *move,
 			      std::vector<transition_t> &transitions
 			      ) {
     //std::cout << " move "; move->print(std::cout); std::cout<<std::endl;
-        
+
     HybEnsModel::StateDescription neigh_state=source_state;
     move->apply(neigh_state);
-    
+
     if (state_outside_region(neigh_state)) {
 	return false;
     }
@@ -139,39 +139,39 @@ RRIBarrierGraph::process_move(const HybEnsModel::Move *move,
     }
 
     energy_t transE=move->transitionEnergy(); // -- energy of transition state
-    
-    
+
+
     // encode neighbor and search neighbor code in hash
-    
+
     code_t neigh_code; // string for holding code
     neigh_state.encode(neigh_code);
-    
+
     state_hash_t::const_iterator it = state_hash_.find(neigh_code);
     if (state_hash_.end() != it) {
 	//found => belongs to basin of already seen local minimum
-	
+
 	// NOTE: in the transition from source_state to
 	// neigh_state, neigh_state has lower or equal energy
 	// than the source_state! The transition state has higher
 	// or equal energy than neigh_state (and possibly source_state)
-	
+
 	// NOTE: the following differs from the standard
 	// barriers algorithm, since there transition energies
 	// are sorted in the same order as target state
 	// energies
-	
+
 	size_t target_basin_index=it->second;
-	
+
 	// if transition energy to neigh_state is smaller than the former minimum
 	if ( transE < min_transition_energy ) {
 	    // record new minimal energy transition
 	    min_transition_energy = transE;
 	    min_transE_target_basin_index = target_basin_index;
 	}
-	
+
 	// compute energy of neighbor state
 	double neigh_energy = model_.energy(neigh_state);
-	
+
 	// record new transition.  In this way, we collect all
 	// transitions from the source state to energetically lower
 	// target states (recall: input states are sorted by energy).
@@ -183,7 +183,7 @@ RRIBarrierGraph::process_move(const HybEnsModel::Move *move,
 				     neigh_energy,
 				     transE)
 			);
-	
+
 	if (debug_out_) {
 	    std::cerr <<"\t"<< transitions[transitions.size()-1]
 		      << " by ";
@@ -195,10 +195,10 @@ RRIBarrierGraph::process_move(const HybEnsModel::Move *move,
     return true;
 }
 
-void 
+void
 RRIBarrierGraph::push_back_basin(size_t basin_index, const code_t &state_code,energy_t energy) {
     basins_.push_back( Basin(basin_index, model_.boltzmann_weight(energy)) );
-    
+
     if (track_basins_) {
 	basin_infos_.push_back( BasinInfo(state_code,energy) );
     }
@@ -206,7 +206,7 @@ RRIBarrierGraph::push_back_basin(size_t basin_index, const code_t &state_code,en
 
 void RRIBarrierGraph::add_state_to_basin(size_t basin_index, const code_t &state_code, energy_t energy) {
     basins_[basin_index].add_state(model_.boltzmann_weight(energy));
-    
+
     if (track_basins_) {
 	basin_infos_[basin_index].add_state(state_code,energy);
     }
@@ -221,11 +221,11 @@ RRIBarrierGraph::assign_to_basin(const HybEnsModel::StateDescription &state,
     if (debug_out_) std::cerr << "  Assign to basin "<<basin_index<<std::endl;
 
     code_t state_code = state.encode();
-    
+
     // assign basin index source_basin_index to source_state and register
     // source_state as new member of the basin
     state_hash_[state_code] = basin_index;
-    
+
     add_state_to_basin(basin_index, state_code, energy);
 }
 
@@ -234,40 +234,40 @@ RRIBarrierGraph::create_new_basin(const HybEnsModel::StateDescription &state,
 				  energy_t energy
 				  ) {
     size_t basin_index = basins_.size();
-    
+
     if (debug_out_) std::cerr << "  New basin "<<basin_index<<std::endl;
-    
+
     code_t state_code = state.encode();
-    
+
     // put state into hash
     state_hash_[state_code] = basin_index;
-    
+
     // generate new basin and put into object's basin list
     push_back_basin(basin_index, state_code, energy);
-    
+
     return basin_index;
 }
 
-void 
+void
 RRIBarrierGraph::register_transitions(size_t source_basin_index,
 				      std::vector<transition_t> &trans
 				      ) {
     // ----------------------------------------
     // Register all transitions from source_basin_index to other basins.
     //
-    for(std::vector<transition_t>::iterator it=trans.begin(); 
+    for(std::vector<transition_t>::iterator it=trans.begin();
 	trans.end()!=it; ++it) {
 	if (it->target_basin_index != source_basin_index) {
-		
+
 	    it->source_basin_index = source_basin_index;
-		
+
 	    if (debug_out_)
 		std::cerr << "add transition "<<source_basin_index<<" <-> "
 			  << it->target_basin_index << " "
 		    //<< it->transition_energy << " "
 			  << it->barrier_energy() << " "
 			  << std::endl;
-	
+
 	    add_transition(*it); // note: this keeps symmetry
 	}
     } // end iterate trans
@@ -276,28 +276,28 @@ RRIBarrierGraph::register_transitions(size_t source_basin_index,
 bool
 RRIBarrierGraph::state_outside_region(const HybEnsModel::StateDescription &state) const {
     return
-	(state.size()==1 && 
-	 (state[0].i1<region_startA_ 
+	(state.size()==1 &&
+	 (state[0].i1<region_startA_
 	  || state[0].j1>region_endA_
-	  || state[0].i2<region_startB_ 
+	  || state[0].i2<region_startB_
 	  || state[0].j2>region_endB_
 	  ))
 	||
-	(state.size()==2 && 
-	 (state[1].i1<region_startA_ 
+	(state.size()==2 &&
+	 (state[1].i1<region_startA_
 	  || state[1].j1>region_endA_
-	  || state[1].i2<region_startB_ 
+	  || state[1].i2<region_startB_
 	  || state[1].j2>region_endB_
 	  ));
-}   
+}
 
 void
-RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state, 
+RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state,
 			       double source_energy) {
-    
+
     // minimum transition state energy from source state source_state to a neighbor
     double min_transition_energy = std::numeric_limits<double>::infinity();
-	
+
     // index of the basin of the neighbor state with minimum transition energy
     size_t min_transE_neighbor_basin_index = std::numeric_limits<size_t>::max();
 
@@ -310,13 +310,13 @@ RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state
     //
     // Register all transitions from source_state to previously read neighbor states.
     // THIS IMPLIES that each transition between x and y is registered only once.
-    // 
-    // Keep track of neighbor state with smallest transition energy. 
+    //
+    // Keep track of neighbor state with smallest transition energy.
     //
     //
     HybEnsModel::MoveIterator mi(source_state,model_,consider_double_sites_);
     for (HybEnsModel::Move *move = mi.firstMove(); move != NULL; move = mi.nextMove(move)) {
-	
+
 	if(process_move(move,
 			source_state,
 			source_energy,
@@ -328,10 +328,10 @@ RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state
 	    moves_counter++;
 	}
     }
-    
+
     if (debug_out_) std::cerr << "  " << transitions.size() << " transitions, "
 			     << moves_counter << " moves" <<std::endl;
-    
+
 
     if (moves_counter==0) {
 	if (debug_out_) std::cerr << "Ignore frozen state " << source_state << "." << std::endl;
@@ -340,11 +340,11 @@ RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state
 
     // index of the basin of the source state
     size_t basin_index=std::numeric_limits<size_t>::max();
- 
-    // in case of homodimer check for symmetry, and assign to basin of previously found symmetric state 
+
+    // in case of homodimer check for symmetry, and assign to basin of previously found symmetric state
     if (model_.is_homodimer()) {
 	HybEnsModel::StateDescription symmetric_state = source_state.symmetric_state(model_.seqA().length());
-	
+
 	if (symmetric_state == source_state) {
 	    // if state is symmetric to itself, then do nothing
 	    if (debug_out_) {
@@ -363,21 +363,24 @@ RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state
 			      << model_.to_dotbracket(symmetric_state)
 			      <<" of basin "<<symmetric_state_it->second<<"."<<std::endl;
 		}
-		
+
 		basin_index = symmetric_state_it->second;
 		if (debug_out_) std::cerr << "  Assign to basin "<<basin_index<<std::endl;
 		state_hash_[source_state.encode()] = basin_index;
 		basins_[basin_index].add_state(model_.boltzmann_weight(source_energy));
+                if (track_basins_) {
+		    basin_infos_[basin_index].add_state(source_state.encode(), source_energy);
+                }
 	    }
 	}
     } // end special homodimer symmetry handling
-    
-    
+
+
     // assign basin
     if ( basin_index == std::numeric_limits<size_t>::max()) { //unless assigned by symm handling
-	
+
 	// assign source state to either new basin or the basin of its deepest neighor; the latter, if barrier<=0
-	
+
 	if ( !gradient_ || min_transition_energy > source_energy ) {
 	    // no transition state to an energetically lower target
 	    // state is energetically lower than the source state
@@ -385,11 +388,11 @@ RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state
 	    // Consequently, source_state is a new local minimum (among
 	    // the previously seen states)
 
-	    
+
 	    // with state recovery: check whether there is a gradient walk;
 	    // if yes, create missing states on walk
 	    // otherwise, create new basin
-	    if (RECOVER_MISSING_STATES 
+	    if (RECOVER_MISSING_STATES
 		&& !(special_first_state_ && source_state.size()==0)
 		&& source_energy <= max_recover_energy_
 		) {
@@ -401,12 +404,12 @@ RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state
 	    // source_state is not a local minimum but belongs to basin
 	    // min_transE_target_basin_index, which is the basin that is reached
 	    // with the lowest transition energy.
-	    
+
 	    assign_to_basin(source_state,source_energy,min_transE_neighbor_basin_index);
 	    basin_index = min_transE_neighbor_basin_index;
 	}
     }
-    
+
     // register the transitions from the source basin to other states in the hash
     register_transitions(basin_index,transitions);
 
@@ -415,35 +418,35 @@ RRIBarrierGraph::process_state(const HybEnsModel::StateDescription &source_state
 size_t
 RRIBarrierGraph::create_gradient_walk(const HybEnsModel::StateDescription &state,
 				      double energy) {
-    
-    if (debug_out_) 
+
+    if (debug_out_)
 	std::cerr << "Walk along from "<<state<<" "<<energy<<std::endl;
-    
+
     code_t state_code = state.encode();
     state_hash_t::const_iterator it = state_hash_.find(state_code);
 
     if (state_hash_.end() != it) {
 	// hey, surprise! the state is already hashed
 
-	if (debug_out_) 
+	if (debug_out_)
 	    std::cerr << "... hits the hash at "<<it->second<<" " << state << "."<<std::endl;
-	
+
 	// do nothing
 	return it->second;
     }
-    
+
     // ------------------------------------------------------------
     // Determine the minimum transition energy neighbor
     //
-    
+
     // minimum transition state energy from source state state to a neighbor
     double min_transE = std::numeric_limits<double>::infinity();
-    
+
     // index of the basin of the neighbor state with minimum transition energy
     HybEnsModel::StateDescription gradient_state;
     // ... and the energy of this state
     double gradient_state_energy = std::numeric_limits<double>::infinity();
-    
+
     size_t moves_counter=0;
 
     // Enumerate neighbors of state to get minimum transition
@@ -451,19 +454,19 @@ RRIBarrierGraph::create_gradient_walk(const HybEnsModel::StateDescription &state
     HybEnsModel::MoveIterator mi(state,model_,consider_double_sites_);
     for (HybEnsModel::Move *move = mi.firstMove(); move != NULL; move = mi.nextMove(move)) {
 	moves_counter++;
-	
+
         HybEnsModel::MoveIterator mi(state,model_,consider_double_sites_);
 	for (HybEnsModel::Move *move = mi.firstMove(); move != NULL; move = mi.nextMove(move)) {
 	    energy_t tE=move->transitionEnergy();
-	    
+
 	    HybEnsModel::StateDescription neigh_state = state;
 	    move->apply(neigh_state);
-	    
+
 	    double neigh_energy=model_.energy(neigh_state);
-	    
+
 	    if (tE<min_transE && !std::isinf(neigh_energy)) {
 		min_transE = tE;
-		
+
 		gradient_state = neigh_state;
 		gradient_state_energy = neigh_energy;
 	    }
@@ -473,26 +476,26 @@ RRIBarrierGraph::create_gradient_walk(const HybEnsModel::StateDescription &state
     if (debug_out_)  std::cerr << "... min tE: "<<min_transE-energy<<std::endl;
     //
     // ------------------------------------------------------------
-    
+
     size_t basin_index;
     if (min_transE >= energy) {
 	// the source state is a local minimum, create basin (and terminate)
-	
+
 	if (debug_out_)
 	    std::cerr << "... create new basin at "<<state<<": "<< energy <<std::endl;
-	
+
 	basin_index = create_new_basin(state,energy);
-	
+
     } else {
 	// there is a gradient neighbor, walk along to find the final basin index
-	
+
 	// recursive call
 	basin_index = create_gradient_walk(gradient_state,gradient_state_energy);
-	
+
 	basins_[basin_index].add_state(model_.boltzmann_weight(energy));
 	state_hash_[state_code] = basin_index;
     }
-    
+
     return basin_index;
 }
 
@@ -502,46 +505,46 @@ RRIBarrierGraph::read_states(std::istream &in,
 
     HybEnsModel::StateDescription source_state;
     double energy;
-        
+
     // counter for states that are read for construction of graph
     size_t state_counter;
 
     state_counter=0;
-    
+
     // use to check input
     double last_energy=-std::numeric_limits<double>::infinity();
     int lineno=1;
-    
+
     if (special_first_state_) {
-	// add the empty/open state first, to guarantee to create a new basin 
+	// add the empty/open state first, to guarantee to create a new basin
 
 	HybEnsModel::StateDescription open_state;
 
-	if (debug_out_) { 
+	if (debug_out_) {
 	    std::cerr << "add open state " << open_state << std::endl;
 	}
-	
+
 	process_state(open_state, model_.energy(open_state));
-	
+
 	state_counter++;
     }
-    
+
 
     while (RRIEnumeration::read_state(in,source_state,energy,lineno,binary)) {
-    	
+
 	if (not source_state.is_valid(model_)) {
 	    std::cerr << "ERROR: read state "<<source_state<<" at line "<<lineno<<" is not valid in model."<<std::endl;
 	    exit(-1);
 	}
-        
+
 	// recompute the source energy to avoid rounding errors
 	energy = model_.energy(source_state);
-	
+
 	/*	if (verbose_ && (state_counter%5000==0)) {
 	    std::cerr << "\r" << state_counter<< "    b:"<<basins_.size()<<"    h:"<<state_hash_.size()<<"        ";
 	    }*/
 	if (energy+1e-6 < last_energy) {
-	    std::cerr 
+	    std::cerr
 		<< "ERROR: input states have to be sorted by increasing energy (at line "
 		<<lineno<<": "<<energy<<"<"<<last_energy << " ).\n"
 		<< "       Ensure that input states are sorted.\n"
@@ -554,25 +557,25 @@ RRIBarrierGraph::read_states(std::istream &in,
 	    std::cerr << "read " << state_counter << " " << energy << " "
 		      << " "  << source_state << std::endl;
 	}
-	
+
 	if (special_first_state_ && source_state.size()==0) {
 	    // if (verbose_) {
 	    // 	std::cerr << std::endl << "Ignore open state in input." <<std::endl;
 	    // }
 	    continue;
 	}
-	
+
 	if (!consider_double_sites_ && source_state.size()==2) {
 	    if (debug_out_) {
 		std::cerr << "Ignore double site state " << source_state <<"."<<std::endl;
 	    }
 	    continue;
 	}
-	
+
 	process_state(source_state,energy);
-            
+
 	state_counter++;
-	
+
 	last_energy=energy;
 	lineno++;
     }
