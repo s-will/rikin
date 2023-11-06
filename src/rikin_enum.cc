@@ -110,7 +110,6 @@ main(int argc, char **argv)
     verbose        = args_info.verbose_given;
     bool enum_double_sites        = args_info.double_sites_given;
     bool binary        = args_info.binary_given;
-    bool add_open_state        = args_info.add_open_state_given;
 
     // ------------------------------------------------------------
     // enumerate states
@@ -124,7 +123,7 @@ main(int argc, char **argv)
 
     std::string seqBrev = seqB;
     HybEnsModel::reverse(seqBrev);
-    
+
     HybEnsModel model(seqA,
                       seqBrev,
 		      maxsitesize,
@@ -156,16 +155,14 @@ main(int argc, char **argv)
 
     // 0 interaction sites
 
-    if (add_open_state) {
-	HybEnsModel::StateDescription empty_state;
-	if (verbose) {
-	    std::cerr <<"Write open state"<<std::endl;
-	}
-	if (model.energy(empty_state) <= max_total_energy) {
-	    enumeration.write_state(std::cout,model.energy(empty_state),
-				    empty_state,
-				    binary);
-	}
+    HybEnsModel::StateDescription empty_state;
+    if (verbose) {
+        std::cerr <<"Write open state"<<std::endl;
+    }
+    if (model.energy(empty_state) <= max_total_energy) {
+        enumeration.write_state(std::cout,model.energy(empty_state),
+			    empty_state,
+			    binary);
     }
 
     // Indexing for single hybridization

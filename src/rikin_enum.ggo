@@ -19,8 +19,6 @@ option "max-hyb-length-diff" - "Maximum difference of lengths in hybridization s
 
 option "double-sites" - "Include double hybridization site configurations" optional
 
-option "add-open-state" - "Add the open state (without interaction)" optional
-
 option "binary" - "Binary encoding of states in output" optional
 
 option "homodimer" - "Enumerate conformations of homodimer (only one sequence accepted)" optional
