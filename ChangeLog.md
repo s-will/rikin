@@ -1,6 +1,8 @@
 ChangeLog
 =========
 
+* Add Python code for new kinetic plots (matplotlib/seaborn)
+* Update convergence criterion in xrates
 
 0.9.4 (Oct, 2023)
 -----------------
