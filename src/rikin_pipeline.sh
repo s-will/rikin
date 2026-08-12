@@ -21,7 +21,7 @@ Run the Rikin pipeline
 USAGE: rikin_pipeline.sh [-h|--help] [options] SEQA SEQB
 
 EXAMPLE CALL:
-rikin_pipeline.sh -j example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC 2>&1 | tee example.out
+rikin_pipeline.sh -o example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC 2>&1 | tee example.out
 
 -o,--outdir output directory
  

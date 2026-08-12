@@ -57,7 +57,7 @@ problems:
 
 ### Installation from Conda package
 
-We recommend to install from the conda package of rikin, using mamba.
+We recommend to install from the conda package of rikin.
 
 Possible create and activate an environment for rikin first:
 ```
@@ -68,34 +68,15 @@ conda activate rikin
 Then, install by
 
 ```
-mamba install -c bioconda rikin
-```
-
-or alternatively conda
-
-```
 conda install -c bioconda rikin
 ```
-
-Then, activate the environment 
-
-```
-conda activate rikin
-```
-
-and install required R pacakges
-
-```
-Rscript -e "install.packages(c('argparse','shape','RColorBrewer'))"
-```
-
 
 ### Compilation/installation from the source repository
 
 The tools can be compiled and installed after cloning the source repository. This requires a build toolchain with C++ compiler and autotools. We describe the installation in a conda environment (and get further specific dependencies from bioconda).
 
 ```
-mamba create -n rikin -c bioconda -c conda-forge viennarna locarna r-base
+conda create -n rikin -c bioconda -c conda-forge viennarna locarna
 
 conda activate rikin
 
@@ -106,7 +87,6 @@ make install
 
 ```
 
-Finally, see above (installation from conda package) how to install the required R packages.
 
 
 ## Usage
@@ -126,7 +106,7 @@ stages in coordination for a pair of given RNAs.
 
 For example
 ```
-rikin_pipeline.sh -j example \
+rikin_pipeline.sh -o example \
 CGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGACAGAUACUAGUUUCAAAACUUCCUUGACAGAACCAUUUCAUGUUCAAUAAUGAAAAUUACUUUCACAUGUUUUAGUGGAAAACGUACGUACGUAUCGUAGCGGUUGGACUUACGUAUAC \
 GCUGCGAUGCAUGCCUCGAU \
 | tee example.out
@@ -134,7 +114,9 @@ GCUGCGAUGCAUGCCUCGAU \
 predicts the kinetics of the interaction between the two given
 sequences using a set of default parameters. The results are written to
 subdirectory example and text output is redirected to example.out.
-In particular, we produce a plot of the dynamics of state probabities in example/example.pdf. This plot was already shown as example above.
+
+Plots can then be generated using Python code as demonstrated in the provided Jupyter
+notebook.
 
 All command line tools can be further configured and provide detailed help
 with options --help or -h.
