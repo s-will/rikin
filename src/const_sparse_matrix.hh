@@ -76,7 +76,7 @@ public:
     ConstSparseMatrix(const key_value_vec_t &x) : vec_(x), def_() {
 	sort();
     }
-    
+
     /** 
      * @brief assign contents of sparse matrix
      * 
@@ -93,6 +93,20 @@ public:
 	sort();
 	return *this;
     }
+
+    /**
+     * Check that the entries are sorted (DEBUGGING)
+     * not fully implemented: fail always
+     */
+    bool
+    is_sorted() const {
+	return std::is_sorted(vec_.begin(),vec_.end(),
+	     [this] (const key_value_t &x,const key_value_t &y) {
+		 return key_compare(x.first,y.first);
+	     }
+        );
+    }
+
 
     /** 
      * @brief move contents according to vector of key value pairs
