@@ -119,7 +119,7 @@ plt.show()
 
 #-----
 
-micA_micA.plot_paired_probability_kinetics(figsize = (12,8), seqfs = 6, hspace=0.25, wspace=0.25)
+micA_micA.plot_paired_probability_kinetics(figsize = (12,4), seqfs = 6, hspace=0.25, wspace=0.25, show_rnas=[1], suffix="paired_kinetics")
 plt.show()
 
 # -
@@ -171,6 +171,15 @@ ompA_micA.dotplot(figsize = (26,24), seqfs = 8, barsize=0.5, wspace=0.12, hspace
 plt.show()
 # -
 
+ompA_micA.plot_paired_probability_kinetics(figsize=(26,24), seqfs=5, wspace=0.2, hspace=0.07, show_pairing=False, suffix="paired_kinetics_interaction_only")
+plt.show()
+
+# +
+ompA_micA.plot_paired_probability_kinetics(figsize = (12,4), seqfs = 6, hspace=0.25, wspace=0.25, show_rnas=[1], suffix="paired_kinetics_only_srna")
+
+plt.show()
+# -
+
 # ## KHP plots
 
 # +
@@ -214,9 +223,6 @@ for a,b in [(1,2),(2,3)]:
 
 # +
 state_names = {0:"ED", 1:"Diss", 2:"KC1", 3:"KC2", 9:"OFF1", 15:"OFF2"}
-states = list(state_names.keys())
-palette = sns.color_palette(n_colors=len(states))
-state_colors = dict(zip(states, palette))
 
 a,b = 1,2
 khp = RikinRun(
@@ -227,18 +233,17 @@ khp = RikinRun(
     autosave=f"HP{a}-HP{b}"
 )
 
+rna_names = [f"HP{a}", f"HP{b}"]
+
 print("------------------")
 print(f"HP{a} - HP{b}")
 
-khp.plot_states(figsize=(8,4.5),seqfs=8, state_names=state_names, state_colors=state_colors,row_gap=1,hspace=0.5,wspace=0.25)
+khp.plot_states(figsize=(8,4.5),seqfs=8, rna_names=rna_names, state_names=state_names,row_gap=1,hspace=0.5,wspace=0.25)
 plt.show()
 
 
 # +
 state_names = {0:"ED", 1:"Diss", 2:"KC1", 3:"KC2", 14:"OFF1", 29:"OFF2"}
-states = list(state_names.keys())
-palette = sns.color_palette(n_colors=len(states))
-state_colors = dict(zip(states, palette))
 
 a,b = 2,3
 khp = RikinRun(
@@ -249,15 +254,19 @@ khp = RikinRun(
     autosave=f"HP{a}-HP{b}"
 )
 
+rna_names = [f"HP{a}", f"HP{b}"]
+
 print("------------------")
 print(f"HP{a} - HP{b}")
 
-khp.plot_states(figsize=(8,4.5),seqfs=8, state_names=state_names, state_colors=state_colors,row_gap=1,hspace=0.5,wspace=0.25)
+khp.plot_states(figsize=(8,4.5),seqfs=8, rna_names=rna_names, state_names=state_names,row_gap=1,hspace=0.5,wspace=0.25)
 plt.show()
 
 # -
 
 xs= np.linspace(0.1, 4, 50)
 sns.lineplot(x=xs,y=[boltzmann_weight(x) for x in xs])
+
+boltzmann_weight(3)
 
 

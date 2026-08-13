@@ -145,53 +145,11 @@ def _unit_csize(ax, fontsize, xdim, ydim):
 
 # ### Plotting states
 
-def _plot_states0(seq, paired_probabilities, states, *, seqfs=8, revseq=False,
-                 vmin=0, vmax=1, cmap = inter_probability_cmap, no_label=False, state_names=None, **kwargs):
-    
-    """
-    Show paired probabilities per state projected to one or the other dimension (dim)
-    no_label: if True, do not show state labels on y-axis
-    """
-    
-    seqlen = len(seq)
-    matrix = np.zeros((len(states), seqlen+1))
-    for sidx,state in enumerate(states):
-        if state not in paired_probabilities: continue
-        for i,prob in paired_probabilities[state].items():
-            if revseq: ## revert sequence
-                i = len(seq)-i+1
-            matrix[sidx, i] = prob
-        
-    ax = sns.heatmap(matrix, linewidth=0.5, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
-    
-    ax.set_xlim(1,seqlen+1)
-    seqposticks = _seqpos_ticks(seqlen, 10)
-    ax.set_xticks([x+0.5 for x in seqposticks],seqposticks,rotation=0)
-
-    the_state_names = [(state_names[i] if state_names and i in state_names else i) for i in states]
-    ax.set_yticks([x+0.5 for x in range(len(states))], the_state_names, rotation=0)
-
-    if no_label:
-        ax.set_yticklabels([])
-
-    ax.grid(alpha=0.5)
-        
-    
-    # Add sequence
-    unit_cwidth, unit_cheight = _unit_csize(ax,seqfs,seqlen,len(states))
-    
-    for i,s in enumerate(seq):
-        ax.text(i+1.5,-unit_cheight,s,fontsize=seqfs,name=seqfontname, ha="center")
-    
-    return ax
-
-
 def _plot_states(seq, paired_probabilities, states, *, seqfs=8, revseq=False,
                   vmin=0, vmax=1, cmap=inter_probability_cmap, no_label=False,
                   state_names=None, row_gap=0.5, ax=None,
                   cbar=True, cbar_ax=None, cbar_kws=None,
                   state_colors=None, label_pad=1, **kwargs):
-
 
     if state_colors is None:
         palette = sns.color_palette(n_colors=len(states))
@@ -1009,7 +967,7 @@ class RikinRun:
     #def plot_interaction_probability_kinetics(self, dim, **kwargs):
     #    _plot_interaction_probability_kinetics(self.seqs[dim], self.state_probabilities, self.interaction_probabilities, dim=dim, **kwargs)
 
-    def plot_states(self, figsize, seqfs, hspace=1, wspace=0.2, cbar_ratio=0.025, state_names=None, state_colors=None, row_gap=0.5, **kwargs):
+    def plot_states(self, figsize, seqfs, rna_names = None, hspace=1, wspace=0.2, cbar_ratio=0.025, state_names=None, state_colors=None, row_gap=0.5, **kwargs):
         
         layout=[['i0','i1','ibar'],
                 ['s0','s1','sbar']]
@@ -1027,7 +985,9 @@ class RikinRun:
                          vmin = vmin, vmax = vmax,
                          state_names=state_names, state_colors=state_colors,  row_gap=row_gap,
                          ax=ax[f'i{dim}'], cbar_ax=ax['ibar'], no_label=dim==1, **kwargs)
-
+            # TODO: set title to RNA name if provided; the following does not correctly position the title
+            #if rna_names:
+            #    ax[f'i{dim}'].set_title(rna_names[dim])
             pair_events = _select_pair_events_for_seq(self.bpp_final_events, dim)
             intrapaired = _marginalize_pair_probabilities(pair_events)
             _plot_states(self.seqs[dim], intrapaired, states=self.shown_states,
@@ -1083,33 +1043,57 @@ class RikinRun:
         self.optsave("dotplot")
         return fig,ax
     
-    def plot_paired_probability_kinetics(self, figsize, seqfs, space=0.5, hspace=None, wspace=None, **kwargs):
-        layout=[['s0','i0','sbar','ibar',],
-                ['s1','i1','sbar','ibar',]]
-        
+    def plot_paired_probability_kinetics(self, figsize, seqfs, space=0.5, hspace=None, wspace=None, show_pairing=True, show_rnas=[0,1], suffix="paired_kinetics", **kwargs):
+
+        height_ratios=[]
+        if 0 in show_rnas: 
+            height_ratios.append(self.lenA)
+        if 1 in show_rnas: 
+            height_ratios.append(self.lenB)
+                
+        if show_pairing:
+            layout=[]
+            if 0 in show_rnas: 
+                layout.append(['s0','i0','sbar','ibar',])
+            if 1 in show_rnas: 
+                layout.append(['s1','i1','sbar','ibar',])
+            width_ratios=[8,8,0.5,0.5]
+        elif not show_pairing:
+            layout=[]
+            if 0 in show_rnas: layout.append(['i0','ibar'])
+            if 1 in show_rnas: layout.append(['i1','ibar'])
+            width_ratios=[8,0.5]
+
+
         if space is not None:
             hspace = hspace if hspace is not None else space
             wspace = wspace if wspace is not None else space
         
         fig,ax = plt.subplot_mosaic(layout,figsize=figsize,
-                                    width_ratios=[8,8,0.5,0.5],
-                                    height_ratios=[self.lenA,self.lenB],
+                                    width_ratios=width_ratios,
+                                    height_ratios=height_ratios,
                                     gridspec_kw=dict(hspace=hspace,wspace=wspace),
                                     **kwargs)
 
         for k in [0,1]:
+            the_ax = f's{k}'
+            if the_ax not in ax:
+                continue
             self.plot_inaccessibility_kinetics(k,
-                seqfs=seqfs, cmap=intra_probability_cmap, ax=ax[f's{k}'], cbar_ax=ax['sbar'])
+                seqfs=seqfs, cmap=intra_probability_cmap, ax=ax[the_ax], cbar_ax=ax['sbar'])
 
         for k in [0,1]:
+            the_ax = f'i{k}'
+            if the_ax not in ax:
+                continue
             self.plot_interaction_probability_kinetics(k,
-                ax=ax[f'i{k}'],
+                ax=ax[the_ax],
                 revseq=(k==1),
                 seqfs=seqfs,
                 cmap=inter_probability_cmap,
                 cbar_ax=ax['ibar'])
-        
-        self.optsave("paired_kinetics")
+            
+        self.optsave(suffix)
         return fig,ax
 
 
