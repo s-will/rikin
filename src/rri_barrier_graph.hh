@@ -64,6 +64,10 @@ private:
     //! vector of additional infos for each basin (if track_) 
     std::vector<BasinInfo> basin_infos_;
 
+    bool verbose_;
+
+    bool debug_out_;
+
 public:
 
 

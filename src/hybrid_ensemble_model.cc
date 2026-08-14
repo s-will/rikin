@@ -1,4 +1,7 @@
 #include <cmath>
+#include <cstdint>
+
+#undef NDEBUG
 
 //#include  <cstdlib>
 //#include  <cstdio>
@@ -12,7 +15,6 @@
 //
 
 HybEnsModel::StateDescription::StateDescription() 
-    :isites(0)
 {
 }
 
@@ -20,21 +22,20 @@ HybEnsModel::StateDescription::StateDescription()
  * @brief Construct state from binary code
  */
 HybEnsModel::StateDescription::StateDescription(const code_t &code) 
-    :isites(0)
 {
     decode(code);
 }
 
 
 HybEnsModel::StateDescription::StateDescription(size_t i1, size_t i2, size_t j1, size_t j2)
-    : isites(1,ISite(i1,i2,j1,j2))
 {
+    isites.push_back(ISite(i1,i2,j1,j2));
 }
+
 
 
 HybEnsModel::StateDescription::StateDescription(size_t i1, size_t i2, size_t j1, size_t j2,
 						size_t k1, size_t k2, size_t l1, size_t l2)
-    : isites()
 {
     isites.reserve(2);
     isites.push_back(ISite(i1,i2,j1,j2));
@@ -92,30 +93,75 @@ HybEnsModel::to_dotbracket(const StateDescription &sd) const {
 //
 // encode empty sites by invalid entry where i1 > j1
 //
+namespace {
+
+    // Pack four 16-bit fields (i1,i2,j1,j2) into one 64-bit word.
+    inline uint64_t
+    pack_fields(uint16_t i1, uint16_t i2, uint16_t j1, uint16_t j2) {
+	return (uint64_t(i1) << 48)
+	     | (uint64_t(i2) << 32)
+	     | (uint64_t(j1) << 16)
+	     |  uint64_t(j2);
+    }
+
+    // Unpack a 64-bit word into four 16-bit fields (i1,i2,j1,j2).
+    inline void
+    unpack_fields(uint64_t word, uint16_t &i1, uint16_t &i2, uint16_t &j1, uint16_t &j2) {
+	i1 = static_cast<uint16_t>((word >> 48) & 0xFFFFu);
+	i2 = static_cast<uint16_t>((word >> 32) & 0xFFFFu);
+	j1 = static_cast<uint16_t>((word >> 16) & 0xFFFFu);
+	j2 = static_cast<uint16_t>( word         & 0xFFFFu);
+    }
+
+    // Convert a sequence position to the 16-bit field used by code_t,
+    // asserting that no information is lost (instead of silently
+    // truncating, as a raw static_cast to unsigned short would).
+    inline uint16_t
+    to_field(size_t x) {
+	assert(x <= 0xFFFFu && "position exceeds 16-bit code_t encoding range");
+	return static_cast<uint16_t>(x);
+    }
+
+    // To avoid 0x00 bytes in the binary file output, each 16-bit field
+    // is spread over two bytes whose most significant bit is always 1:
+    //   x = 00aaaaaa abbbbbbb  (only bits 0..13 of x are used)
+    //   -> stored as bit pattern  aaaaaaa1 bbbbbbb1
+    // IMPORTANT: this scheme only preserves 14 bits. Values >= 0x4000
+    // (16384) would previously be truncated *silently*; here that is
+    // turned into an assertion so it fails loudly during development
+    // instead of corrupting positions for large sequences.
+    inline void
+    encode_ushort(uint16_t &x) {
+	assert(x < 0x4000u && "encode_ushort: value exceeds 14-bit range, would be truncated");
+	x = 1 | ( (x & 0x7F) << 1 ) | 0x100 | ( ((x>>7) & 0x7F) << 9 );
+    }
+
+    inline void
+    decode_ushort(uint16_t &x) {
+	x = ((x>>1) & 0x7F) | (((x>>9) & 0x7F)<<7);
+    }
+
+} // end anonymous namespace
+
 HybEnsModel::StateDescription::code_t &
 HybEnsModel::StateDescription::encode(code_t &the_code) const {
-    
-    for (size_t i=0; i<size(); i++) {
-	unsigned short *code = 
-	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
-	
-	*(code++)=isites[i].i1;
-	*(code++)=isites[i].i2;
-	*(code++)=isites[i].j1;
-	*(code++)=isites[i].j2;
-    }
-    
-    // if site()!=2, mark the second site or both sites as empty
-    for (size_t i=size(); i<2; i++) {
-	unsigned short *code = 
-	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
 
-	*(code++)=2;
-	*(code++)=2;
-	*(code++)=1;
-	*(code++)=1;
+    assert(size()<=2);
+
+    uint64_t *words[2] = { &the_code.first, &the_code.second };
+
+    for (size_t i=0; i<2; i++) {
+	if (i<size()) {
+	    const ISite &is = isites[i];
+	    *words[i] = pack_fields(to_field(is.i1), to_field(is.i2),
+				     to_field(is.j1), to_field(is.j2));
+	} else {
+	    // mark unused site slot as empty: i1=2,j1=1 so that i1>j1,
+	    // which decode() recognizes as an invalid/empty site.
+	    *words[i] = pack_fields(2,2,1,1);
+	}
     }
-    
+
     return the_code;
 }
 
@@ -132,37 +178,29 @@ HybEnsModel::StateDescription::encode() const {
 HybEnsModel::StateDescription &
 HybEnsModel::StateDescription::decode(const code_t &the_code) {
 
+    assert(the_code.first!=0 and the_code.second!=0);
+
+    const uint64_t words[2] = { the_code.first, the_code.second };
+
     // decode and determine number of encoded sites
     size_t num_sites=0;
     for (size_t i=0; i<2; i++) {
-        const unsigned short *code = 
-	    reinterpret_cast<const unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
-		
-	if (code[0]<=code[2]) { num_sites++; } 
+	uint16_t i1,i2,j1,j2;
+	unpack_fields(words[i], i1, i2, j1, j2);
+
+	if (i1<=j1) { num_sites++; }
 	else { break; } // break at first invalid site
     }
-    
+
+    isites.clear();
     isites.reserve(num_sites);
-    isites.resize(0);
-    
+
     for (size_t i=0; i<num_sites; i++) {
-	const unsigned short *code = 
-	    reinterpret_cast<const unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
-	isites.push_back(ISite(*(code),*(code+1),*(code+2),*(code+3)));
+	uint16_t i1,i2,j1,j2;
+	unpack_fields(words[i], i1, i2, j1, j2);
+	isites.push_back(ISite(i1,i2,j1,j2));
     }
     return *this;
-}
-
-
-// to avoid 0 bytes in binary file output: encode unsigned short int
-// x=00aaaaaaabbbbbbb as bit sequence aaaaaaa1bbbbbbb1
-void
-encode_ushort(unsigned short &x) {
-    x = 1 | ( (x & 0x7F) << 1 ) | 0x100 | ( ((x>>7) & 0x7F) << 9 );
-}
-void
-decode_ushort(unsigned short &x) {
-    x = ((x>>1) & 0x7F) | (((x>>9) & 0x7F)<<7);
 }
 
 std::ostream &
@@ -170,38 +208,51 @@ HybEnsModel::StateDescription::write_binary(std::ostream &out) const {
     code_t the_code;
     encode(the_code);
 
-    for (size_t i=0; i<2; i++) {
-	unsigned short *code = 
-	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
-		
-	encode_ushort(code[0]);
-	encode_ushort(code[1]);
-	encode_ushort(code[2]);
-	encode_ushort(code[3]);
-	
-	out.write(reinterpret_cast<char *>(&code),4*sizeof(unsigned short));
+    const uint64_t words[2] = { the_code.first, the_code.second };
+
+    for (uint64_t word : words) {
+	uint16_t fields[4];
+	unpack_fields(word, fields[0], fields[1], fields[2], fields[3]);
+
+	for (uint16_t &f : fields) {
+	    encode_ushort(f);
+	}
+
+	// Serialize explicitly as little-endian bytes. This avoids
+	// aliasing a uint16_t through the raw storage of an unrelated
+	// object and makes the on-disk format independent of the host's
+	// native endianness/short size.
+	char buf[8];
+	for (size_t k=0; k<4; k++) {
+	    buf[2*k]   = static_cast<char>( fields[k]       & 0xFF);
+	    buf[2*k+1] = static_cast<char>((fields[k] >> 8) & 0xFF);
+	}
+	out.write(buf, sizeof(buf));
     }
-    
+
     return out;
 }
 
 bool
 HybEnsModel::StateDescription::read_binary(std::istream &in) {
-    HybEnsModel::StateDescription::code_t the_code;
-    
-    for (size_t i=0; i<2; i++) {
-	unsigned short *code = 
-	    reinterpret_cast<unsigned short *>((i==0)?(&the_code.first):(&the_code.second));
-	
-	in.read(reinterpret_cast<char *>(&code),4*sizeof(unsigned short));
-	
-	decode_ushort(code[0]);
-	decode_ushort(code[1]);
-	decode_ushort(code[2]);
-	decode_ushort(code[3]);
+    uint64_t words[2];
 
+    for (uint64_t &word : words) {
+	char buf[8];
+	in.read(buf, sizeof(buf));
+	if (!in) { return false; }
+
+	uint16_t fields[4];
+	for (size_t k=0; k<4; k++) {
+	    fields[k] = static_cast<uint16_t>(static_cast<unsigned char>(buf[2*k]))
+	              | static_cast<uint16_t>(static_cast<unsigned char>(buf[2*k+1]) << 8);
+	    decode_ushort(fields[k]);
+	}
+
+	word = pack_fields(fields[0], fields[1], fields[2], fields[3]);
     }
 
+    HybEnsModel::StateDescription::code_t the_code(words[0], words[1]);
     decode(the_code);
 
     return true;
@@ -295,6 +346,12 @@ HybEnsModel::energy_hybrid(const StateDescription::ISite &is) const {
 
 HybEnsModel::energy_t
 HybEnsModel::energy_hybrid(size_t i1,size_t i2,size_t j1,size_t j2) const {    
+    assert(region_startA_<=i1);
+    assert(region_startB_<=i2);
+    assert(i1<=j1);
+    assert(i2<=j2);
+    assert(j1<=region_endA_);
+    assert(j2<=region_endB_);
     return - hybrid_pf_.RT() * log( hybrid_pf_.partition_function(i1,j1,i2,j2) );
 }
 

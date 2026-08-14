@@ -40,7 +40,9 @@ RRIBarrierGraph::RRIBarrierGraph(const HybEnsModel &model,
     region_endB_(region_endB),
     consider_double_sites_(consider_double_sites),
     gradient_(gradient),
-    track_basins_(false)
+    track_basins_(false),
+    verbose_(verbose),
+    debug_out_(debug_out)
 {
 }
 
@@ -198,6 +200,7 @@ RRIBarrierGraph::process_move(const HybEnsModel::Move *move,
 void
 RRIBarrierGraph::push_back_basin(size_t basin_index, const code_t &state_code,energy_t energy) {
     basins_.push_back( Basin(basin_index, model_.boltzmann_weight(energy)) );
+
 
     if (track_basins_) {
 	basin_infos_.push_back( BasinInfo(state_code,energy) );

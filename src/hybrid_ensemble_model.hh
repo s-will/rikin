@@ -188,6 +188,7 @@ public:
 	/** 
 	 * @brief Construct from code
 	 */
+        explicit
 	StateDescription(const code_t &code);
 	
 	/** 
@@ -750,8 +751,5 @@ operator << (std::ostream &out, const HybEnsModel::StateDescription::ISite &isit
 
 std::ostream &
 operator << (std::ostream &out, const HybEnsModel::StateDescription &sd);
-    
-
-
     
 #endif
