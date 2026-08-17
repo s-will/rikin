@@ -2,7 +2,7 @@ SUBDIRS=Tests
 
 bin_PROGRAMS=rikin_enum rikin_barriers rikin_prune test_moves
 
-dist_bin_SCRIPTS=rikin_xrates.m rikin_kinetics.R rikin_kinetics_lib.R \
+dist_bin_SCRIPTS=rikin_xrates.m rikin_plot.py rikinplotlib.py\
 	rikin_pipeline.sh rikin_pipeline.cfg
 
 # base sources, common to all programs

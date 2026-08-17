@@ -197,8 +197,9 @@ def _plot_states(seq, paired_probabilities, states, *, seqfs=8, revseq=False,
     plot_cmap.set_bad(alpha=0)
 
     mesh = ax.pcolormesh(x_edges, y_edges, masked, cmap=plot_cmap,
-                          vmin=vmin, vmax=vmax, edgecolors='white',
-                          linewidth=0.5, **kwargs)
+                            rasterized=True,
+                            vmin=vmin, vmax=vmax, edgecolors='white',
+                            linewidth=0.5, **kwargs)
 
     ax.grid(alpha=0.5)
 
@@ -343,7 +344,7 @@ def _plot_positional_probability_kinetics(seq, state_probabilities, positional_p
             probs_time_matrix[jj,i] = x
 
         
-    ax = sns.heatmap(probs_time_matrix, cmap=cmap, vmin=0, vmax=1, **kwargs)
+    ax = sns.heatmap(probs_time_matrix, rasterized=True, cmap=cmap, vmin=0, vmax=1, **kwargs)
 
     seqposticks = _seqpos_ticks(seqlen, 10)
     ax.set_yticks([x-0.5 for x in seqposticks],seqposticks)
@@ -448,7 +449,7 @@ def _dotplot(seqA, seqB, state_probabilities, pair_probabilities, *,
     if swap_axes:
         matrix=matrix.transpose()
     
-    ax = sns.heatmap(matrix, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+    ax = sns.heatmap(matrix, rasterized=True, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
     
     if swap_axes:
         lenA,lenB,seqA,seqB = lenB,lenA,seqB,seqA
