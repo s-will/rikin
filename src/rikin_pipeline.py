@@ -6,26 +6,6 @@ rikin_pipeline.py
 Runs the Rikin pipeline enumerate -> barriers -> prune -> solve master equation and
 finally calls rikin_plot.py to produce the full set of kinetics plots for the run.
 
-Differences from the previous rikin_pipeline.sh bash script (all deliberate)
-------------------------------------------------------------
-* Configuration is now a cfg file instead of a sourced bash file. Since
-  the old PRUNE_OPTS string-interpolated $RIKIN_ASSOCIATION_PREFACTOR,
-  that value is kept as its own JSON field ("association_prefactor") and
-  the script prepends the resulting "--preexpf-first <value>" to the
-  prune options itself; everything else is just a plain JSON array of
-  CLI arguments (no shell parsing/quoting involved).
-* --reuse / --dryrun logic is preserved (same "skip a stage if its
-  output already exists" behaviour, same REUSE-goes-false-once-anything-
-  actually-runs cascading behaviour), extended to cover the new plotting
-  stage via a "plots.done" sentinel file in the output directory.
-* Bug fix vs. the original: in rikin_pipeline.sh, the gzip/gunzip/sort
-  housekeeping around `sorted_states` is NOT gated by $DRYRUN (only the
-  call/tcall/call_redirect-wrapped commands are) -- so `--dryrun` would
-  actually try to `sort` a file that was never created by the (skipped)
-  enum step. This translation makes --dryrun genuinely dry everywhere.
-* The original end-of-run banner referenced an unset $JOBID; this uses
-  the actual output directory.
-
 Usage
 -----
     rikin_pipeline.py [-h] [-o OUTDIR] [-c CONFIG] [--dryrun] [--reuse] SEQA SEQB
@@ -198,8 +178,7 @@ def build_arg_parser():
         "-c", "--config", type=Path,
         help="JSON file with pipeline configuration, deep-merged on top of the global config "
              "(rikin_pipeline.cfg next to this script). Comprises association_prefactor, "
-             "common_opts, enum_opts, barriers_opts, prune_opts, xrates_opts, kinetics_opts, "
-             "plot_opts.",
+             "common_opts, enum_opts, barriers_opts, prune_opts, xrates_opts, plot_opts.",
     )
     parser.add_argument(
         "--global-config", type=Path, default=None,
@@ -425,7 +404,6 @@ def main():
     print(f'  prune_opts = {cfg.get("prune_opts", [])}  #(controls rikin_prune; '
           f'association_prefactor={cfg.get("association_prefactor", 1.0)})')
     print(f'  xrates_opts = {cfg.get("xrates_opts", [])}  #(controls solving of master equation by rikin_xrates.m)')
-    print(f'  kinetics_opts = {cfg.get("kinetics_opts", [])}  #(controls plotting by rikin_kinetics.R)')
     print(f'  plot_opts = {cfg.get("plot_opts", {})}  #(controls plotting by rikin_plot.py)')
     print()
     print(f"Start date:  {datetime.now()}")
