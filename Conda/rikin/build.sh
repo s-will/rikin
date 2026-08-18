@@ -1,5 +1,9 @@
-#!/bin/sh
+#!/bin/bash
+set -euo pipefail
 
-./configure --prefix=$PREFIX && \
-make -j ${CPU_COUNT} && \
+# configure script is not committed to git, only configure.ac -- regenerate it
+autoreconf -i
+
+./configure --prefix="${PREFIX}" PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
+make -j "${CPU_COUNT}"
 make install
