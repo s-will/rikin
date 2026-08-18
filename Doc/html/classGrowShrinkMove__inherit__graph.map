@@ -1,0 +1,13 @@
+<map id="GrowShrinkMove" name="GrowShrinkMove">
+<area shape="rect" id="Node000001" title="Move that grows or shrinks left ends." alt="" coords="273,79,406,104"/>
+<area shape="rect" id="Node000003" href="$classGrowShrinkMoveFL.html" title="Move that grows or shrinks left ends of first site." alt="" coords="5,152,153,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="285,110,122,154,121,149,284,105"/>
+<area shape="rect" id="Node000004" href="$classGrowShrinkMoveFR.html" title="Move that grows or shrinks right ends of first site." alt="" coords="177,152,328,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="317,115,269,154,265,150,313,110"/>
+<area shape="rect" id="Node000005" href="$classGrowShrinkMoveSL.html" title="Move that grows or shrinks left ends of second site." alt="" coords="352,152,500,177"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="365,110,414,150,410,154,362,115"/>
+<area shape="rect" id="Node000006" href="$classGrowShrinkMoveSR.html" title="Move that grows or shrinks right ends of second site." alt="" coords="524,152,675,177"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="395,105,558,149,557,154,394,110"/>
+<area shape="rect" id="Node000002" href="$classMove.html" title="A move by adding/removing an interior loop." alt="" coords="310,5,369,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="342,44,342,79,337,79,337,44"/>
+</map>

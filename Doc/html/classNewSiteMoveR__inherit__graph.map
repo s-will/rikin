@@ -1,0 +1,7 @@
+<map id="NewSiteMoveR" name="NewSiteMoveR">
+<area shape="rect" id="Node000001" title="Move that introduces a new interaction site at the right." alt="" coords="5,152,127,177"/>
+<area shape="rect" id="Node000002" href="$classNewSiteMove.html" title="Move that introduces a new site." alt="" coords="10,79,122,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="69,118,69,152,63,152,63,118"/>
+<area shape="rect" id="Node000003" href="$classMove.html" title="A move by adding/removing an interior loop." alt="" coords="37,5,95,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="69,44,69,79,63,79,63,44"/>
+</map>

@@ -1,0 +1,29 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classMove.html" title="A move by adding/removing an interior loop." alt="" coords="5,252,64,277"/>
+<area shape="rect" id="Node000001" href="$classGrowShrinkMove.html" title="Move that grows or shrinks left ends." alt="" coords="114,104,247,129"/>
+<area shape="poly" id="edge2_Node000000_Node000001" title=" " alt="" coords="49,239,76,202,110,163,156,127,160,132,114,167,80,205,54,242"/>
+<area shape="rect" id="Node000006" href="$classMergeMove.html" title="Move that merges two interaction sites." alt="" coords="131,177,230,203"/>
+<area shape="poly" id="edge7_Node000000_Node000006" title=" " alt="" coords="62,242,111,212,137,200,139,205,113,216,65,246"/>
+<area shape="rect" id="Node000007" href="$classNewSiteMove.html" title="Move that introduces a new site." alt="" coords="125,227,237,252"/>
+<area shape="poly" id="edge8_Node000000_Node000007" title=" " alt="" coords="77,255,124,246,125,252,78,260"/>
+<area shape="rect" id="Node000011" href="$classRemoveSiteMove.html" title="Move that removes an interaction site." alt="" coords="112,276,249,301"/>
+<area shape="poly" id="edge12_Node000000_Node000011" title=" " alt="" coords="78,269,112,275,111,280,77,274"/>
+<area shape="rect" id="Node000012" href="$classShiftMove.html" title="Move that shifts one end in one sequence." alt="" coords="137,325,224,351"/>
+<area shape="poly" id="edge13_Node000000_Node000012" title=" " alt="" coords="67,283,113,310,142,323,140,328,111,315,64,287"/>
+<area shape="rect" id="Node000013" href="$classSplitMove.html" title="Move that splits two interaction sites." alt="" coords="137,375,224,400"/>
+<area shape="poly" id="edge14_Node000000_Node000013" title=" " alt="" coords="52,288,77,325,114,361,138,374,136,379,110,365,73,329,47,291"/>
+<area shape="rect" id="Node000002" href="$classGrowShrinkMoveFL.html" title="Move that grows or shrinks left ends of first site." alt="" coords="299,5,447,31"/>
+<area shape="poly" id="edge3_Node000001_Node000002" title=" " alt="" coords="208,94,249,66,296,40,325,28,327,33,298,44,251,71,211,98"/>
+<area shape="rect" id="Node000003" href="$classGrowShrinkMoveFR.html" title="Move that grows or shrinks right ends of first site." alt="" coords="297,55,448,80"/>
+<area shape="poly" id="edge4_Node000001_Node000003" title=" " alt="" coords="243,98,321,78,323,83,244,103"/>
+<area shape="rect" id="Node000004" href="$classGrowShrinkMoveSL.html" title="Move that grows or shrinks left ends of second site." alt="" coords="299,104,447,129"/>
+<area shape="poly" id="edge5_Node000001_Node000004" title=" " alt="" coords="261,114,299,114,299,119,261,119"/>
+<area shape="rect" id="Node000005" href="$classGrowShrinkMoveSR.html" title="Move that grows or shrinks right ends of second site." alt="" coords="297,153,448,179"/>
+<area shape="poly" id="edge6_Node000001_Node000005" title=" " alt="" coords="244,130,323,151,321,156,243,135"/>
+<area shape="rect" id="Node000008" href="$classNewSiteMoveF.html" title="Move that introduces the first interaction site." alt="" coords="313,203,433,228"/>
+<area shape="poly" id="edge9_Node000007_Node000008" title=" " alt="" coords="250,228,312,220,312,225,251,233"/>
+<area shape="rect" id="Node000009" href="$classNewSiteMoveL.html" title="Move that introduces a new interaction site at the left." alt="" coords="313,252,432,277"/>
+<area shape="poly" id="edge10_Node000007_Node000009" title=" " alt="" coords="251,246,313,254,312,259,250,251"/>
+<area shape="rect" id="Node000010" href="$classNewSiteMoveR.html" title="Move that introduces a new interaction site at the right." alt="" coords="312,301,433,327"/>
+<area shape="poly" id="edge11_Node000007_Node000010" title=" " alt="" coords="234,254,250,261,298,286,332,299,330,304,296,291,248,266,232,259"/>
+</map>

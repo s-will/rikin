@@ -1,0 +1,7 @@
+<map id="GrowShrinkMove" name="GrowShrinkMove">
+<area shape="rect" id="Node000001" title="Move that grows or shrinks left ends." alt="" coords="5,168,139,193"/>
+<area shape="rect" id="Node000002" href="$classMove.html" title="A move by adding/removing an interior loop." alt="" coords="43,93,101,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="75,133,75,168,69,168,69,133"/>
+<area shape="rect" id="Node000003" href="$classMoveIterator.html" title="Defines iteration over moves (together with Move)." alt="" coords="19,5,125,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="75,45,75,93,69,93,69,45"/>
+</map>

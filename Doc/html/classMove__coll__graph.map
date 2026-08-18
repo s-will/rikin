@@ -1,0 +1,5 @@
+<map id="Move" name="Move">
+<area shape="rect" id="Node000001" title="A move by adding/removing an interior loop." alt="" coords="29,93,88,119"/>
+<area shape="rect" id="Node000002" href="$classMoveIterator.html" title="Defines iteration over moves (together with Move)." alt="" coords="5,5,112,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="61,45,61,93,56,93,56,45"/>
+</map>
