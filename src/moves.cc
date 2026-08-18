@@ -62,7 +62,7 @@ HybEnsModel::GrowShrinkMove::firstRight() {
 }
 
 bool
-HybEnsModel::GrowShrinkMove::first(size_t i1_,
+HybEnsModel::GrowShrinkMove::firstGen(size_t i1_,
 				   size_t i2_,
 				   size_t min1_,
 				   size_t min2_,
@@ -132,7 +132,7 @@ HybEnsModel::GrowShrinkMove::next() {
 }
 
 HybEnsModel::energy_t
-HybEnsModel::GrowShrinkMove::transitionEnergy(size_t site, size_t left) const {
+HybEnsModel::GrowShrinkMove::transitionEnergyGen(size_t site, size_t left) const {
     
     const StateDescription &sd=mi.origin();
     StateDescription sd2(sd);
@@ -146,13 +146,13 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(size_t site, size_t left) const {
     return
 	left
 	?
-	transitionEnergy(sd_small,sd_large,k1,k2,i1,i2)
+	transitionEnergyGen(sd_small,sd_large,k1,k2,i1,i2)
 	:
-	transitionEnergy(sd_small,sd_large,i1,i2,k1,k2);
+	transitionEnergyGen(sd_small,sd_large,i1,i2,k1,k2);
 }
 
 HybEnsModel::energy_t
-HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
+HybEnsModel::GrowShrinkMove::transitionEnergyGen(const StateDescription &sd_small,
 					      const StateDescription &sd_large,
 					      size_t loop_i1, size_t loop_i2, size_t loop_j1, size_t loop_j2
 					      ) const {
@@ -161,7 +161,7 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
     assert(sd_large.size()==sd_small.size());
     
     
-    //std::cout <<std::endl << "GrowShrinkMove::transitionEnergy" << sd_small << " " << sd_large<< " " 
+    //std::cout <<std::endl << "GrowShrinkMove::transitionEnergyGen" << sd_small << " " << sd_large<< " " 
     // 	      << loop_i1 << " "<< loop_i2 << " " << loop_j1 << " " << loop_j2
     // 	      <<std::endl;
     
@@ -191,7 +191,7 @@ HybEnsModel::GrowShrinkMove::transitionEnergy(const StateDescription &sd_small,
 	model.energy_unpair(sd_large[0],
 			    sd_large[1]);
 
-    //std::cout << "GrowShrinkMove::transitionEnergy returns " << e_hyb <<" + " << e_loop <<" + "<< e_unp << std::endl;
+    //std::cout << "GrowShrinkMove::transitionEnergyGen returns " << e_hyb <<" + " << e_loop <<" + "<< e_unp << std::endl;
 
     return
 	e_hyb
@@ -228,7 +228,7 @@ HybEnsModel::GrowShrinkMoveFL::first() {
     }
 
     return 
-	HybEnsModel::GrowShrinkMove::first(o[0].i1,
+	HybEnsModel::GrowShrinkMove::firstGen(o[0].i1,
 					   o[0].i2, 
 					   1, 
 					   1,
@@ -240,7 +240,7 @@ HybEnsModel::GrowShrinkMoveFL::first() {
 HybEnsModel::energy_t
 HybEnsModel::GrowShrinkMoveFL::transitionEnergy() const {
     return
-	HybEnsModel::GrowShrinkMove::transitionEnergy(0,true);
+	HybEnsModel::GrowShrinkMove::transitionEnergyGen(0,true);
 }
     
 
@@ -279,7 +279,7 @@ HybEnsModel::GrowShrinkMoveFR::first() {
     size_t len2 = m.seqB().length();
 
     return 
-	HybEnsModel::GrowShrinkMove::first(
+	HybEnsModel::GrowShrinkMove::firstGen(
 					   o[0].j1,
 					   o[0].j2, 
 					   o[0].i1+m.minsitesize()-1,
@@ -296,7 +296,7 @@ HybEnsModel::GrowShrinkMoveFR::first() {
 HybEnsModel::energy_t
 HybEnsModel::GrowShrinkMoveFR::transitionEnergy() const {
     return
-	HybEnsModel::GrowShrinkMove::transitionEnergy(0,false);
+	HybEnsModel::GrowShrinkMove::transitionEnergyGen(0,false);
 }
 
 void
@@ -331,7 +331,7 @@ HybEnsModel::GrowShrinkMoveSL::first() {
     }
     
     return 
-	HybEnsModel::GrowShrinkMove::first(
+	HybEnsModel::GrowShrinkMove::firstGen(
 					   o[1].i1,
 					   o[1].i2, 
 					   o[0].j1+m.minsitedist()+1,
@@ -344,7 +344,7 @@ HybEnsModel::GrowShrinkMoveSL::first() {
 HybEnsModel::energy_t
 HybEnsModel::GrowShrinkMoveSL::transitionEnergy() const {
     return
-	HybEnsModel::GrowShrinkMove::transitionEnergy(1,true);
+	HybEnsModel::GrowShrinkMove::transitionEnergyGen(1,true);
 }
 
 void
@@ -385,7 +385,7 @@ HybEnsModel::GrowShrinkMoveSR::first() {
     }
     
     return 
-	HybEnsModel::GrowShrinkMove::first(
+	HybEnsModel::GrowShrinkMove::firstGen(
 					   o[1].j1,
 					   o[1].j2, 
 					   o[1].i1+m.minsitesize()+1,
@@ -398,7 +398,7 @@ HybEnsModel::GrowShrinkMoveSR::first() {
 HybEnsModel::energy_t
 HybEnsModel::GrowShrinkMoveSR::transitionEnergy() const {    
     return
-	HybEnsModel::GrowShrinkMove::transitionEnergy(1,false);
+	HybEnsModel::GrowShrinkMove::transitionEnergyGen(1,false);
 }
 
 void

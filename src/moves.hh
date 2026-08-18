@@ -130,7 +130,7 @@ protected:
      * @return whether there is a first move
      */
     bool
-    first(size_t i1_,size_t i2_,
+    firstGen(size_t i1_,size_t i2_,
 	  size_t min1_,size_t min2_,
 	  size_t max1_,size_t max2_);
 	
@@ -187,7 +187,7 @@ protected:
      * @return energy of transition state where the loop is attached to
      * the smaller state in order to yield the larger state
      */	
-    energy_t transitionEnergy(const StateDescription &sd_small,
+    energy_t transitionEnergyGen(const StateDescription &sd_small,
 			      const StateDescription &sd_large,
 			      size_t loop_i1, size_t loop_i2, size_t loop_j1, size_t loop_j2
 			      ) const;
@@ -202,7 +202,7 @@ protected:
      * the specified end of specified site
      */
     energy_t
-    transitionEnergy(size_t site, size_t left) const;	
+    transitionEnergyGen(size_t site, size_t left) const;	
 
     /** 
      * Print move
