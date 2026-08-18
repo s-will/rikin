@@ -164,25 +164,23 @@ def plot_paired_kinetics(run: RikinRun, cfg: dict):
 # Sequence loading
 # --------------------------------------------------------------------------
 
-def read_fasta_pair(path: Path):
-    seqs, cur = [], []
-    with open(path) as fh:
+def read_fasta(filename: Path):
+    seq = ""
+    name = None
+    with open(filename) as fh:
         for line in fh:
             line = line.strip()
             if not line:
                 continue
             if line.startswith(">"):
-                if cur:
-                    seqs.append("".join(cur))
-                    cur = []
+                if name is None:
+                    name = line[1:].strip().split()[0]
+                else: break  # stop reading after the first sequence
             else:
-                cur.append(line)
-    if cur:
-        seqs.append("".join(cur))
-    if len(seqs) != 2:
-        sys.exit(f"Error: expected exactly 2 sequences in {path}, found {len(seqs)}")
-    return seqs[0], seqs[1]
-
+                seq += line
+    if name is None or name == "":
+        raise ValueError(f"FASTA file {filename} empty or does not contain a valid sequence name")
+    return name, seq
 
 # --------------------------------------------------------------------------
 # Output configuration (mirrors notebook's `rkplt.output_directory = "Figs"`)
@@ -238,9 +236,10 @@ def build_arg_parser():
     single = parser.add_argument_group("single-run options (ignored if --runs-config is given)")
     single.add_argument("--input-dir", help="Directory with RikinRun result files")
     single.add_argument("--name", help="Prefix used for output plot filenames (RikinRun's autosave name)")
-    single.add_argument("--seqA", help="Sequence A")
-    single.add_argument("--seqB", help="Sequence B")
-    single.add_argument("--fasta", type=Path, help="FASTA file with the two sequences (alternative to --seqA/--seqB)")
+    parser.add_argument("--fastaA", help="Fasta containing first sequence")
+    parser.add_argument("--fastaB", help="Fasta containing second sequence")
+    parser.add_argument("--seqA", help="First sequence")
+    parser.add_argument("--seqB", help="Second sequence")
     single.add_argument("--shown-state-threshold", type=float, default=0.02)
 
     parser.add_argument(
@@ -282,19 +281,41 @@ def main():
     else:
         if not (args.input_dir and args.name):
             parser.error("either --runs-config, or both --input-dir and --name, are required")
-        if args.seqA and args.seqB:
-            seqA, seqB = args.seqA, args.seqB
-        elif args.fasta:
-            seqA, seqB = read_fasta_pair(args.fasta)
-        else:
-            parser.error("provide sequences via --seqA/--seqB or --fasta")
-        run_specs = [{
-            "name": args.name,
-            "input_dir": args.input_dir,
-            "seqA": seqA,
-            "seqB": seqB,
-            "shown_state_threshold": args.shown_state_threshold,
-        }]
+
+    seqA = None
+    seqB = None
+    nameA = "seqA"
+    nameB = "seqB"
+
+    if args.seqA and args.fastaA or args.seqB and args.fastaB:
+        parser.error("provide sequences via --seqA/--seqB or --fastaA/--fastaB")
+
+    if args.fastaA:
+        nameA,seqA = read_fasta(args.fastaA)
+    else:
+        seqA = args.seqA
+
+    if args.fastaB:
+        nameB,seqB = read_fasta(args.fastaB)
+    else:
+        seqB = args.seqB
+
+    if not seqA or not seqB:
+        parser.error("must provide both sequences via --seqA/--seqB or --fastaA/--fastaB")
+    if set(seqA) - set("ACGUacgu"):
+        parser.error(f"seqA contains invalid characters: {set(seqA) - set('ACGUacgu')}")
+    if set(seqB) - set("ACGUacgu"):
+        parser.error(f"seqB contains invalid characters: {set(seqB) - set('ACGUacgu')}")
+        
+    run_specs = [{
+        "name": args.name,
+        "input_dir": args.input_dir,
+        "seqA": seqA,
+        "seqB": seqB,
+        "nameA": nameA,
+        "nameB": nameB,
+        "shown_state_threshold": args.shown_state_threshold,
+    }]
 
     for run_spec in run_specs:
         run_one(run_spec, plots_to_run, cfg_all)

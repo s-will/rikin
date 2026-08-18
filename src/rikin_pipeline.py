@@ -8,10 +8,11 @@ finally calls rikin_plot.py to produce the full set of kinetics plots for the ru
 
 Usage
 -----
-    rikin_pipeline.py [-h] [-o OUTDIR] [-c CONFIG] [--dryrun] [--reuse] SEQA SEQB
+    rikin_pipeline.py [-h] [-o OUTDIR] [-c CONFIG] [--dryrun] [--reuse] SeqA|FastaA SeqB|FastaB
 
-Example:
-    rikin_pipeline.py -o example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC
+Examples:
+    rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC
+    rikin_pipeline.py -o example --fastaA exampleA.fasta --fastaB exampleB.fasta -c example_config.cfg -o example
 
 Config file
 -----------
@@ -26,6 +27,7 @@ schema.
 
 import argparse
 import gzip
+from html import parser
 import json
 import os
 import shutil
@@ -37,8 +39,6 @@ from pathlib import Path
 
 VERSION = "0.9.5"
 
-DEFAULT_SEQA_NAME = "seqA"
-DEFAULT_SEQB_NAME = "seqB"
 DEFAULT_OUTDIR = "Rikin-results"
 DEFAULT_GLOBAL_CONFIG_NAME = "rikin_pipeline.cfg"
 
@@ -158,6 +158,27 @@ def get_tool_version(bindir: Path) -> str:
     except Exception:
         return "unknown"
 
+# --------------------------------------------------------------------------
+# Sequence loading
+# --------------------------------------------------------------------------
+
+def read_fasta(filename: Path):
+    seq = ""
+    name = None
+    with open(filename) as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith(">"):
+                if name is None:
+                    name = line[1:].strip().split()[0]
+                else: break  # stop reading after the first sequence
+            else:
+                seq += line
+    if name is None or name == "":
+        raise ValueError(f"FASTA file {filename} empty or does not contain a valid sequence name")
+    return name, seq
 
 # --------------------------------------------------------------------------
 # Argument parsing
@@ -168,8 +189,9 @@ def build_arg_parser():
         prog="rikin_pipeline.py",
         description="Run the RNAInterKin pipeline.",
         epilog=(
-            "EXAMPLE CALL:\n"
-            "  rikin_pipeline.py -o example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC\n"
+            "EXAMPLE CALLS:\n"
+            "   rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC\n"
+            "   rikin_pipeline.py -o example --fastaA exampleA.fasta --fastaB exampleB.fasta -c example_config.cfg -o example\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -188,12 +210,11 @@ def build_arg_parser():
                          help="Directory containing the rikin_* tools (default: this script's directory)")
     parser.add_argument("--dryrun", action="store_true", help="don't run commands and/or write files")
     parser.add_argument("--reuse", action="store_true", help="reuse existing partial results in the output directory")
-    parser.add_argument("--seqA-name", dest="seqA_name", default=DEFAULT_SEQA_NAME)
-    parser.add_argument("--seqB-name", dest="seqB_name", default=DEFAULT_SEQB_NAME)
-    parser.add_argument("seqA", help="RNA sequence A, as a word over A,C,G,U")
-    parser.add_argument("seqB", help="RNA sequence B, as a word over A,C,G,U")
+    parser.add_argument("--fastaA", help="Fasta containing first sequence")
+    parser.add_argument("--fastaB", help="Fasta containing second sequence")
+    parser.add_argument("--seqA", help="First sequence")
+    parser.add_argument("--seqB", help="Second sequence")
     return parser
-
 
 # --------------------------------------------------------------------------
 # Pipeline stages
@@ -272,7 +293,7 @@ def stage_prune(outdir: Path, bindir: Path, cfg, reuse, dryrun) -> bool:
         cmd = [
             str(bindir / "rikin_prune"), str(bg),
             *prune_opts,
-            "--pffile", str(pf), "--verbose", "--barfile", str(bar),
+            "--pffile", str(pf), "--barfile", str(bar),
             "--ratesfile", str(rates),
             "--compress-track", "--track", str(prune_track),
             f"--track-pps-out={track_ipps_prune}",
@@ -356,6 +377,31 @@ def main():
     parser = build_arg_parser()
     args = parser.parse_args()
 
+    seqA = None
+    seqB = None
+    nameA = "seqA"
+    nameB = "seqB"
+    if args.seqA and args.fastaA or args.seqB and args.fastaB:
+        parser.error("provide sequences via --seqA/--seqB or --fastaA/--fastaB")
+
+    if args.fastaA:
+        nameA,seqA = read_fasta(args.fastaA)
+    else:
+        seqA = args.seqA
+
+    if args.fastaB:
+        nameB,seqB = read_fasta(args.fastaB)
+    else:
+        seqB = args.seqB
+
+    if not seqA or not seqB:
+        parser.error("must provide both sequences via --seqA/--seqB or --fastaA/--fastaB")
+    if set(seqA) - set("ACGUacgu"):
+        parser.error(f"seqA contains invalid characters: {set(seqA) - set('ACGUacgu')}")
+    if set(seqB) - set("ACGUacgu"):
+        parser.error(f"seqB contains invalid characters: {set(seqB) - set('ACGUacgu')}")
+
+
     bindir = (args.bindir or Path(__file__).resolve().parent).resolve()
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -381,15 +427,15 @@ def main():
     if args.config is not None:
         cfg = deep_merge(cfg, load_json_config(args.config))
 
-    seqA, seqB = args.seqA, args.seqB
+
 
     version = get_tool_version(bindir)
     print("=" * 60)
     print(f"RNAInterKin Pipeline ver {VERSION}")
     print()
     print("Input:")
-    print(f"  SeqA:   {seqA}")
-    print(f"  SeqB:   {seqB}")
+    print(f"  SeqA {nameA}:   {seqA}")
+    print(f"  SeqB {nameB}:   {seqB}")
     print(f"  Outdir: {outdir}")
     print()
     print("Environment:")

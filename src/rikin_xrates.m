@@ -1,4 +1,4 @@
-#!/usr/bin/env octave -qf
+#!/usr/bin/env -S octave -qf
 # -*- Octave -*-
 
 #
