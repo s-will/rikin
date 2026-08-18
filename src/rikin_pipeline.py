@@ -35,7 +35,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-VERSION = "0.95"
+VERSION = "0.9.5"
 
 DEFAULT_SEQA_NAME = "seqA"
 DEFAULT_SEQB_NAME = "seqB"

@@ -4,7 +4,7 @@ pages:
   tags: 
     - small
   only:
-    - release-doc
+    - tags
   script: 
     - echo "Do nothing" 
   artifacts:
