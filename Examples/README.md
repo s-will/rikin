@@ -1,13 +1,14 @@
 # RNA--RNA interactions examples
 
+## Toy example
+rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC
+
 ## KHP
 
 ### HP1:HP2
-
 rikin_pipeline.py --fastaA HP1.fasta --fastaB HP2.fasta -c khp.cfg -o KHP --name HP1-HP2
 
 ### HP3:HP2
-
 rikin_pipeline.py --fastaA HP3.fasta --fastaB HP2.fasta -c khp.cfg -o HP3-HP2
 
 
