@@ -3,7 +3,7 @@
 rikin_pipeline.py
 ==================
 
-Runs the Rikin pipeline enumerate -> barriers -> prune -> solve master equation and
+Runs the RNAInterKin pipeline enumerate -> barriers -> prune -> solve master equation and
 finally calls rikin_plot.py to produce the full set of kinetics plots for the run.
 
 Usage
@@ -39,7 +39,7 @@ VERSION = "0.95"
 
 DEFAULT_SEQA_NAME = "seqA"
 DEFAULT_SEQB_NAME = "seqB"
-DEFAULT_OUTDIR = "RIkin-pipeline-results"
+DEFAULT_OUTDIR = "Rikin-results"
 DEFAULT_GLOBAL_CONFIG_NAME = "rikin_pipeline.cfg"
 
 
@@ -166,7 +166,7 @@ def get_tool_version(bindir: Path) -> str:
 def build_arg_parser():
     parser = argparse.ArgumentParser(
         prog="rikin_pipeline.py",
-        description="Run the Rikin pipeline.",
+        description="Run the RNAInterKin pipeline.",
         epilog=(
             "EXAMPLE CALL:\n"
             "  rikin_pipeline.py -o example AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA CCCGCCC\n"
@@ -385,7 +385,7 @@ def main():
 
     version = get_tool_version(bindir)
     print("=" * 60)
-    print(f"RIkin Pipeline ver {VERSION}")
+    print(f"RNAInterKin Pipeline ver {VERSION}")
     print()
     print("Input:")
     print(f"  SeqA:   {seqA}")
@@ -395,7 +395,7 @@ def main():
     print("Environment:")
     print(f"  Working dir: {Path.cwd()}")
     print(f"  BINDIR={bindir}")
-    print(f"  RIkin version {version}")
+    print(f"  RNAInterKin version {version}")
     print()
     print("Options:")
     print(f'  common_opts = {cfg.get("common_opts", [])}  #(controls rikin_enum and rikin_barriers)')
@@ -443,7 +443,7 @@ def main():
     print()
     print()
     print("=" * 60)
-    print(f"RIkin pipeline finished at {datetime.now()}.")
+    print(f"RNAInterKin pipeline finished at {datetime.now()}.")
     print()
     print(f"Output files written to directory {outdir}")
     print("=" * 60)

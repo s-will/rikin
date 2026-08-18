@@ -1,6 +1,6 @@
-# RIkin
+# RNAInterKin
 
-Rikin implements tools for the fast computation of RNA-RNA interaction kinetics
+RNAInterKin (RIKin) implements tools for the fast computation of RNA-RNA interaction kinetics
 in a detailed RNAup/Intarna-inspired interaction model.
 
 It features accurate modeling of RNA structures and interaction complexes based on their secondary structure and the full Turner nearest neighbor energy model.
@@ -57,7 +57,7 @@ problems:
 
 ### Installation from Conda package
 
-We recommend to install from the conda package of rikin.
+We recommend to install RNAInterKin from the conda package rikin.
 
 Possible create and activate an environment for rikin first:
 ```
