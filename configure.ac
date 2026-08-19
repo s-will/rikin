@@ -63,7 +63,7 @@ if test x"$debuger" = x"yes"; then
     AC_DEFINE([DEBUG], [1], [Define to 1 for turning on debugging])
     CXXFLAGS="$CXXFLAGS -g -Wall"
 else
-    AC_DEFINE([NDEBUG], [], [Define to 1 for turning off debugging])
+    CPPFLAGS="$CPPFLAGS -DNDEBUG"
 fi
 
 
@@ -72,6 +72,13 @@ PKG_CHECK_MODULES([LOCARNA], [LocARNA-2.0 >= 1.9.2])
 
 dnl set rpath for LocARNA lib directories (rather hackish by 'duplicating' -L entries)
 LOCARNA_LIBS=[`echo $LOCARNA_LIBS |sed 's/-L\([^ ]*\)/-L\1 -Wl,-rpath \1 /g'`]
+
+
+dnl strip -fno-lto/-Wl,-fno-lto: some conda-forge builds of LocARNA/ViennaRNA
+dnl embed these in their pkg-config Libs field; GCC tolerates it, but Clang
+dnl forwards -Wl,-fno-lto straight to the linker, which rejects it
+LOCARNA_LIBS=[`echo $LOCARNA_LIBS |sed 's/-Wl,-fno-lto//g;s/-fno-lto//g'`]
+
 
 CXXFLAGS="$LOCARNA_CFLAGS $CXXFLAGS"
 LDFLAGS="$LDFLAGS"
@@ -100,6 +107,10 @@ PKG_CHECK_MODULES([VRNA],[RNAlib2 >= 2.1.9],[VRNALIB_OK=true],[VRNALIB_OK=false]
 dnl replace ViennaRNA add end of include path -- use perl, since we require it anyway
 dnl This fixes a legacy problem in ViennaRNA <2.2.x pkg-config files
 VRNA_CFLAGS=$(echo $VRNA_CFLAGS | perl -ne 's/(-I.*)\/ViennaRNA(\/\s|\s|$)/\1\2/g;print')
+
+dnl strip -fno-lto/-Wl,-fno-lto (see note above at LOCARNA_LIBS)
+VRNA_LIBS=[`echo $VRNA_LIBS |sed 's/-Wl,-fno-lto//g;s/-fno-lto//g'`]
+
 
 
 LIBS="$VRNA_LIBS $LIBS"

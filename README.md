@@ -11,7 +11,6 @@ possible interaction states evolves over time: which states form first,
 which are transient, and which the system ultimately settles into.
 
 ![Predicted state probabilities over time](Examples/Plots/example_kinetics.svg)
-
 *Predicted probabilities of the most prominent interaction states over time,
 for a small toy example (see [Quick example](#quick-example) below).*
 
@@ -93,7 +92,8 @@ ViennaRNA/LocARNA dependencies from Bioconda:
 git clone https://github.com/s-will/rikin.git
 cd rikin
 
-conda create -n rikin -c bioconda -c conda-forge viennarna locarna \
+conda create -n rikin -c conda-forge -c bioconda compilers \
+    viennarna locarna \
     autoconf automake libtool pkg-config gengetopt \
     python numpy pandas scipy matplotlib seaborn octave
 
@@ -104,6 +104,14 @@ autoreconf -i
 make
 make install
 ```
+
+> **Note:** the `compilers` package (conda-forge's meta-package for a
+> platform-matched C/C++ compiler) is required, not optional — RIKin's
+> ViennaRNA/LocARNA dependencies are themselves built with the conda
+> toolchain, and linking against them with a non-conda system compiler
+> (e.g. plain `/usr/bin/clang++`) can fail with confusing linker errors,
+> since conda's compiler-activation scripts translate certain flags in a
+> way a system compiler won't.
 
 
 ## Quick example
@@ -122,8 +130,8 @@ directory.
 |---|---|
 | ![State probabilities over time](Examples/Plots/example_kinetics.svg) | ![Most prominent interaction states](Examples/Plots/example_states.svg) |
 | Predicted state probabilities over time | Structures of the most prominent states |
-| ![Interaction dotplot](Examples/Plots/example_dotplot.svg) | ![Per-nucleotide pairing probabilities over time](Examples/Plots/example_paired_kinetics.svg) |
-| Base pair probability dotplot | Per-nucleotide pairing probabilities over time |
+| ![Interaction dotplot](Examples/Plots/example_interaction.svg) | ![Per-nucleotide pairing probabilities over time](Examples/Plots/example_paired_kinetics.svg) |
+| Interaction probability dotplot | Per-nucleotide pairing probabilities over time |
 
 Equivalently, sequences can be given via FASTA files instead of directly on
 the command line:
@@ -238,8 +246,8 @@ A completed run's `outdir` contains, among others:
 | `bg`                         | Basin graph after discrete coarse-graining |
 | `barriers_track.gz`, `track-ipps-barriers.gz` | Barrier-stage tracking data |
 | `pf`, `bar`, `rates.gz`      | Partition functions, basins, and rates after pruning |
-| `kin`                        | Solved kinetics (final result of the computation, state probabilities over time) |
-| `*.svg`, `*.pdf`             | Plots of the RNA-RNA kinetics |
+| `kin`                        | Solved kinetics (state probabilities over time) |
+| `plots.done`                 | Marker file indicating plotting completed (used by `--reuse`) |
 
 These are intermediate/result files consumed by later pipeline stages; the
 plots produced by the final stage are the primary human-readable output.
@@ -247,12 +255,12 @@ plots produced by the final stage are the primary human-readable output.
 
 ## More examples
 
-The [`Examples`](Examples/Examples.md) directory contains several further,
+The [`Examples`](Examples/README.md) directory contains several further,
 biologically motivated examples — including a real bacterial sRNA–mRNA pair
 (*E. coli* MicA sRNA and the *ompA* mRNA 5′UTR) and a designed
 kissing-hairpin (KHP) system — along with a script to reproduce all of them
 and a notebook that regenerates the figures shown throughout this README.
-See [`Examples/README.md`](Examples/Examples.md) for details.
+See [`Examples/README.md`](Examples/README.md) for details.
 
 
 ## License

@@ -1,10 +1,6 @@
 ChangeLog
 =========
 
-Post release
-------------------
-* Update/fix doxygen Documentation
-
 0.9.5 (Aug, 2026)
 -----------------
 * Add rikin_pipeline.py that runs entire pipeline
@@ -21,6 +17,9 @@ Post release
   (kissing-hairpin system, MicA-MicA homodimer, MicA-OmpA heterodimer),
   an accompanying README, a run-all.sh script, and a plotting notebook
 * Update convergence criterion in xrates
+* Update/fix doxygen Documentation
+* Patch quirky linker flags inherited from VRNA
+
 
 0.9.4 (Oct, 2023)
 -----------------
