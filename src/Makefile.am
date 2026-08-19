@@ -2,8 +2,11 @@ SUBDIRS=Tests
 
 bin_PROGRAMS=rikin_enum rikin_barriers rikin_prune test_moves
 
-dist_bin_SCRIPTS=rikin_xrates.m rikin_plot.py rikinplotlib.py\
+dist_bin_SCRIPTS=rikin_xrates.m rikin_plot.py\
 	rikin_pipeline.py rikin_pipeline.cfg
+
+# importable Python module
+python_PYTHON =  rikinplotlib.py
 
 # base sources, common to all programs
 BASE_SRCS=hybrid_pf.cc hybrid_pf.hh unpaired_pf.cc unpaired_pf.hh	\

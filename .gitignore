@@ -19,3 +19,10 @@ src/Makefile.in
 src/Tests/Makefile.in
 srna_homologs.zip
 tmp/
+Examples/HP1-HP2/
+Examples/HP3-HP2/
+Examples/MicA-MicA/
+Examples/MicA-OmpA/
+Examples/example/
+Examples/plot_kinetics.ipynb
+

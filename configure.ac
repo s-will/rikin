@@ -16,6 +16,11 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX
 AC_PROG_CC
 
+#############################
+# Python
+#
+AM_PATH_PYTHON([3.9])
+
 
 ## for compiling modified ViennaRNA code
 if test "$GCC" = yes; then
@@ -140,6 +145,7 @@ fi
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_TYPE_SIZE_T
+
 
 ###############################################################################
 # BEGIN DO NOT COMPILE CHECKS
