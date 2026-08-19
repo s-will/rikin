@@ -27,7 +27,8 @@ the top-level [`README.md`](../README.md).
 ### Toy example
 
 A short synthetic RNA pair, used as the minimal illustrative example in the
-main README:
+main README (see the [Quick example](../README.md#quick-example) section
+there):
 ```bash
 rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC
 ```
@@ -35,6 +36,10 @@ or equivalently, from the FASTA files in this directory:
 ```bash
 rikin_pipeline.py -o example --fastaA exampleA.fasta --fastaB exampleB.fasta
 ```
+
+| Kinetics | Top states |
+|---|---|
+| ![Example kinetics](Plots/example_kinetics.svg) | ![Example states](Plots/example_states.svg) |
 
 ### Kissing-hairpin (KHP) system
 
@@ -46,9 +51,13 @@ rikin_pipeline.py --fastaA HP1.fasta --fastaB HP2.fasta -c khp.cfg -o HP1-HP2
 rikin_pipeline.py --fastaA HP3.fasta --fastaB HP2.fasta -c khp.cfg -o HP3-HP2
 ```
 
-| HP1:HP2 | HP3:HP2 |
+| HP1:HP2 kinetics | HP1:HP2 states |
 |---|---|
-| ![HP1-HP2 kinetics](Plots/HP1-HP2_kinetics.svg) | ![HP3-HP2 kinetics](Plots/HP3-HP2_kinetics.svg) |
+| ![HP1-HP2 kinetics](Plots/HP1-HP2_kinetics.svg) | ![HP1-HP2 states](Plots/HP1-HP2_states.svg) |
+
+| HP3:HP2 kinetics | HP3:HP2 states |
+|---|---|
+| ![HP3-HP2 kinetics](Plots/HP3-HP2_kinetics.svg) | ![HP3-HP2 states](Plots/HP3-HP2_states.svg) |
 
 ### MicA–MicA homodimer
 
@@ -57,7 +66,10 @@ rikin_pipeline.py --fastaA HP3.fasta --fastaB HP2.fasta -c khp.cfg -o HP3-HP2
 ```bash
 rikin_pipeline.py --fastaA MicA.fasta --fastaB MicA.fasta -c MicA-MicA.cfg -o MicA-MicA
 ```
-![MicA-MicA kinetics](Plots/micA_micA_kinetics.svg)
+
+| MicA-MicA kinetics | MicA-MicA states |
+|---|---|
+| ![MicA-MicA kinetics](Plots/micA_micA_kinetics.svg) | ![MicA-MicA states](Plots/micA_micA_states.svg) |
 
 ### MicA–OmpA heterodimer
 
@@ -66,7 +78,10 @@ which MicA represses upon binding):
 ```bash
 rikin_pipeline.py --fastaA MicA.fasta --fastaB OmpA.fasta -c MicA-ompA.cfg -o MicA-OmpA
 ```
-![MicA-OmpA kinetics](Plots/micA_ompA_kinetics.svg)
+
+| MicA-OmpA kinetics | MicA-OmpA states |
+|---|---|
+| ![MicA-OmpA kinetics](Plots/micA_ompA_kinetics.svg) | ![MicA-OmpA states](Plots/micA_ompA_states.svg) |
 
 ## Reproducing everything
 
@@ -75,23 +90,6 @@ rikin_pipeline.py --fastaA MicA.fasta --fastaB OmpA.fasta -c MicA-ompA.cfg -o Mi
 bash run-all.sh
 ```
 
-> **Note:** at the time of writing, `run-all.sh` in this directory contains
-> the example commands as plain text rather than a runnable script (it's
-> effectively a copy of the command list above). Until it's fixed, either
-> run the commands shown above directly, or use the corrected version:
-> ```bash
-> #!/bin/bash
-> set -euo pipefail
->
-> rikin_pipeline.py -o example --fastaA exampleA.fasta --fastaB exampleB.fasta
->
-> rikin_pipeline.py --fastaA HP1.fasta --fastaB HP2.fasta -c khp.cfg -o HP1-HP2
-> rikin_pipeline.py --fastaA HP3.fasta --fastaB HP2.fasta -c khp.cfg -o HP3-HP2
->
-> rikin_pipeline.py --fastaA MicA.fasta --fastaB MicA.fasta -c MicA-MicA.cfg -o MicA-MicA
-> rikin_pipeline.py --fastaA MicA.fasta --fastaB OmpA.fasta -c MicA-ompA.cfg -o MicA-OmpA
-> ```
-
 ## Regenerating the plots
 
 Once the runs above have produced their output directories, `plot_kinetics.py`
@@ -99,23 +97,10 @@ loads each one and renders the full set of figures (state-probability
 kinetics, top-state structures, interaction dotplots, and per-nucleotide
 paired-probability kinetics) into `Plots/`.
 
-Since it's kept in [Jupytext](https://jupytext.readthedocs.io/) light
-format rather than as a plain script, open it as a notebook:
+Open `plot_kinetics.ipynb` directly in Jupyter/JupyterLab and run it:
 ```bash
-pip install jupytext   # if not already available
-jupytext --to notebook plot_kinetics.py   # produces plot_kinetics.ipynb
 jupyter notebook plot_kinetics.ipynb
 ```
-or, if you have the Jupytext extension enabled in Jupyter/JupyterLab, you
-can open `plot_kinetics.py` directly as a notebook without a separate
-conversion step.
-
-> We're considering committing the paired `.ipynb` alongside `plot_kinetics.py`
-> directly, to make this a one-step "open and run" without requiring Jupytext
-> as a prerequisite — check whether `plot_kinetics.ipynb` is present in this
-> directory, in which case you can skip straight to `jupyter notebook plot_kinetics.ipynb`.
-
-The notebook currently has some machine-specific absolute paths for
-locating each example's `input_directory` (e.g.
-`/home/will/Research/Projects/...`) that will need adjusting to point at
-wherever you ran the corresponding `rikin_pipeline.py` command above.
+It's paired with `plot_kinetics.py` via [Jupytext](https://jupytext.readthedocs.io/)
+(light format), so the two stay in sync if you prefer editing the `.py`
+version in a plain text editor or IDE.
