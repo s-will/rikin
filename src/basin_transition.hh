@@ -1,8 +1,6 @@
 #ifndef BASIN_TRANSITION
 #define BASIN_TRANSITION
 
-//#undef NDEBUG
-
 #include <cassert>
 #include <unordered_map>
 #include <iostream>

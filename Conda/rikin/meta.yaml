@@ -28,9 +28,11 @@ requirements:
     - viennarna
     - locarna
     - zlib
+    - llvm-openmp  # [osx]
   run:
     - viennarna
     - locarna
+    - llvm-openmp  # [osx]
     - python >=3.9
     - numpy
     - pandas

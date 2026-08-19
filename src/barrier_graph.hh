@@ -5,7 +5,6 @@
 #include <set>
 #include <iostream>
 #include <limits>
-#include <tr1/unordered_map>
 
 #include <zlib.h>
 

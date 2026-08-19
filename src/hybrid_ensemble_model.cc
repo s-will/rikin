@@ -1,8 +1,6 @@
 #include <cmath>
 #include <cstdint>
 
-#undef NDEBUG
-
 //#include  <cstdlib>
 //#include  <cstdio>
 #include <iostream>
