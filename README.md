@@ -237,8 +237,8 @@ A completed run's `outdir` contains, among others:
 | `bg`                         | Basin graph after discrete coarse-graining |
 | `barriers_track.gz`, `track-ipps-barriers.gz` | Barrier-stage tracking data |
 | `pf`, `bar`, `rates.gz`      | Partition functions, basins, and rates after pruning |
-| `kin`                        | Solved kinetics (state probabilities over time) |
-| `plots.done`                 | Marker file indicating plotting completed (used by `--reuse`) |
+| `kin`                        | Solved kinetics (final result of the computation, state probabilities over time) |
+| `*.svg`, `*.pdf`             | Plots of the RNA-RNA kinetics |
 
 These are intermediate/result files consumed by later pipeline stages; the
 plots produced by the final stage are the primary human-readable output.
