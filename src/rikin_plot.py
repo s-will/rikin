@@ -130,21 +130,21 @@ def plot_states(run: RikinRun, cfg: dict):
     plt.close(fig)
 
 
-@register("interaction_dotplot")
-def plot_interaction_dotplot(run: RikinRun, cfg: dict):
-    figsize = tuple(cfg.get("figsize", (8, 1.75)))
-    width_ratios = cfg.get("width_ratios", [30, 1])
-    fig, ax = plt.subplots(1, 2, figsize=figsize, width_ratios=width_ratios)
-
-    call_kwargs = _kwargs_from_cfg(
-        {k: v for k, v in cfg.items() if k not in ("figsize", "width_ratios")},
-        {"swap_axes": True, "vmax": 1},
-    )
-    run.interaction_dotplot(ax=ax[0], cbar_ax=ax[1], **call_kwargs)
-    fig.tight_layout()
-    run.optsave("interaction")
-    plt.close(fig)
-
+#@register("interaction_dotplot")
+#def plot_interaction_dotplot(run: RikinRun, cfg: dict):
+#    figsize = tuple(cfg.get("figsize", (8, 1.75)))
+#    width_ratios = cfg.get("width_ratios", [30, 1])
+#    fig, ax = plt.subplots(1, 2, figsize=figsize, width_ratios=width_ratios)
+#
+#    call_kwargs = _kwargs_from_cfg(
+#        {k: v for k, v in cfg.items() if k not in ("figsize", "width_ratios")},
+#        {"swap_axes": True, "vmax": 1},
+#    )
+#    run.interaction_dotplot(ax=ax[0], cbar_ax=ax[1], **call_kwargs)
+#    fig.tight_layout()
+#    run.optsave("interaction")
+#    plt.close(fig)
+#
 
 @register("dotplot")
 def plot_dotplot(run: RikinRun, cfg: dict):

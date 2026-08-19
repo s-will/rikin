@@ -121,8 +121,8 @@ directory.
 |---|---|
 | ![State probabilities over time](Examples/Plots/example_kinetics.svg) | ![Most prominent interaction states](Examples/Plots/example_states.svg) |
 | Predicted state probabilities over time | Structures of the most prominent states |
-| ![Interaction dotplot](Examples/Plots/example_interaction.svg) | ![Per-nucleotide pairing probabilities over time](Examples/Plots/example_paired_kinetics.svg) |
-| Interaction probability dotplot | Per-nucleotide pairing probabilities over time |
+| ![Interaction dotplot](Examples/Plots/example_dotplot.svg) | ![Per-nucleotide pairing probabilities over time](Examples/Plots/example_paired_kinetics.svg) |
+| Base pair probability dotplot | Per-nucleotide pairing probabilities over time |
 
 Equivalently, sequences can be given via FASTA files instead of directly on
 the command line:
