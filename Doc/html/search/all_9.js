@@ -1,10 +1,25 @@
 var searchData=
 [
-  ['debug_5fout_5f_0',['debug_out_',['../classBarrierGraph.html#a6fb22379f40ea99e36424d43db5dd370',1,'BarrierGraph']]],
-  ['decode_1',['decode',['../classHybEnsModel_1_1StateDescription.html#a85c310ff0808a2711e94c0c01b73e1ff',1,'HybEnsModel::StateDescription']]],
-  ['def_2',['def',['../classOrderedSparseMatrix.html#a5a484e520391de0bb759685505255c00',1,'OrderedSparseMatrix']]],
-  ['def_5f_3',['def_',['../classConstSparseMatrix.html#a99f6ec93cb55944de75fea5afb142520',1,'ConstSparseMatrix::def_'],['../classOrderedSparseMatrix.html#a25634a5b7ee67a6453da242b838b0152',1,'OrderedSparseMatrix::def_']]],
-  ['directory_20layout_4',['Output directory layout',['../index.html#autotoc_md11',1,'']]],
-  ['dissolve_5fbasin_5',['dissolve_basin',['../classBarrierGraph.html#a0184068cd0d44594c7bd1c341fc445f7',1,'BarrierGraph']]],
-  ['duplexinit_6',['DuplexInit',['../classHybridPF.html#a3dbefe089136460ad7ef2d8d820d369b',1,'HybridPF']]]
+  ['capacity_0',['capacity',['../classConstSparseMatrix.html#a22f98edeb956dbb24959751ec3c0153c',1,'ConstSparseMatrix']]],
+  ['changelog_1',['ChangeLog',['../md_ChangeLog.html',1,'']]],
+  ['clear_2',['clear',['../classBasinPruningInfo.html#a873c7d346660a475d34388dd847a0725',1,'BasinPruningInfo::clear()'],['../classOrderedSparseMatrix.html#ad5824f6f1e5c8ed62befda5a04e72427',1,'OrderedSparseMatrix::clear()']]],
+  ['code_5ft_3',['code_t',['../classHybEnsModel_1_1StateDescription.html#a662d7a05384d4ca88485067cb301e140',1,'HybEnsModel::StateDescription']]],
+  ['code_5ft_5fhash_4',['code_t_hash',['../classHybEnsModel_1_1StateDescription_1_1code__t__hash.html',1,'HybEnsModel::StateDescription']]],
+  ['command_20line_20tools_5',['Command-line tools',['../index.html#autotoc_md10',1,'']]],
+  ['comp_5fentry_5fval_6',['comp_entry_val',['../classConstSparseMatrix.html#a408d2f49d02ab5415e1239dadb5253a3',1,'ConstSparseMatrix']]],
+  ['compbasinidxs_7',['compbasinidxs',['../classBarrierGraph_1_1compBasinIdxs.html',1,'BarrierGraph::compBasinIdxs'],['../classBarrierGraph_1_1compBasinIdxs.html#a462ecb93631e327978a90a6123aee782',1,'BarrierGraph::compBasinIdxs::compBasinIdxs()']]],
+  ['compilation_20installation_20from_20the_20source_20repository_8',['Compilation/installation from the source repository',['../index.html#autotoc_md5',1,'']]],
+  ['complement_9',['complement',['../classHybEnsModel.html#afabdf0b351641981722b36e821d2007e',1,'HybEnsModel']]],
+  ['compute_5fpruning_5fpps_10',['compute_pruning_pps',['../classBarrierGraph.html#a0b7e3a88f9cddfac5c6b8b752c9582af',1,'BarrierGraph']]],
+  ['compute_5fz_11',['compute_Z',['../classBarrierGraph.html#a904d79f05f72428082fb62767371328f',1,'BarrierGraph']]],
+  ['conda_20package_12',['Installation from the Conda package',['../index.html#autotoc_md4',1,'']]],
+  ['configuration_20file_13',['Configuration file',['../index.html#autotoc_md9',1,'']]],
+  ['connect_5fcomponents_14',['connect_components',['../classBarrierGraph.html#a8d6e9f930ef969b77b4c8a6d291536ea',1,'BarrierGraph']]],
+  ['connected_5fcomponents_15',['connected_components',['../classBasinTransitions.html#af9c36def5074406ddfabeaeed37e8739',1,'BasinTransitions::connected_components()'],['../classBarrierGraph.html#ad8f006032422f3fe38cd03f4a1c0e69f',1,'BarrierGraph::connected_components(std::vector&lt; size_t &gt; &amp;components, std::vector&lt; size_t &gt; &amp;component_sizes, std::vector&lt; double &gt; &amp;component_pfs) const']]],
+  ['considered_5ftransitions_5f_16',['considered_transitions_',['../classBarrierGraph.html#a5de3335e64c134daefe4be5b40a46907',1,'BarrierGraph']]],
+  ['const_5fiterator_17',['const_iterator',['../classOrderedSparseMatrix.html#a85f430763b80d791b049166a3f26ac40',1,'OrderedSparseMatrix::const_iterator'],['../classConstSparseMatrix.html#a3da592183932238034e5d7e529d85bbd',1,'ConstSparseMatrix::const_iterator']]],
+  ['const_5fpp_5fmatrix_5ft_18',['const_pp_matrix_t',['../classPairPfs.html#a1067a48807b143712350efffbc58e83f',1,'PairPfs']]],
+  ['constsparsematrix_19',['constsparsematrix',['../classConstSparseMatrix.html#aee5661ee0179fbeea963f16f5c44c306',1,'ConstSparseMatrix::ConstSparseMatrix()'],['../classConstSparseMatrix.html#ab940023d13b32ea95945c722c7603a49',1,'ConstSparseMatrix::ConstSparseMatrix(const key_value_vec_t &amp;x)'],['../classConstSparseMatrix.html',1,'ConstSparseMatrix&lt; _index_t, _value_t &gt;']]],
+  ['contacts_20',['Authors and contacts',['../index.html#autotoc_md14',1,'']]],
+  ['contents_21',['contents',['../md_Examples_2Examples.html#autotoc_md23',1,'Contents'],['../index.html#autotoc_md1',1,'Table of contents']]]
 ];

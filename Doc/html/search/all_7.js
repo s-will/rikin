@@ -1,16 +1,12 @@
 var searchData=
 [
-  ['background_0',['Background',['../index.html#autotoc_md2',1,'']]],
-  ['barrier_5fenergy_1',['barrier_energy',['../structRRIBarrierGraph_1_1transition__t.html#a82dd4eb1ab47a3987ea885a8195db3b2',1,'RRIBarrierGraph::transition_t']]],
-  ['barriergraph_2',['barriergraph',['../classBarrierGraph.html',1,'BarrierGraph'],['../classBarrierGraph.html#ad1c635fb48fbb0372eb0d61f2b05953c',1,'BarrierGraph::BarrierGraph(bool special_first_state, bool verbose, bool debug_out)'],['../classBarrierGraph.html#acd3bd6169515266b07931df2b42ff4f9',1,'BarrierGraph::BarrierGraph(std::istream &amp;in, double min_rate, bool special_first_state, bool verbose, bool debug_out, bool track_pruning)']]],
-  ['basin_3',['basin',['../classBasin.html',1,'Basin'],['../classBasin.html#a42ca902e2a56e7ff00d2cd55a15005a8',1,'Basin::Basin()'],['../classBasin.html#a842264fe3b252f839428faa490ca9df0',1,'Basin::Basin(size_t index, double boltzmann_weight)']]],
-  ['basin_5fpruning_5finfos_5f_4',['basin_pruning_infos_',['../classBarrierGraph.html#a23d59bc850b6149230850c9c82790787',1,'BarrierGraph']]],
-  ['basin_5fpruning_5finfos_5ft_5',['basin_pruning_infos_t',['../classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888',1,'BarrierGraph']]],
-  ['basininfo_6',['basininfo',['../classBasinInfo.html#acec80717511203d7e0d57ed2361edc9e',1,'BasinInfo::BasinInfo()'],['../classBasinInfo.html',1,'BasinInfo']]],
-  ['basinpruninginfo_7',['basinpruninginfo',['../classBasinPruningInfo.html',1,'BasinPruningInfo'],['../classBasinPruningInfo.html#abcabf1b41114473c64b635b49e41586d',1,'BasinPruningInfo::BasinPruningInfo()']]],
-  ['basins_5f_8',['basins_',['../classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d',1,'BarrierGraph']]],
-  ['basintransitions_9',['BasinTransitions',['../classBasinTransitions.html',1,'']]],
-  ['begin_10',['begin',['../classBasinInfo.html#ae3ec3e107efe0a684ff30201ac8080d5',1,'BasinInfo::begin()'],['../classBasinPruningInfo.html#a12204aaef6903f2d1ef5123a4da76fb2',1,'BasinPruningInfo::begin()'],['../classConstSparseMatrix.html#a96ca69a3742f537ec6eea39640427420',1,'ConstSparseMatrix::begin()'],['../classHybEnsModel_1_1StateDescription.html#a6547ef0ae352b4ed7b6c5ffdfa0cd6a4',1,'HybEnsModel::StateDescription::begin() const'],['../classHybEnsModel_1_1StateDescription.html#ab057a15260b454a0e803a64ddfcd2129',1,'HybEnsModel::StateDescription::begin()'],['../classOrderedSparseMatrix.html#af1270ea04c61412c03973ce6f7af21e0',1,'OrderedSparseMatrix::begin()']]],
-  ['binsearch_11',['binsearch',['../classConstSparseMatrix.html#ac83b5add159bda481249f7c3d0cc4736',1,'ConstSparseMatrix']]],
-  ['boltzmann_5fweight_12',['boltzmann_weight',['../classHybEnsModel.html#a8ea5ecd84ede269d178432750fbfcf34',1,'HybEnsModel']]]
+  ['add_0',['add',['../classBasinTransitions.html#a71ff4dc59918f7d48caa66f23ea38f34',1,'BasinTransitions']]],
+  ['add_5fstate_1',['add_state',['../classBasin.html#a977a2e57a9c4a4737dfce36af724f23d',1,'Basin::add_state()'],['../classBasinInfo.html#aeb76212e3af701a99dde55469de9fabe',1,'BasinInfo::add_state()']]],
+  ['add_5ftransition_2',['add_transition',['../classRRIBarrierGraph.html#a6eece1d48f9dd52e8f704e64dcb8897e',1,'RRIBarrierGraph']]],
+  ['and_20contacts_3',['Authors and contacts',['../index.html#autotoc_md14',1,'']]],
+  ['apply_4',['apply',['../classRemoveSiteMove.html#a179ebeec61b0d1b08c2d1a24822f392b',1,'RemoveSiteMove::apply()'],['../classSplitMove.html#ac6918960c93e562e55808c947d42fca4',1,'SplitMove::apply()'],['../classMergeMove.html#a0f63ebef21622f798b005bd0b3644284',1,'MergeMove::apply()'],['../classNewSiteMoveR.html#a7607eed6cb8b70ae75e371d59751cb8e',1,'NewSiteMoveR::apply()'],['../classNewSiteMoveL.html#addd29d6d0cb99ecb51da33eb76685aae',1,'NewSiteMoveL::apply()'],['../classNewSiteMoveF.html#a70e87b16f7b391930b309f6eb696f964',1,'NewSiteMoveF::apply()'],['../classShiftMove.html#af2392f7da8e378592333f0cd902e0d24',1,'ShiftMove::apply()'],['../classGrowShrinkMoveSR.html#abd7c0260740829689fc8853dfa28c97e',1,'GrowShrinkMoveSR::apply()'],['../classGrowShrinkMoveSL.html#aee670a741d42b4e1ab213e20cb0a7e25',1,'GrowShrinkMoveSL::apply()'],['../classGrowShrinkMoveFR.html#a318c03ab7ecd89fc9cb94bbfae5278d1',1,'GrowShrinkMoveFR::apply()'],['../classGrowShrinkMoveFL.html#a6a715ae3e08f72cbb71311155b02e660',1,'GrowShrinkMoveFL::apply()'],['../classMove.html#a425cdc3dad73db86f940bd355ea8697f',1,'Move::apply()']]],
+  ['apr_202016_5',['0.9 (Apr, 2016)',['../md_ChangeLog.html#autotoc_md21',1,'']]],
+  ['assert_5fconsistency_6',['assert_consistency',['../classBasinTransitions.html#a0c1865604a5508e01173cf385a7f44f5',1,'BasinTransitions']]],
+  ['aug_202026_7',['0.9.5 (Aug, 2026)',['../md_ChangeLog.html#autotoc_md16',1,'']]],
+  ['authors_20and_20contacts_8',['Authors and contacts',['../index.html#autotoc_md14',1,'']]]
 ];
