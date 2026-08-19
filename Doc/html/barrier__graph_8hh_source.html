@@ -131,304 +131,303 @@ $(document).ready(function(){initNavTree('barrier__graph_8hh_source.html',''); i
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;set&gt;</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;iostream&gt;</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;limits&gt;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;tr1/unordered_map&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;zlib.h&gt;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;basin.hh&quot;</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;basin_pruning_info.hh&quot;</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &quot;basin_transition.hh&quot;</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">class </span><a class="code hl_class" href="classPairPfs.html">PairPfs</a>;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
-<div class="foldopen" id="foldopen00018" data-start="{" data-end="}">
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="namespaceLocARNA.html">   18</a></span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceLocARNA.html">LocARNA</a> {</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classLocARNA_1_1SparseMatrix.html">   19</a></span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; <span class="keyword">class </span><a class="code hl_class" href="classLocARNA_1_1SparseMatrix.html">SparseMatrix</a>;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>}</div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;zlib.h&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &quot;basin.hh&quot;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;basin_pruning_info.hh&quot;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;basin_transition.hh&quot;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">class </span><a class="code hl_class" href="classPairPfs.html">PairPfs</a>;</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
+<div class="foldopen" id="foldopen00017" data-start="{" data-end="}">
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="namespaceLocARNA.html">   17</a></span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceLocARNA.html">LocARNA</a> {</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="classLocARNA_1_1SparseMatrix.html">   18</a></span><span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; <span class="keyword">class </span><a class="code hl_class" href="classLocARNA_1_1SparseMatrix.html">SparseMatrix</a>;</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>}</div>
 </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="foldopen" id="foldopen00030" data-start="{" data-end="};">
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="classBarrierGraph.html">   30</a></span><span class="keyword">class </span><a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>{</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#aa514241e5bc5722d11332015e3e8c582">   37</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="classBarrierGraph.html#aa514241e5bc5722d11332015e3e8c582">special_first_state_</a>;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="comment">/* control output */</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#ad2bf0c3c74432ff0028a6719eca93284">   42</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="classBarrierGraph.html#ad2bf0c3c74432ff0028a6719eca93284">verbose_</a>;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a6fb22379f40ea99e36424d43db5dd370">   45</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="classBarrierGraph.html#a6fb22379f40ea99e36424d43db5dd370">debug_out_</a>;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a86f53c6c9e198fac96a5993fde81265d">   53</a></span>    <a class="code hl_class" href="classBasinTransitions.html">BasinTransitions</a> <a class="code hl_variable" href="classBarrierGraph.html#a86f53c6c9e198fac96a5993fde81265d">transitions_</a>;</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">   56</a></span>    std::vector&lt;Basin&gt; <a class="code hl_variable" href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">basins_</a>; <span class="comment">// 0-based, note: also basin indices are 0-based</span></div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#aa5d5041763eac8b84d2892bc753b071c">   59</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="classBarrierGraph.html#aa5d5041763eac8b84d2892bc753b071c">track_pruning_</a>;</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a2b90afbd1f2a716b8b936a5ff406c62f">   62</a></span>    <span class="keywordtype">size_t</span> <a class="code hl_variable" href="classBarrierGraph.html#a2b90afbd1f2a716b8b936a5ff406c62f">num_input_states_</a>;</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#aceee6b5f84eb0438cadc305ab3802ab2">   65</a></span>    <span class="keywordtype">double</span> <a class="code hl_variable" href="classBarrierGraph.html#aceee6b5f84eb0438cadc305ab3802ab2">min_contribution_</a>;</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888">   67</a></span>    <span class="keyword">typedef</span> std::vector&lt;BasinPruningInfo&gt; <a class="code hl_typedef" href="classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888">basin_pruning_infos_t</a>;</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a23d59bc850b6149230850c9c82790787">   70</a></span>    <a class="code hl_typedef" href="classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888">basin_pruning_infos_t</a> <a class="code hl_variable" href="classBarrierGraph.html#a23d59bc850b6149230850c9c82790787">basin_pruning_infos_</a>;</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">size_t</span></div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a6d6c5db92b85dd083f2a64821dea08c7">   75</a></span>    <a class="code hl_variable" href="classBarrierGraph.html#a6d6c5db92b85dd083f2a64821dea08c7">removed_transitions_</a>;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordtype">size_t</span></div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a5de3335e64c134daefe4be5b40a46907">   80</a></span>    <a class="code hl_variable" href="classBarrierGraph.html#a5de3335e64c134daefe4be5b40a46907">considered_transitions_</a>;</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <a class="code hl_function" href="classBarrierGraph.html#af50a798d627382a064549687c89002c8">push_back_basin</a>(<span class="keywordtype">size_t</span> index, <span class="keywordtype">double</span> pf);</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
+<div class="foldopen" id="foldopen00029" data-start="{" data-end="};">
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="classBarrierGraph.html">   29</a></span><span class="keyword">class </span><a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>{</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#aa514241e5bc5722d11332015e3e8c582">   36</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="classBarrierGraph.html#aa514241e5bc5722d11332015e3e8c582">special_first_state_</a>;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="comment">/* control output */</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#ad2bf0c3c74432ff0028a6719eca93284">   41</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="classBarrierGraph.html#ad2bf0c3c74432ff0028a6719eca93284">verbose_</a>;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a6fb22379f40ea99e36424d43db5dd370">   44</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="classBarrierGraph.html#a6fb22379f40ea99e36424d43db5dd370">debug_out_</a>;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a86f53c6c9e198fac96a5993fde81265d">   52</a></span>    <a class="code hl_class" href="classBasinTransitions.html">BasinTransitions</a> <a class="code hl_variable" href="classBarrierGraph.html#a86f53c6c9e198fac96a5993fde81265d">transitions_</a>;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">   55</a></span>    std::vector&lt;Basin&gt; <a class="code hl_variable" href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">basins_</a>; <span class="comment">// 0-based, note: also basin indices are 0-based</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#aa5d5041763eac8b84d2892bc753b071c">   58</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="classBarrierGraph.html#aa5d5041763eac8b84d2892bc753b071c">track_pruning_</a>;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a2b90afbd1f2a716b8b936a5ff406c62f">   61</a></span>    <span class="keywordtype">size_t</span> <a class="code hl_variable" href="classBarrierGraph.html#a2b90afbd1f2a716b8b936a5ff406c62f">num_input_states_</a>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#aceee6b5f84eb0438cadc305ab3802ab2">   64</a></span>    <span class="keywordtype">double</span> <a class="code hl_variable" href="classBarrierGraph.html#aceee6b5f84eb0438cadc305ab3802ab2">min_contribution_</a>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888">   66</a></span>    <span class="keyword">typedef</span> std::vector&lt;BasinPruningInfo&gt; <a class="code hl_typedef" href="classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888">basin_pruning_infos_t</a>;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a23d59bc850b6149230850c9c82790787">   69</a></span>    <a class="code hl_typedef" href="classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888">basin_pruning_infos_t</a> <a class="code hl_variable" href="classBarrierGraph.html#a23d59bc850b6149230850c9c82790787">basin_pruning_infos_</a>;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keywordtype">size_t</span></div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a6d6c5db92b85dd083f2a64821dea08c7">   74</a></span>    <a class="code hl_variable" href="classBarrierGraph.html#a6d6c5db92b85dd083f2a64821dea08c7">removed_transitions_</a>;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">size_t</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a5de3335e64c134daefe4be5b40a46907">   79</a></span>    <a class="code hl_variable" href="classBarrierGraph.html#a5de3335e64c134daefe4be5b40a46907">considered_transitions_</a>;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <a class="code hl_function" href="classBarrierGraph.html#af50a798d627382a064549687c89002c8">push_back_basin</a>(<span class="keywordtype">size_t</span> index, <span class="keywordtype">double</span> pf);</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    <a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a>( <span class="keywordtype">bool</span> special_first_state,</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>          <span class="keywordtype">bool</span> verbose,</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>          <span class="keywordtype">bool</span> debug_out</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>          );</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    <a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a>(std::istream &amp;in,</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>         <span class="keywordtype">double</span> min_rate,</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>         <span class="keywordtype">bool</span> special_first_state,</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>         <span class="keywordtype">bool</span> verbose,</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>         <span class="keywordtype">bool</span> debug_out,</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>         <span class="keywordtype">bool</span> track_pruning</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>         );</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span> </div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>    <a class="code hl_function" href="classBarrierGraph.html#ace00abef5798a54c1a82f3299bf48285">multiply_transitions_from_to</a>(<span class="keywordtype">int</span> basin_idx, <span class="keywordtype">double</span> factor);</div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span> </div>
-<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    std::ostream &amp;</div>
-<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    <a class="code hl_function" href="classBarrierGraph.html#abe4ab8db79ab2fd770c27de732dd2fad">write_binary</a>(std::ostream &amp;out, <span class="keywordtype">double</span> min_rate) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a>( <span class="keywordtype">bool</span> special_first_state,</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>          <span class="keywordtype">bool</span> verbose,</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>          <span class="keywordtype">bool</span> debug_out</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>          );</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a>(std::istream &amp;in,</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>         <span class="keywordtype">double</span> min_rate,</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>         <span class="keywordtype">bool</span> special_first_state,</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>         <span class="keywordtype">bool</span> verbose,</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>         <span class="keywordtype">bool</span> debug_out,</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>         <span class="keywordtype">bool</span> track_pruning</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>         );</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span> </div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    <a class="code hl_function" href="classBarrierGraph.html#ace00abef5798a54c1a82f3299bf48285">multiply_transitions_from_to</a>(<span class="keywordtype">int</span> basin_idx, <span class="keywordtype">double</span> factor);</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span> </div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    std::ostream &amp;</div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    <a class="code hl_function" href="classBarrierGraph.html#abe4ab8db79ab2fd770c27de732dd2fad">write_binary</a>(std::ostream &amp;out, <span class="keywordtype">double</span> min_rate) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span> </div>
 <div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span> </div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span> </div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    <span class="keywordtype">double</span></div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>    <a class="code hl_function" href="classBarrierGraph.html#afce13c368566b9cf63ff16cb9921afb9">outflow_pf</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span> </div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    <span class="keywordtype">double</span></div>
-<div class="foldopen" id="foldopen00173" data-start="{" data-end="}">
-<div class="line"><a id="l00173" name="l00173"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a35782918454680f82881690e9edba06b">  173</a></span>    <a class="code hl_function" href="classBarrierGraph.html#a35782918454680f82881690e9edba06b">outflow_rate</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x)<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classBarrierGraph.html#afce13c368566b9cf63ff16cb9921afb9">outflow_pf</a>(x)/x.<a class="code hl_function" href="classBasin.html#a6b0609c70ed00a45ff83180cc2915611">Z</a>();</div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>    }</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>    <span class="keywordtype">double</span></div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    <a class="code hl_function" href="classBarrierGraph.html#afce13c368566b9cf63ff16cb9921afb9">outflow_pf</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span> </div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>    <span class="keywordtype">double</span></div>
+<div class="foldopen" id="foldopen00172" data-start="{" data-end="}">
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a35782918454680f82881690e9edba06b">  172</a></span>    <a class="code hl_function" href="classBarrierGraph.html#a35782918454680f82881690e9edba06b">outflow_rate</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classBarrierGraph.html#afce13c368566b9cf63ff16cb9921afb9">outflow_pf</a>(x)/x.<a class="code hl_function" href="classBasin.html#a6b0609c70ed00a45ff83180cc2915611">Z</a>();</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    }</div>
 </div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span> </div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>    <span class="keywordtype">double</span></div>
-<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>    <a class="code hl_function" href="classBarrierGraph.html#ab2212c4a95c4b6fc9b29f703f5140e52">max_outflow</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span> </div>
-<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>    <span class="keywordtype">double</span></div>
-<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    <a class="code hl_function" href="classBarrierGraph.html#a904d79f05f72428082fb62767371328f">compute_Z</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span> </div>
-<div class="foldopen" id="foldopen00193" data-start="{" data-end="};">
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno"><a class="line" href="classBarrierGraph_1_1compBasinIdxs.html">  193</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classBarrierGraph_1_1compBasinIdxs.html">compBasinIdxs</a> {</div>
-<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>    <span class="keyword">const</span> <a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a> &amp;bg_;</div>
-<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00196" name="l00196"></a><span class="lineno"><a class="line" href="classBarrierGraph_1_1compBasinIdxs.html#a462ecb93631e327978a90a6123aee782">  196</a></span>    <a class="code hl_function" href="classBarrierGraph_1_1compBasinIdxs.html#a462ecb93631e327978a90a6123aee782">compBasinIdxs</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a> &amp;bg): bg_(bg) {}</div>
-<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span> </div>
-<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    <span class="keywordtype">bool</span></div>
-<div class="foldopen" id="foldopen00199" data-start="{" data-end="}">
-<div class="line"><a id="l00199" name="l00199"></a><span class="lineno"><a class="line" href="classBarrierGraph_1_1compBasinIdxs.html#ac05af1be5b3ca930028750ff13bd0743">  199</a></span>    <a class="code hl_function" href="classBarrierGraph_1_1compBasinIdxs.html#ac05af1be5b3ca930028750ff13bd0743">operator() </a>(<span class="keywordtype">size_t</span> a,<span class="keywordtype">size_t</span> b)<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>        <span class="keywordflow">return</span> bg_.<a class="code hl_variable" href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">basins_</a>[a].Z() &lt; bg_.<a class="code hl_variable" href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">basins_</a>[b].Z();</div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    }</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span> </div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>    <span class="keywordtype">double</span></div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>    <a class="code hl_function" href="classBarrierGraph.html#ab2212c4a95c4b6fc9b29f703f5140e52">max_outflow</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span> </div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>    <span class="keywordtype">double</span></div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>    <a class="code hl_function" href="classBarrierGraph.html#a904d79f05f72428082fb62767371328f">compute_Z</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span> </div>
+<div class="foldopen" id="foldopen00192" data-start="{" data-end="};">
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno"><a class="line" href="classBarrierGraph_1_1compBasinIdxs.html">  192</a></span>    <span class="keyword">class </span><a class="code hl_class" href="classBarrierGraph_1_1compBasinIdxs.html">compBasinIdxs</a> {</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>    <span class="keyword">const</span> <a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a> &amp;bg_;</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno"><a class="line" href="classBarrierGraph_1_1compBasinIdxs.html#a462ecb93631e327978a90a6123aee782">  195</a></span>    <a class="code hl_function" href="classBarrierGraph_1_1compBasinIdxs.html#a462ecb93631e327978a90a6123aee782">compBasinIdxs</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBarrierGraph.html">BarrierGraph</a> &amp;bg): bg_(bg) {}</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span> </div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    <span class="keywordtype">bool</span></div>
+<div class="foldopen" id="foldopen00198" data-start="{" data-end="}">
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno"><a class="line" href="classBarrierGraph_1_1compBasinIdxs.html#ac05af1be5b3ca930028750ff13bd0743">  198</a></span>    <a class="code hl_function" href="classBarrierGraph_1_1compBasinIdxs.html#ac05af1be5b3ca930028750ff13bd0743">operator() </a>(<span class="keywordtype">size_t</span> a,<span class="keywordtype">size_t</span> b)<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>        <span class="keywordflow">return</span> bg_.<a class="code hl_variable" href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">basins_</a>[a].Z() &lt; bg_.<a class="code hl_variable" href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">basins_</a>[b].Z();</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    }</div>
 </div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    };</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    };</div>
 </div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span> </div>
-<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>    merge_in_basin(<a class="code hl_class" href="classBasin.html">Basin</a> &amp;x0, <a class="code hl_class" href="classBasin.html">Basin</a> &amp;y, <span class="keywordtype">double</span> fraction);</div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span> </div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>    <span class="keywordtype">bool</span></div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>    is_to_be_merged(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x0, <span class="keywordtype">double</span> <a class="code hl_function" href="classBarrierGraph.html#ab2212c4a95c4b6fc9b29f703f5140e52">max_outflow</a>, <span class="keywordtype">double</span> min_p_equ) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span> </div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>    <a class="code hl_function" href="classBarrierGraph.html#a0184068cd0d44594c7bd1c341fc445f7">dissolve_basin</a>(<a class="code hl_class" href="classBasin.html">Basin</a> &amp;x0, <span class="keywordtype">double</span> min_rate);</div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span> </div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>    <a class="code hl_function" href="classBarrierGraph.html#a969f00163200e3de1a48f05b281a65b9">prune</a>(<span class="keywordtype">double</span> <a class="code hl_function" href="classBarrierGraph.html#ab2212c4a95c4b6fc9b29f703f5140e52">max_outflow</a>, <span class="keywordtype">double</span> min_p_equ, <span class="keywordtype">double</span> min_rate);</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span> </div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>    merge_in_basin(<a class="code hl_class" href="classBasin.html">Basin</a> &amp;x0, <a class="code hl_class" href="classBasin.html">Basin</a> &amp;y, <span class="keywordtype">double</span> fraction);</div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span> </div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>    <span class="keywordtype">bool</span></div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>    is_to_be_merged(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x0, <span class="keywordtype">double</span> <a class="code hl_function" href="classBarrierGraph.html#ab2212c4a95c4b6fc9b29f703f5140e52">max_outflow</a>, <span class="keywordtype">double</span> min_p_equ) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span> </div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>    <a class="code hl_function" href="classBarrierGraph.html#a0184068cd0d44594c7bd1c341fc445f7">dissolve_basin</a>(<a class="code hl_class" href="classBasin.html">Basin</a> &amp;x0, <span class="keywordtype">double</span> min_rate);</div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span> </div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>    <a class="code hl_function" href="classBarrierGraph.html#a969f00163200e3de1a48f05b281a65b9">prune</a>(<span class="keywordtype">double</span> <a class="code hl_function" href="classBarrierGraph.html#ab2212c4a95c4b6fc9b29f703f5140e52">max_outflow</a>, <span class="keywordtype">double</span> min_p_equ, <span class="keywordtype">double</span> min_rate);</div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span> </div>
 <div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span> </div>
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>    <a class="code hl_function" href="classBarrierGraph.html#a5656fc7d02fe63f5080ba26bfd13c1fd">reduce_basin_set</a>(<span class="keyword">const</span> std::set&lt;size_t&gt; &amp;to_keep, <span class="keywordtype">double</span> min_rate);</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>    <a class="code hl_function" href="classBarrierGraph.html#a5656fc7d02fe63f5080ba26bfd13c1fd">reduce_basin_set</a>(<span class="keyword">const</span> std::set&lt;size_t&gt; &amp;to_keep, <span class="keywordtype">double</span> min_rate);</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span> </div>
 <div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span> </div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span> </div>
-<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>    <a class="code hl_function" href="classBarrierGraph.html#a8e38a6959b27431a61c4b11405701169">filter_basin_transitions</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x0, <span class="keywordtype">double</span> min_rate);</div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span> </div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>    <a class="code hl_function" href="classBarrierGraph.html#af0ff7b6e7db7836c6e465480bbe4fbd4">print_basins</a>(std::ostream &amp;out) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span> </div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>    <a class="code hl_function" href="classBarrierGraph.html#aa5d692b1fd18ddced20aa22a43c3a6ee">print_edges</a>(std::ostream &amp;out,<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;b) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span> </div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>    <a class="code hl_function" href="classBarrierGraph.html#a539e0497d368a2c1d2cdec9d7641b9b5">print_barrier_graph</a>(std::ostream &amp;out) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span> </div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>    <span class="keywordtype">size_t</span></div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>    <a class="code hl_function" href="classBarrierGraph.html#a6a74a59523aec1ac19506bcb4c7fa9e8">num_basins</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span> </div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>    <span class="keywordtype">size_t</span></div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>    <a class="code hl_function" href="classBarrierGraph.html#af5dc3e60b0de3bc1613373ef88a163ac">num_transitions</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>    <a class="code hl_function" href="classBarrierGraph.html#a8e38a6959b27431a61c4b11405701169">filter_basin_transitions</a>(<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;x0, <span class="keywordtype">double</span> min_rate);</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span> </div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>    <a class="code hl_function" href="classBarrierGraph.html#af0ff7b6e7db7836c6e465480bbe4fbd4">print_basins</a>(std::ostream &amp;out) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span> </div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>    <a class="code hl_function" href="classBarrierGraph.html#aa5d692b1fd18ddced20aa22a43c3a6ee">print_edges</a>(std::ostream &amp;out,<span class="keyword">const</span> <a class="code hl_class" href="classBasin.html">Basin</a> &amp;b) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span> </div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>    <a class="code hl_function" href="classBarrierGraph.html#a539e0497d368a2c1d2cdec9d7641b9b5">print_barrier_graph</a>(std::ostream &amp;out) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span> </div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>    <span class="keywordtype">size_t</span></div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>    <a class="code hl_function" href="classBarrierGraph.html#a6a74a59523aec1ac19506bcb4c7fa9e8">num_basins</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span> </div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>    <span class="keywordtype">size_t</span></div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>    <a class="code hl_function" href="classBarrierGraph.html#af5dc3e60b0de3bc1613373ef88a163ac">num_transitions</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span> </div>
 <div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span> </div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span> </div>
-<div class="foldopen" id="foldopen00327" data-start="{" data-end="}">
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a35c5cad809c8da180fa017c8ea2ebc23">  327</a></span>    <a class="code hl_function" href="classBarrierGraph.html#a35c5cad809c8da180fa017c8ea2ebc23">~BarrierGraph</a>() {</div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>    }</div>
+<div class="foldopen" id="foldopen00326" data-start="{" data-end="}">
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno"><a class="line" href="classBarrierGraph.html#a35c5cad809c8da180fa017c8ea2ebc23">  326</a></span>    <a class="code hl_function" href="classBarrierGraph.html#a35c5cad809c8da180fa017c8ea2ebc23">~BarrierGraph</a>() {</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>    }</div>
 </div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span> </div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>    std::ostream &amp;</div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>    <a class="code hl_function" href="classBarrierGraph.html#a72f8bcc097bd8bce93429fde03558f8d">print_stats</a>(std::ostream &amp;out) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span> </div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>    <a class="code hl_function" href="classBarrierGraph.html#ad8f006032422f3fe38cd03f4a1c0e69f">connected_components</a>(std::vector&lt;size_t&gt; &amp;components,</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>                         std::vector&lt;size_t&gt; &amp;component_sizes,</div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>                         std::vector&lt;double&gt; &amp;component_pfs</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>                         ) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span> </div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>    <a class="code hl_function" href="classBarrierGraph.html#ae9a82bc7adccd0e23f57c48aedf965cf">keep_single_component</a>(<span class="keywordtype">size_t</span> c,<span class="keyword">const</span> std::vector&lt;size_t&gt; &amp;components);</div>
-<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span> </div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>    <a class="code hl_function" href="classBarrierGraph.html#a8d6e9f930ef969b77b4c8a6d291536ea">connect_components</a>(<span class="keywordtype">size_t</span> component_num,</div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>                       <span class="keyword">const</span> std::vector&lt;size_t&gt; &amp;components,</div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>                       <span class="keywordtype">double</span> rate);</div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span> </div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    <span class="keywordtype">bool</span></div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>    write_treekin_ratesmatrix_row(std::ostream &amp;out, <span class="keywordtype">size_t</span> i) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span> </div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span> </div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>    <a class="code hl_function" href="classBarrierGraph.html#ad8aff6a30c75a2b9bf9f4c77e47ddf0f">write_treekin_ratesmatrix</a>(std::ostream &amp;out) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span> </div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>    gzFile</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>    <a class="code hl_function" href="classBarrierGraph.html#a25198ebba26e6bdfb74b05df2299e895">gzwrite_treekin_ratesmatrix</a>(gzFile fh) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span> </div>
-<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>    <a class="code hl_function" href="classBarrierGraph.html#a1661e4702fe667fd1634095fed034a84">print_pfs</a>(std::ostream &amp;out,<span class="keywordtype">bool</span> binary=<span class="keyword">false</span>) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span> </div>
-<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span>    <a class="code hl_function" href="classBarrierGraph.html#a938a1d099d48f878a253fa055d678cc1">print_rxns</a>(std::ostream &amp;out,</div>
-<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>           <span class="keyword">const</span> std::string &amp;nameA,</div>
-<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>           <span class="keyword">const</span> std::string &amp;nameB,</div>
-<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span>           <span class="keyword">const</span> std::string &amp;nameAB) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span> </div>
-<div class="line"><a id="l00436" name="l00436"></a><span class="lineno">  436</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span>    <a class="code hl_function" href="classBarrierGraph.html#a5d15073770350b0ed2b7aeb812d14887">print_spcs</a>(std::ostream &amp;out,</div>
-<div class="line"><a id="l00438" name="l00438"></a><span class="lineno">  438</span>           <span class="keyword">const</span> std::string &amp;nameA,</div>
-<div class="line"><a id="l00439" name="l00439"></a><span class="lineno">  439</span>           <span class="keyword">const</span> std::string &amp;nameB,</div>
-<div class="line"><a id="l00440" name="l00440"></a><span class="lineno">  440</span>           <span class="keyword">const</span> std::string &amp;nameAB) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00441" name="l00441"></a><span class="lineno">  441</span> </div>
-<div class="line"><a id="l00442" name="l00442"></a><span class="lineno">  442</span><span class="keyword">private</span>:</div>
-    <span class="keywordtype">void</span><div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span>    reindex_basin(<a class="code hl_class" href="classBasin.html">Basin</a> &amp;x, <span class="keywordtype">size_t</span> new_index);</div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span> </div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>    std::ostream &amp;</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>    <a class="code hl_function" href="classBarrierGraph.html#a72f8bcc097bd8bce93429fde03558f8d">print_stats</a>(std::ostream &amp;out) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span> </div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>    <a class="code hl_function" href="classBarrierGraph.html#ad8f006032422f3fe38cd03f4a1c0e69f">connected_components</a>(std::vector&lt;size_t&gt; &amp;components,</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>                         std::vector&lt;size_t&gt; &amp;component_sizes,</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>                         std::vector&lt;double&gt; &amp;component_pfs</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>                         ) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span> </div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>    <a class="code hl_function" href="classBarrierGraph.html#ae9a82bc7adccd0e23f57c48aedf965cf">keep_single_component</a>(<span class="keywordtype">size_t</span> c,<span class="keyword">const</span> std::vector&lt;size_t&gt; &amp;components);</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span> </div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    <a class="code hl_function" href="classBarrierGraph.html#a8d6e9f930ef969b77b4c8a6d291536ea">connect_components</a>(<span class="keywordtype">size_t</span> component_num,</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>                       <span class="keyword">const</span> std::vector&lt;size_t&gt; &amp;components,</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>                       <span class="keywordtype">double</span> rate);</div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span> </div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    <span class="keywordtype">bool</span></div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    write_treekin_ratesmatrix_row(std::ostream &amp;out, <span class="keywordtype">size_t</span> i) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span> </div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span> </div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>    <a class="code hl_function" href="classBarrierGraph.html#ad8aff6a30c75a2b9bf9f4c77e47ddf0f">write_treekin_ratesmatrix</a>(std::ostream &amp;out) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span> </div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>    gzFile</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>    <a class="code hl_function" href="classBarrierGraph.html#a25198ebba26e6bdfb74b05df2299e895">gzwrite_treekin_ratesmatrix</a>(gzFile fh) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span> </div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>    <a class="code hl_function" href="classBarrierGraph.html#a1661e4702fe667fd1634095fed034a84">print_pfs</a>(std::ostream &amp;out,<span class="keywordtype">bool</span> binary=<span class="keyword">false</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span> </div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>    <a class="code hl_function" href="classBarrierGraph.html#a938a1d099d48f878a253fa055d678cc1">print_rxns</a>(std::ostream &amp;out,</div>
+<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span>           <span class="keyword">const</span> std::string &amp;nameA,</div>
+<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>           <span class="keyword">const</span> std::string &amp;nameB,</div>
+<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>           <span class="keyword">const</span> std::string &amp;nameAB) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span> </div>
+<div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00436" name="l00436"></a><span class="lineno">  436</span>    <a class="code hl_function" href="classBarrierGraph.html#a5d15073770350b0ed2b7aeb812d14887">print_spcs</a>(std::ostream &amp;out,</div>
+<div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span>           <span class="keyword">const</span> std::string &amp;nameA,</div>
+<div class="line"><a id="l00438" name="l00438"></a><span class="lineno">  438</span>           <span class="keyword">const</span> std::string &amp;nameB,</div>
+<div class="line"><a id="l00439" name="l00439"></a><span class="lineno">  439</span>           <span class="keyword">const</span> std::string &amp;nameAB) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00440" name="l00440"></a><span class="lineno">  440</span> </div>
+<div class="line"><a id="l00441" name="l00441"></a><span class="lineno">  441</span><span class="keyword">private</span>:</div>
+    <span class="keywordtype">void</span><div class="line"><a id="l00450" name="l00450"></a><span class="lineno">  450</span>    reindex_basin(<a class="code hl_class" href="classBasin.html">Basin</a> &amp;x, <span class="keywordtype">size_t</span> new_index);</div>
+<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span> </div>
 <div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span> </div>
-<div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span> </div>
-<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span> </div>
-<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classBarrierGraph.html#a55ca38c9bbb7c7c203abcd74f3c9a67b">swap_indices</a>(<span class="keywordtype">size_t</span> x, <span class="keywordtype">size_t</span> y);</div>
-<div class="line"><a id="l00463" name="l00463"></a><span class="lineno">  463</span> </div>
-<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span>    <a class="code hl_function" href="classBarrierGraph.html#ad3d2ae96710e76703ca244e5bd0dc719">reindex</a>();</div>
-<div class="line"><a id="l00468" name="l00468"></a><span class="lineno">  468</span> </div>
-<div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span>    <a class="code hl_function" href="classBarrierGraph.html#ad3d2ae96710e76703ca244e5bd0dc719">reindex</a>(<span class="keyword">const</span> std::vector&lt;bool&gt; &amp;keep);</div>
+<div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span> </div>
+<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classBarrierGraph.html#a55ca38c9bbb7c7c203abcd74f3c9a67b">swap_indices</a>(<span class="keywordtype">size_t</span> x, <span class="keywordtype">size_t</span> y);</div>
+<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span> </div>
+<div class="line"><a id="l00465" name="l00465"></a><span class="lineno">  465</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span>    <a class="code hl_function" href="classBarrierGraph.html#ad3d2ae96710e76703ca244e5bd0dc719">reindex</a>();</div>
+<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span> </div>
+<div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span>    <a class="code hl_function" href="classBarrierGraph.html#ad3d2ae96710e76703ca244e5bd0dc719">reindex</a>(<span class="keyword">const</span> std::vector&lt;bool&gt; &amp;keep);</div>
+<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span> </div>
 <div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span> </div>
 <div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span> </div>
-<div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span> </div>
-<div class="line"><a id="l00481" name="l00481"></a><span class="lineno">  481</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span>    <a class="code hl_function" href="classBarrierGraph.html#a85fb2f332b47165bd8e612250765b393">print_treekin_barriers</a>(std::ostream &amp;out, std::string header, <span class="keywordtype">double</span> RT) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00480" name="l00480"></a><span class="lineno">  480</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00481" name="l00481"></a><span class="lineno">  481</span>    <a class="code hl_function" href="classBarrierGraph.html#a85fb2f332b47165bd8e612250765b393">print_treekin_barriers</a>(std::ostream &amp;out, std::string header, <span class="keywordtype">double</span> RT) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span> </div>
 <div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span> </div>
-<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span> </div>
-<div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span>    <span class="keyword">static</span></div>
-<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>    std::string</div>
-<div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span>    format_rate_for_treekin(<span class="keywordtype">double</span> x);</div>
+<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>    <span class="keyword">static</span></div>
+<div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span>    std::string</div>
+<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>    format_rate_for_treekin(<span class="keywordtype">double</span> x);</div>
+<div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span> </div>
 <div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span> </div>
-<div class="line"><a id="l00492" name="l00492"></a><span class="lineno">  492</span> </div>
-<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>    outflow_distribution(std::vector&lt;double&gt; &amp;outflows) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span> </div>
-<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>    pequ_distribution(std::vector&lt;double&gt; &amp;pequs) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span> </div>
-<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>    <span class="keywordtype">double</span></div>
-<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>    <a class="code hl_function" href="classBarrierGraph.html#ab3cc406391a92b81c83b3bb3fbfbc8f5">max_outflow_by_quantile</a>(<span class="keywordtype">double</span> q) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span> </div>
-<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>    <span class="keywordtype">double</span></div>
-<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>    <a class="code hl_function" href="classBarrierGraph.html#a549b83495ece670a820f3de2f6a4fcea">max_outflow_by_number</a>(<span class="keywordtype">size_t</span> n) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span> </div>
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>    <span class="keywordtype">double</span></div>
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>    <a class="code hl_function" href="classBarrierGraph.html#a93afdb25525e46954c0052f48fd9edca">min_pequ_by_quantile</a>(<span class="keywordtype">double</span> q) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span> </div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>    <span class="keywordtype">double</span></div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>    <a class="code hl_function" href="classBarrierGraph.html#a58436b3190c1556edb0188370de2d211">min_pequ_by_number</a>(<span class="keywordtype">size_t</span> n) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span> </div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    std::ostream &amp;</div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>    <a class="code hl_function" href="classBarrierGraph.html#a97ad0232978b1e0660e6c4c44b038f40">write_pruning_track</a>(std::ostream &amp;out, <span class="keywordtype">bool</span> sparse) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span> </div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>    gzFile</div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>    <a class="code hl_function" href="classBarrierGraph.html#af7aa538d52186296d20c45524ba0a767">gzwrite_pruning_track</a>(gzFile fh, <span class="keywordtype">bool</span> sparse) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span>    outflow_distribution(std::vector&lt;double&gt; &amp;outflows) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span> </div>
+<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>    pequ_distribution(std::vector&lt;double&gt; &amp;pequs) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span> </div>
+<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span>    <span class="keywordtype">double</span></div>
+<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>    <a class="code hl_function" href="classBarrierGraph.html#ab3cc406391a92b81c83b3bb3fbfbc8f5">max_outflow_by_quantile</a>(<span class="keywordtype">double</span> q) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span> </div>
+<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>    <span class="keywordtype">double</span></div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>    <a class="code hl_function" href="classBarrierGraph.html#a549b83495ece670a820f3de2f6a4fcea">max_outflow_by_number</a>(<span class="keywordtype">size_t</span> n) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span> </div>
+<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>    <span class="keywordtype">double</span></div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>    <a class="code hl_function" href="classBarrierGraph.html#a93afdb25525e46954c0052f48fd9edca">min_pequ_by_quantile</a>(<span class="keywordtype">double</span> q) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span> </div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>    <span class="keywordtype">double</span></div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>    <a class="code hl_function" href="classBarrierGraph.html#a58436b3190c1556edb0188370de2d211">min_pequ_by_number</a>(<span class="keywordtype">size_t</span> n) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span> </div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>    std::ostream &amp;</div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    <a class="code hl_function" href="classBarrierGraph.html#a97ad0232978b1e0660e6c4c44b038f40">write_pruning_track</a>(std::ostream &amp;out, <span class="keywordtype">bool</span> sparse) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span> </div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>    gzFile</div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>    <a class="code hl_function" href="classBarrierGraph.html#af7aa538d52186296d20c45524ba0a767">gzwrite_pruning_track</a>(gzFile fh, <span class="keywordtype">bool</span> sparse) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span> </div>
 <div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span> </div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span> </div>
-<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>    <span class="keywordtype">bool</span></div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>    <a class="code hl_function" href="classBarrierGraph.html#a0b7e3a88f9cddfac5c6b8b752c9582af">compute_pruning_pps</a>(<span class="keywordtype">size_t</span> ms_idx,</div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>             <span class="keyword">const</span> <a class="code hl_class" href="classPairPfs.html">PairPfs</a> &amp;ppfs,</div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>             <span class="keywordtype">double</span> &amp;ms_Z,</div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>             <a class="code hl_class" href="classLocARNA_1_1SparseMatrix.html">LocARNA::SparseMatrix&lt;double&gt;</a> &amp;ms_ppfs) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span> </div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>    std::ostream &amp;</div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>    <a class="code hl_function" href="classBarrierGraph.html#aca1e2b94e84b1277dd4894903f206643">write_pruning_pps</a>(std::ostream &amp;out,</div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>              <span class="keyword">const</span> <a class="code hl_class" href="classPairPfs.html">PairPfs</a> &amp;ppfs,</div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>              <span class="keywordtype">double</span> min_prob) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span> </div>
-<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    gzFile</div>
-<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    <a class="code hl_function" href="classBarrierGraph.html#ace26b74ba912d3332c2d8de7f5e8e03a">gzwrite_pruning_pps</a>(gzFile fh,</div>
-<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>            <span class="keyword">const</span> <a class="code hl_class" href="classPairPfs.html">PairPfs</a> &amp;ppfs,</div>
-<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>            <span class="keywordtype">double</span> min_prob) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span> </div>
-<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>};</div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>    <span class="keywordtype">bool</span></div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>    <a class="code hl_function" href="classBarrierGraph.html#a0b7e3a88f9cddfac5c6b8b752c9582af">compute_pruning_pps</a>(<span class="keywordtype">size_t</span> ms_idx,</div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>             <span class="keyword">const</span> <a class="code hl_class" href="classPairPfs.html">PairPfs</a> &amp;ppfs,</div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>             <span class="keywordtype">double</span> &amp;ms_Z,</div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>             <a class="code hl_class" href="classLocARNA_1_1SparseMatrix.html">LocARNA::SparseMatrix&lt;double&gt;</a> &amp;ms_ppfs) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span> </div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>    std::ostream &amp;</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>    <a class="code hl_function" href="classBarrierGraph.html#aca1e2b94e84b1277dd4894903f206643">write_pruning_pps</a>(std::ostream &amp;out,</div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>              <span class="keyword">const</span> <a class="code hl_class" href="classPairPfs.html">PairPfs</a> &amp;ppfs,</div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>              <span class="keywordtype">double</span> min_prob) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span> </div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>    gzFile</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    <a class="code hl_function" href="classBarrierGraph.html#ace26b74ba912d3332c2d8de7f5e8e03a">gzwrite_pruning_pps</a>(gzFile fh,</div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>            <span class="keyword">const</span> <a class="code hl_class" href="classPairPfs.html">PairPfs</a> &amp;ppfs,</div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>            <span class="keywordtype">double</span> min_prob) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span> </div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>};</div>
 </div>
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span> </div>
 <div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span> </div>
-<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span> </div>
-<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassBarrierGraph_1_1compBasinIdxs_html"><div class="ttname"><a href="classBarrierGraph_1_1compBasinIdxs.html">BarrierGraph::compBasinIdxs</a></div><div class="ttdoc">compare basin indices by their associated pfs</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:193</div></div>
-<div class="ttc" id="aclassBarrierGraph_1_1compBasinIdxs_html_a462ecb93631e327978a90a6123aee782"><div class="ttname"><a href="classBarrierGraph_1_1compBasinIdxs.html#a462ecb93631e327978a90a6123aee782">BarrierGraph::compBasinIdxs::compBasinIdxs</a></div><div class="ttdeci">compBasinIdxs(const BarrierGraph &amp;bg)</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:196</div></div>
-<div class="ttc" id="aclassBarrierGraph_1_1compBasinIdxs_html_ac05af1be5b3ca930028750ff13bd0743"><div class="ttname"><a href="classBarrierGraph_1_1compBasinIdxs.html#ac05af1be5b3ca930028750ff13bd0743">BarrierGraph::compBasinIdxs::operator()</a></div><div class="ttdeci">bool operator()(size_t a, size_t b) const</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:199</div></div>
-<div class="ttc" id="aclassBarrierGraph_html"><div class="ttname"><a href="classBarrierGraph.html">BarrierGraph</a></div><div class="ttdoc">Graph of basins and barriers.</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:31</div></div>
+<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassBarrierGraph_1_1compBasinIdxs_html"><div class="ttname"><a href="classBarrierGraph_1_1compBasinIdxs.html">BarrierGraph::compBasinIdxs</a></div><div class="ttdoc">compare basin indices by their associated pfs</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:192</div></div>
+<div class="ttc" id="aclassBarrierGraph_1_1compBasinIdxs_html_a462ecb93631e327978a90a6123aee782"><div class="ttname"><a href="classBarrierGraph_1_1compBasinIdxs.html#a462ecb93631e327978a90a6123aee782">BarrierGraph::compBasinIdxs::compBasinIdxs</a></div><div class="ttdeci">compBasinIdxs(const BarrierGraph &amp;bg)</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:195</div></div>
+<div class="ttc" id="aclassBarrierGraph_1_1compBasinIdxs_html_ac05af1be5b3ca930028750ff13bd0743"><div class="ttname"><a href="classBarrierGraph_1_1compBasinIdxs.html#ac05af1be5b3ca930028750ff13bd0743">BarrierGraph::compBasinIdxs::operator()</a></div><div class="ttdeci">bool operator()(size_t a, size_t b) const</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:198</div></div>
+<div class="ttc" id="aclassBarrierGraph_html"><div class="ttname"><a href="classBarrierGraph.html">BarrierGraph</a></div><div class="ttdoc">Graph of basins and barriers.</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:30</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a0184068cd0d44594c7bd1c341fc445f7"><div class="ttname"><a href="classBarrierGraph.html#a0184068cd0d44594c7bd1c341fc445f7">BarrierGraph::dissolve_basin</a></div><div class="ttdeci">void dissolve_basin(Basin &amp;x0, double min_rate)</div><div class="ttdoc">merge a single basins to its neighbors</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:184</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a0b7e3a88f9cddfac5c6b8b752c9582af"><div class="ttname"><a href="classBarrierGraph.html#a0b7e3a88f9cddfac5c6b8b752c9582af">BarrierGraph::compute_pruning_pps</a></div><div class="ttdeci">bool compute_pruning_pps(size_t ms_idx, const PairPfs &amp;ppfs, double &amp;ms_Z, LocARNA::SparseMatrix&lt; double &gt; &amp;ms_ppfs) const</div><div class="ttdoc">compute pps for pruning; single state</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:991</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a101c8b0a52600f261eba06cedbfa8888"><div class="ttname"><a href="classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888">BarrierGraph::basin_pruning_infos_t</a></div><div class="ttdeci">std::vector&lt; BasinPruningInfo &gt; basin_pruning_infos_t</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:67</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a101c8b0a52600f261eba06cedbfa8888"><div class="ttname"><a href="classBarrierGraph.html#a101c8b0a52600f261eba06cedbfa8888">BarrierGraph::basin_pruning_infos_t</a></div><div class="ttdeci">std::vector&lt; BasinPruningInfo &gt; basin_pruning_infos_t</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:66</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a1661e4702fe667fd1634095fed034a84"><div class="ttname"><a href="classBarrierGraph.html#a1661e4702fe667fd1634095fed034a84">BarrierGraph::print_pfs</a></div><div class="ttdeci">void print_pfs(std::ostream &amp;out, bool binary=false) const</div><div class="ttdoc">print partition functions of basins and transitions to stream</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:525</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a23d59bc850b6149230850c9c82790787"><div class="ttname"><a href="classBarrierGraph.html#a23d59bc850b6149230850c9c82790787">BarrierGraph::basin_pruning_infos_</a></div><div class="ttdeci">basin_pruning_infos_t basin_pruning_infos_</div><div class="ttdoc">vector of basin pruning information</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:70</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a23d59bc850b6149230850c9c82790787"><div class="ttname"><a href="classBarrierGraph.html#a23d59bc850b6149230850c9c82790787">BarrierGraph::basin_pruning_infos_</a></div><div class="ttdeci">basin_pruning_infos_t basin_pruning_infos_</div><div class="ttdoc">vector of basin pruning information</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:69</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a25198ebba26e6bdfb74b05df2299e895"><div class="ttname"><a href="classBarrierGraph.html#a25198ebba26e6bdfb74b05df2299e895">BarrierGraph::gzwrite_treekin_ratesmatrix</a></div><div class="ttdeci">gzFile gzwrite_treekin_ratesmatrix(gzFile fh) const</div><div class="ttdoc">write treekin-compatible rates matrix to stream</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:512</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a2b90afbd1f2a716b8b936a5ff406c62f"><div class="ttname"><a href="classBarrierGraph.html#a2b90afbd1f2a716b8b936a5ff406c62f">BarrierGraph::num_input_states_</a></div><div class="ttdeci">size_t num_input_states_</div><div class="ttdoc">number of input states</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:62</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a35782918454680f82881690e9edba06b"><div class="ttname"><a href="classBarrierGraph.html#a35782918454680f82881690e9edba06b">BarrierGraph::outflow_rate</a></div><div class="ttdeci">double outflow_rate(const Basin &amp;x) const</div><div class="ttdoc">total outflow as rate</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:173</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a35c5cad809c8da180fa017c8ea2ebc23"><div class="ttname"><a href="classBarrierGraph.html#a35c5cad809c8da180fa017c8ea2ebc23">BarrierGraph::~BarrierGraph</a></div><div class="ttdeci">~BarrierGraph()</div><div class="ttdoc">destructor</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:327</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a2b90afbd1f2a716b8b936a5ff406c62f"><div class="ttname"><a href="classBarrierGraph.html#a2b90afbd1f2a716b8b936a5ff406c62f">BarrierGraph::num_input_states_</a></div><div class="ttdeci">size_t num_input_states_</div><div class="ttdoc">number of input states</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:61</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a35782918454680f82881690e9edba06b"><div class="ttname"><a href="classBarrierGraph.html#a35782918454680f82881690e9edba06b">BarrierGraph::outflow_rate</a></div><div class="ttdeci">double outflow_rate(const Basin &amp;x) const</div><div class="ttdoc">total outflow as rate</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:172</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a35c5cad809c8da180fa017c8ea2ebc23"><div class="ttname"><a href="classBarrierGraph.html#a35c5cad809c8da180fa017c8ea2ebc23">BarrierGraph::~BarrierGraph</a></div><div class="ttdeci">~BarrierGraph()</div><div class="ttdoc">destructor</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:326</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a539e0497d368a2c1d2cdec9d7641b9b5"><div class="ttname"><a href="classBarrierGraph.html#a539e0497d368a2c1d2cdec9d7641b9b5">BarrierGraph::print_barrier_graph</a></div><div class="ttdeci">void print_barrier_graph(std::ostream &amp;out) const</div><div class="ttdoc">print representation of barrier graph with weights of basins and transitions</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:419</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a549b83495ece670a820f3de2f6a4fcea"><div class="ttname"><a href="classBarrierGraph.html#a549b83495ece670a820f3de2f6a4fcea">BarrierGraph::max_outflow_by_number</a></div><div class="ttdeci">double max_outflow_by_number(size_t n) const</div><div class="ttdoc">maximum outflow by number</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:884</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a55ca38c9bbb7c7c203abcd74f3c9a67b"><div class="ttname"><a href="classBarrierGraph.html#a55ca38c9bbb7c7c203abcd74f3c9a67b">BarrierGraph::swap_indices</a></div><div class="ttdeci">void swap_indices(size_t x, size_t y)</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:801</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a5656fc7d02fe63f5080ba26bfd13c1fd"><div class="ttname"><a href="classBarrierGraph.html#a5656fc7d02fe63f5080ba26bfd13c1fd">BarrierGraph::reduce_basin_set</a></div><div class="ttdeci">void reduce_basin_set(const std::set&lt; size_t &gt; &amp;to_keep, double min_rate)</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:372</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a58436b3190c1556edb0188370de2d211"><div class="ttname"><a href="classBarrierGraph.html#a58436b3190c1556edb0188370de2d211">BarrierGraph::min_pequ_by_number</a></div><div class="ttdeci">double min_pequ_by_number(size_t n) const</div><div class="ttdoc">mimum p_equ by number</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:901</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a58ca54b2433ccbf8a26b81238cf70e3d"><div class="ttname"><a href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">BarrierGraph::basins_</a></div><div class="ttdeci">std::vector&lt; Basin &gt; basins_</div><div class="ttdoc">vector storing basins of all local minima</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:56</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a58ca54b2433ccbf8a26b81238cf70e3d"><div class="ttname"><a href="classBarrierGraph.html#a58ca54b2433ccbf8a26b81238cf70e3d">BarrierGraph::basins_</a></div><div class="ttdeci">std::vector&lt; Basin &gt; basins_</div><div class="ttdoc">vector storing basins of all local minima</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:55</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a5d15073770350b0ed2b7aeb812d14887"><div class="ttname"><a href="classBarrierGraph.html#a5d15073770350b0ed2b7aeb812d14887">BarrierGraph::print_spcs</a></div><div class="ttdeci">void print_spcs(std::ostream &amp;out, const std::string &amp;nameA, const std::string &amp;nameB, const std::string &amp;nameAB) const</div><div class="ttdoc">print species to stream</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:652</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a5de3335e64c134daefe4be5b40a46907"><div class="ttname"><a href="classBarrierGraph.html#a5de3335e64c134daefe4be5b40a46907">BarrierGraph::considered_transitions_</a></div><div class="ttdeci">size_t considered_transitions_</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:80</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a5de3335e64c134daefe4be5b40a46907"><div class="ttname"><a href="classBarrierGraph.html#a5de3335e64c134daefe4be5b40a46907">BarrierGraph::considered_transitions_</a></div><div class="ttdeci">size_t considered_transitions_</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:79</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a6a74a59523aec1ac19506bcb4c7fa9e8"><div class="ttname"><a href="classBarrierGraph.html#a6a74a59523aec1ac19506bcb4c7fa9e8">BarrierGraph::num_basins</a></div><div class="ttdeci">size_t num_basins() const</div><div class="ttdoc">number of (non-merged) basins</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:108</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a6d6c5db92b85dd083f2a64821dea08c7"><div class="ttname"><a href="classBarrierGraph.html#a6d6c5db92b85dd083f2a64821dea08c7">BarrierGraph::removed_transitions_</a></div><div class="ttdeci">size_t removed_transitions_</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:75</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a6fb22379f40ea99e36424d43db5dd370"><div class="ttname"><a href="classBarrierGraph.html#a6fb22379f40ea99e36424d43db5dd370">BarrierGraph::debug_out_</a></div><div class="ttdeci">bool debug_out_</div><div class="ttdoc">debugging output</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:45</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a6d6c5db92b85dd083f2a64821dea08c7"><div class="ttname"><a href="classBarrierGraph.html#a6d6c5db92b85dd083f2a64821dea08c7">BarrierGraph::removed_transitions_</a></div><div class="ttdeci">size_t removed_transitions_</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:74</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a6fb22379f40ea99e36424d43db5dd370"><div class="ttname"><a href="classBarrierGraph.html#a6fb22379f40ea99e36424d43db5dd370">BarrierGraph::debug_out_</a></div><div class="ttdeci">bool debug_out_</div><div class="ttdoc">debugging output</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:44</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a72f8bcc097bd8bce93429fde03558f8d"><div class="ttname"><a href="classBarrierGraph.html#a72f8bcc097bd8bce93429fde03558f8d">BarrierGraph::print_stats</a></div><div class="ttdeci">std::ostream &amp; print_stats(std::ostream &amp;out) const</div><div class="ttdoc">print some statistics of the barrier graph</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:910</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a85fb2f332b47165bd8e612250765b393"><div class="ttname"><a href="classBarrierGraph.html#a85fb2f332b47165bd8e612250765b393">BarrierGraph::print_treekin_barriers</a></div><div class="ttdeci">void print_treekin_barriers(std::ostream &amp;out, std::string header, double RT) const</div><div class="ttdoc">print treekin-compatible barriers list to stream</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:824</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_a86f53c6c9e198fac96a5993fde81265d"><div class="ttname"><a href="classBarrierGraph.html#a86f53c6c9e198fac96a5993fde81265d">BarrierGraph::transitions_</a></div><div class="ttdeci">BasinTransitions transitions_</div><div class="ttdoc">state transitions (partition functions)</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:53</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_a86f53c6c9e198fac96a5993fde81265d"><div class="ttname"><a href="classBarrierGraph.html#a86f53c6c9e198fac96a5993fde81265d">BarrierGraph::transitions_</a></div><div class="ttdeci">BasinTransitions transitions_</div><div class="ttdoc">state transitions (partition functions)</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:52</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a8d6e9f930ef969b77b4c8a6d291536ea"><div class="ttname"><a href="classBarrierGraph.html#a8d6e9f930ef969b77b4c8a6d291536ea">BarrierGraph::connect_components</a></div><div class="ttdeci">void connect_components(size_t component_num, const std::vector&lt; size_t &gt; &amp;components, double rate)</div><div class="ttdoc">heuristically connect the components</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:692</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a8e38a6959b27431a61c4b11405701169"><div class="ttname"><a href="classBarrierGraph.html#a8e38a6959b27431a61c4b11405701169">BarrierGraph::filter_basin_transitions</a></div><div class="ttdeci">void filter_basin_transitions(const Basin &amp;x0, double min_rate)</div><div class="ttdoc">filter transitions of a single basin by minimum rate, also remove self-transitions</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:132</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a904d79f05f72428082fb62767371328f"><div class="ttname"><a href="classBarrierGraph.html#a904d79f05f72428082fb62767371328f">BarrierGraph::compute_Z</a></div><div class="ttdeci">double compute_Z() const</div><div class="ttdoc">compute partition function of all basins</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:427</div></div>
@@ -436,8 +435,8 @@ $(document).ready(function(){initNavTree('barrier__graph_8hh_source.html',''); i
 <div class="ttc" id="aclassBarrierGraph_html_a93afdb25525e46954c0052f48fd9edca"><div class="ttname"><a href="classBarrierGraph.html#a93afdb25525e46954c0052f48fd9edca">BarrierGraph::min_pequ_by_quantile</a></div><div class="ttdeci">double min_pequ_by_quantile(double q) const</div><div class="ttdoc">mimum p_equ by quantile</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:892</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a969f00163200e3de1a48f05b281a65b9"><div class="ttname"><a href="classBarrierGraph.html#a969f00163200e3de1a48f05b281a65b9">BarrierGraph::prune</a></div><div class="ttdeci">void prune(double max_outflow, double min_p_equ, double min_rate)</div><div class="ttdoc">Prunes the barrier graph.</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:324</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_a97ad0232978b1e0660e6c4c44b038f40"><div class="ttname"><a href="classBarrierGraph.html#a97ad0232978b1e0660e6c4c44b038f40">BarrierGraph::write_pruning_track</a></div><div class="ttdeci">std::ostream &amp; write_pruning_track(std::ostream &amp;out, bool sparse) const</div><div class="ttdoc">Write tracking information about pruning.</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:962</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_aa514241e5bc5722d11332015e3e8c582"><div class="ttname"><a href="classBarrierGraph.html#aa514241e5bc5722d11332015e3e8c582">BarrierGraph::special_first_state_</a></div><div class="ttdeci">bool special_first_state_</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:37</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_aa5d5041763eac8b84d2892bc753b071c"><div class="ttname"><a href="classBarrierGraph.html#aa5d5041763eac8b84d2892bc753b071c">BarrierGraph::track_pruning_</a></div><div class="ttdeci">bool track_pruning_</div><div class="ttdoc">track prunings</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:59</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_aa514241e5bc5722d11332015e3e8c582"><div class="ttname"><a href="classBarrierGraph.html#aa514241e5bc5722d11332015e3e8c582">BarrierGraph::special_first_state_</a></div><div class="ttdeci">bool special_first_state_</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:36</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_aa5d5041763eac8b84d2892bc753b071c"><div class="ttname"><a href="classBarrierGraph.html#aa5d5041763eac8b84d2892bc753b071c">BarrierGraph::track_pruning_</a></div><div class="ttdeci">bool track_pruning_</div><div class="ttdoc">track prunings</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:58</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_aa5d692b1fd18ddced20aa22a43c3a6ee"><div class="ttname"><a href="classBarrierGraph.html#aa5d692b1fd18ddced20aa22a43c3a6ee">BarrierGraph::print_edges</a></div><div class="ttdeci">void print_edges(std::ostream &amp;out, const Basin &amp;b) const</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:402</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_ab2212c4a95c4b6fc9b29f703f5140e52"><div class="ttname"><a href="classBarrierGraph.html#ab2212c4a95c4b6fc9b29f703f5140e52">BarrierGraph::max_outflow</a></div><div class="ttdeci">double max_outflow(const Basin &amp;x) const</div><div class="ttdoc">maximum outflow rate</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:155</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_ab3cc406391a92b81c83b3bb3fbfbc8f5"><div class="ttname"><a href="classBarrierGraph.html#ab3cc406391a92b81c83b3bb3fbfbc8f5">BarrierGraph::max_outflow_by_quantile</a></div><div class="ttdeci">double max_outflow_by_quantile(double q) const</div><div class="ttdoc">maximum outflow by quantile</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:875</div></div>
@@ -445,8 +444,8 @@ $(document).ready(function(){initNavTree('barrier__graph_8hh_source.html',''); i
 <div class="ttc" id="aclassBarrierGraph_html_aca1e2b94e84b1277dd4894903f206643"><div class="ttname"><a href="classBarrierGraph.html#aca1e2b94e84b1277dd4894903f206643">BarrierGraph::write_pruning_pps</a></div><div class="ttdeci">std::ostream &amp; write_pruning_pps(std::ostream &amp;out, const PairPfs &amp;ppfs, double min_prob) const</div><div class="ttdoc">Write interaction pair probability information.</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:1038</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_ace00abef5798a54c1a82f3299bf48285"><div class="ttname"><a href="classBarrierGraph.html#ace00abef5798a54c1a82f3299bf48285">BarrierGraph::multiply_transitions_from_to</a></div><div class="ttdeci">void multiply_transitions_from_to(int basin_idx, double factor)</div><div class="ttdoc">modify transitions from and to state</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:100</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_ace26b74ba912d3332c2d8de7f5e8e03a"><div class="ttname"><a href="classBarrierGraph.html#ace26b74ba912d3332c2d8de7f5e8e03a">BarrierGraph::gzwrite_pruning_pps</a></div><div class="ttdeci">gzFile gzwrite_pruning_pps(gzFile fh, const PairPfs &amp;ppfs, double min_prob) const</div><div class="ttdoc">Write compressed interaction pair probability information.</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:1061</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_aceee6b5f84eb0438cadc305ab3802ab2"><div class="ttname"><a href="classBarrierGraph.html#aceee6b5f84eb0438cadc305ab3802ab2">BarrierGraph::min_contribution_</a></div><div class="ttdeci">double min_contribution_</div><div class="ttdoc">minimum contribution that is recorded in pruning info</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:65</div></div>
-<div class="ttc" id="aclassBarrierGraph_html_ad2bf0c3c74432ff0028a6719eca93284"><div class="ttname"><a href="classBarrierGraph.html#ad2bf0c3c74432ff0028a6719eca93284">BarrierGraph::verbose_</a></div><div class="ttdeci">bool verbose_</div><div class="ttdoc">verbose output</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:42</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_aceee6b5f84eb0438cadc305ab3802ab2"><div class="ttname"><a href="classBarrierGraph.html#aceee6b5f84eb0438cadc305ab3802ab2">BarrierGraph::min_contribution_</a></div><div class="ttdeci">double min_contribution_</div><div class="ttdoc">minimum contribution that is recorded in pruning info</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:64</div></div>
+<div class="ttc" id="aclassBarrierGraph_html_ad2bf0c3c74432ff0028a6719eca93284"><div class="ttname"><a href="classBarrierGraph.html#ad2bf0c3c74432ff0028a6719eca93284">BarrierGraph::verbose_</a></div><div class="ttdeci">bool verbose_</div><div class="ttdoc">verbose output</div><div class="ttdef"><b>Definition</b> barrier_graph.hh:41</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_ad3d2ae96710e76703ca244e5bd0dc719"><div class="ttname"><a href="classBarrierGraph.html#ad3d2ae96710e76703ca244e5bd0dc719">BarrierGraph::reindex</a></div><div class="ttdeci">void reindex()</div><div class="ttdoc">reindex basins, remove merged basins</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:671</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_ad8aff6a30c75a2b9bf9f4c77e47ddf0f"><div class="ttname"><a href="classBarrierGraph.html#ad8aff6a30c75a2b9bf9f4c77e47ddf0f">BarrierGraph::write_treekin_ratesmatrix</a></div><div class="ttdeci">void write_treekin_ratesmatrix(std::ostream &amp;out) const</div><div class="ttdoc">write treekin-compatible rates matrix to stream</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:504</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_ad8f006032422f3fe38cd03f4a1c0e69f"><div class="ttname"><a href="classBarrierGraph.html#ad8f006032422f3fe38cd03f4a1c0e69f">BarrierGraph::connected_components</a></div><div class="ttdeci">void connected_components(std::vector&lt; size_t &gt; &amp;components, std::vector&lt; size_t &gt; &amp;component_sizes, std::vector&lt; double &gt; &amp;component_pfs) const</div><div class="ttdoc">determine connected components</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:791</div></div>
@@ -456,12 +455,12 @@ $(document).ready(function(){initNavTree('barrier__graph_8hh_source.html',''); i
 <div class="ttc" id="aclassBarrierGraph_html_af5dc3e60b0de3bc1613373ef88a163ac"><div class="ttname"><a href="classBarrierGraph.html#af5dc3e60b0de3bc1613373ef88a163ac">BarrierGraph::num_transitions</a></div><div class="ttdeci">size_t num_transitions() const</div><div class="ttdoc">number of transitions (only from non-merged states)</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:120</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_af7aa538d52186296d20c45524ba0a767"><div class="ttname"><a href="classBarrierGraph.html#af7aa538d52186296d20c45524ba0a767">BarrierGraph::gzwrite_pruning_track</a></div><div class="ttdeci">gzFile gzwrite_pruning_track(gzFile fh, bool sparse) const</div><div class="ttdoc">Write tracking information about pruning.</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:976</div></div>
 <div class="ttc" id="aclassBarrierGraph_html_afce13c368566b9cf63ff16cb9921afb9"><div class="ttname"><a href="classBarrierGraph.html#afce13c368566b9cf63ff16cb9921afb9">BarrierGraph::outflow_pf</a></div><div class="ttdeci">double outflow_pf(const Basin &amp;x) const</div><div class="ttdoc">total outflow of basin as partition function</div><div class="ttdef"><b>Definition</b> barrier_graph.cc:140</div></div>
-<div class="ttc" id="aclassBasinTransitions_html"><div class="ttname"><a href="classBasinTransitions.html">BasinTransitions</a></div><div class="ttdef"><b>Definition</b> basin_transition.hh:21</div></div>
+<div class="ttc" id="aclassBasinTransitions_html"><div class="ttname"><a href="classBasinTransitions.html">BasinTransitions</a></div><div class="ttdef"><b>Definition</b> basin_transition.hh:19</div></div>
 <div class="ttc" id="aclassBasin_html"><div class="ttname"><a href="classBasin.html">Basin</a></div><div class="ttdoc">A basin in the energy landscape.</div><div class="ttdef"><b>Definition</b> basin.hh:17</div></div>
 <div class="ttc" id="aclassBasin_html_a6b0609c70ed00a45ff83180cc2915611"><div class="ttname"><a href="classBasin.html#a6b0609c70ed00a45ff83180cc2915611">Basin::Z</a></div><div class="ttdeci">double Z() const</div><div class="ttdoc">Get partition function.</div><div class="ttdef"><b>Definition</b> basin.hh:94</div></div>
-<div class="ttc" id="aclassLocARNA_1_1SparseMatrix_html"><div class="ttname"><a href="classLocARNA_1_1SparseMatrix.html">LocARNA::SparseMatrix</a></div><div class="ttdef"><b>Definition</b> barrier_graph.hh:19</div></div>
+<div class="ttc" id="aclassLocARNA_1_1SparseMatrix_html"><div class="ttname"><a href="classLocARNA_1_1SparseMatrix.html">LocARNA::SparseMatrix</a></div><div class="ttdef"><b>Definition</b> barrier_graph.hh:18</div></div>
 <div class="ttc" id="aclassPairPfs_html"><div class="ttname"><a href="classPairPfs.html">PairPfs</a></div><div class="ttdoc">Represent probabilities / partition functions of pairs for a set of states.</div><div class="ttdef"><b>Definition</b> pair_pfs.hh:27</div></div>
-<div class="ttc" id="anamespaceLocARNA_html"><div class="ttname"><a href="namespaceLocARNA.html">LocARNA</a></div><div class="ttdef"><b>Definition</b> barrier_graph.hh:18</div></div>
+<div class="ttc" id="anamespaceLocARNA_html"><div class="ttname"><a href="namespaceLocARNA.html">LocARNA</a></div><div class="ttdef"><b>Definition</b> barrier_graph.hh:17</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

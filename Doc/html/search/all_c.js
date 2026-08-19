@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['feb_202017_0',['feb 2017',['../md_ChangeLog.html#autotoc_md20',1,'0.9.1 (Feb, 2017)'],['../md_ChangeLog.html#autotoc_md19',1,'0.9.2 (Feb, 2017)']]],
+  ['feb_202017_0',['feb 2017',['../md_ChangeLog.html#autotoc_md19',1,'0.9.1 (Feb, 2017)'],['../md_ChangeLog.html#autotoc_md18',1,'0.9.2 (Feb, 2017)']]],
   ['file_1',['Configuration file',['../index.html#autotoc_md9',1,'']]],
   ['filter_2',['filter',['../classBasinTransitions.html#a67ea31c963d7f74508fd49edbcb38e9e',1,'BasinTransitions']]],
   ['filter_5fbasin_5ftransitions_3',['filter_basin_transitions',['../classBarrierGraph.html#a8e38a6959b27431a61c4b11405701169',1,'BarrierGraph']]],

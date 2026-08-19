@@ -21,5 +21,5 @@ var searchData=
   ['const_5fpp_5fmatrix_5ft_18',['const_pp_matrix_t',['../classPairPfs.html#a1067a48807b143712350efffbc58e83f',1,'PairPfs']]],
   ['constsparsematrix_19',['constsparsematrix',['../classConstSparseMatrix.html#aee5661ee0179fbeea963f16f5c44c306',1,'ConstSparseMatrix::ConstSparseMatrix()'],['../classConstSparseMatrix.html#ab940023d13b32ea95945c722c7603a49',1,'ConstSparseMatrix::ConstSparseMatrix(const key_value_vec_t &amp;x)'],['../classConstSparseMatrix.html',1,'ConstSparseMatrix&lt; _index_t, _value_t &gt;']]],
   ['contacts_20',['Authors and contacts',['../index.html#autotoc_md14',1,'']]],
-  ['contents_21',['contents',['../md_Examples_2Examples.html#autotoc_md23',1,'Contents'],['../index.html#autotoc_md1',1,'Table of contents']]]
+  ['contents_21',['contents',['../md_Examples_2Examples.html#autotoc_md22',1,'Contents'],['../index.html#autotoc_md1',1,'Table of contents']]]
 ];

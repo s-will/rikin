@@ -121,11 +121,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md_README"></a> RNAInterKin (RIKin) computes the <b>kinetics of RNA–RNA interaction</b> — how two RNAs find and settle into their interaction structure over time — using a detailed RNAup/IntaRNA-inspired interaction model built on RNA secondary structure and the full Turner nearest-neighbor energy model.</p>
 <p>Where most RNA–RNA interaction tools predict a single, most likely interaction structure, RIKin instead predicts how the <em>population</em> of possible interaction states evolves over time: which states form first, which are transient, and which the system ultimately settles into.</p>
-<div class="image">
-<object type="image/svg+xml" data="example_kinetics.svg" style="pointer-events: none;"></object>
-<div class="caption">
-Predicted state probabilities over time</div></div>
-    <p><em>Predicted probabilities of the most prominent interaction states over time, for a small toy example (see Quick example below).</em></p>
+<p><img src="example_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="Predicted state probabilities over time"/>     <em>Predicted probabilities of the most prominent interaction states over time, for a small toy example (see Quick example below).</em></p>
 <h1><a class="anchor" id="autotoc_md1"></a>
 Table of contents</h1>
 <ul>
@@ -173,7 +169,8 @@ Compilation/installation from the source repository</h2>
 <div class="fragment"><div class="line">git clone https://github.com/s-will/rikin.git</div>
 <div class="line">cd rikin</div>
 <div class="line"> </div>
-<div class="line">conda create -n rikin -c bioconda -c conda-forge viennarna locarna \</div>
+<div class="line">conda create -n rikin -c conda-forge -c bioconda compilers \</div>
+<div class="line">    viennarna locarna \</div>
 <div class="line">    autoconf automake libtool pkg-config gengetopt \</div>
 <div class="line">    python numpy pandas scipy matplotlib seaborn octave</div>
 <div class="line"> </div>
@@ -183,7 +180,10 @@ Compilation/installation from the source repository</h2>
 <div class="line">./configure --prefix=\f$CONDA_PREFIX PKG_CONFIG_PATH=\f$CONDA_PREFIX/lib/pkgconfig</div>
 <div class="line">make</div>
 <div class="line">make install</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md6"></a>
+</div><!-- fragment --><blockquote class="doxtable">
+<p>&zwj;<b>Note:</b> the <code>compilers</code> package (conda-forge's meta-package for a platform-matched C/C++ compiler) is required, not optional — RIKin's ViennaRNA/LocARNA dependencies are themselves built with the conda toolchain, and linking against them with a non-conda system compiler (e.g. plain <code>/usr/bin/clang++</code>) can fail with confusing linker errors, since conda's compiler-activation scripts translate certain flags in a way a system compiler won't. </p>
+</blockquote>
+<h1><a class="anchor" id="autotoc_md6"></a>
 Quick example</h1>
 <p><code>rikin_pipeline.py</code> runs the complete pipeline — enumeration, coarse-graining, solving the Master Equation, and plotting — for a pair of RNA sequences:</p>
 <div class="fragment"><div class="line">rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC</div>
@@ -196,9 +196,9 @@ Quick example</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">Predicted state probabilities over time   </td><td class="markdownTableBodyNone">Structures of the most prominent states    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><img src="example_dotplot.svg" alt="" style="pointer-events: none;" class="inline" title="Interaction dotplot"/>      </td><td class="markdownTableBodyNone"><img src="example_paired_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="Per-nucleotide pairing probabilities over time"/>       </td></tr>
+<td class="markdownTableBodyNone"><img src="example_interaction.svg" alt="" style="pointer-events: none;" class="inline" title="Interaction dotplot"/>      </td><td class="markdownTableBodyNone"><img src="example_paired_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="Per-nucleotide pairing probabilities over time"/>       </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">Base pair probability dotplot   </td><td class="markdownTableBodyNone">Per-nucleotide pairing probabilities over time   </td></tr>
+<td class="markdownTableBodyNone">Interaction probability dotplot   </td><td class="markdownTableBodyNone">Per-nucleotide pairing probabilities over time   </td></tr>
 </table>
 <p>Equivalently, sequences can be given via FASTA files instead of directly on the command line: </p><div class="fragment"><div class="line">rikin_pipeline.py -o example --fastaA Examples/exampleA.fasta --fastaB Examples/exampleB.fasta</div>
 </div><!-- fragment --><p>See More examples below for further, biologically motivated examples (with a real bacterial sRNA–mRNA pair) and how to reproduce all figures shown here.</p>
@@ -296,14 +296,14 @@ Output directory layout</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>pf</code>, <code>bar</code>, <code>rates.gz</code>   </td><td class="markdownTableBodyNone">Partition functions, basins, and rates after pruning    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>kin</code>   </td><td class="markdownTableBodyNone">Solved kinetics (final result of the computation, state probabilities over time)    </td></tr>
+<td class="markdownTableBodyNone"><code>kin</code>   </td><td class="markdownTableBodyNone">Solved kinetics (state probabilities over time)    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>*.svg</code>, <code>*.pdf</code>   </td><td class="markdownTableBodyNone">Plots of the RNA-RNA kinetics   </td></tr>
+<td class="markdownTableBodyNone"><code>plots.done</code>   </td><td class="markdownTableBodyNone">Marker file indicating plotting completed (used by <code>--reuse</code>)   </td></tr>
 </table>
 <p>These are intermediate/result files consumed by later pipeline stages; the plots produced by the final stage are the primary human-readable output.</p>
 <h1><a class="anchor" id="autotoc_md12"></a>
 More examples</h1>
-<p>The <a class="el" href="md_Examples_2Examples.html">`Examples`</a> directory contains several further, biologically motivated examples — including a real bacterial sRNA–mRNA pair (<em>E. coli</em> MicA sRNA and the <em>ompA</em> mRNA 5′UTR) and a designed kissing-hairpin (KHP) system — along with a script to reproduce all of them and a notebook that regenerates the figures shown throughout this README. See <a class="el" href="md_Examples_2Examples.html">`Examples/README.md`</a> for details.</p>
+<p>The `Examples` directory contains several further, biologically motivated examples — including a real bacterial sRNA–mRNA pair (<em>E. coli</em> MicA sRNA and the <em>ompA</em> mRNA 5′UTR) and a designed kissing-hairpin (KHP) system — along with a script to reproduce all of them and a notebook that regenerates the figures shown throughout this README. See `Examples/README.md` for details.</p>
 <h1><a class="anchor" id="autotoc_md13"></a>
 License</h1>
 <p>RNAInterKin is distributed under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). See [<code>COPYING</code>](COPYING) for the full license text.</p>

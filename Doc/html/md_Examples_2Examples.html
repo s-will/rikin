@@ -119,8 +119,8 @@ $(document).ready(function(){initNavTree('md_Examples_2Examples.html',''); initR
   <div class="headertitle"><div class="title">RNA–RNA interaction examples</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md22"></a> This directory contains a set of biologically motivated example runs for RIKin, alongside the scripts used to reproduce them and the plots shown in the top-level <a class="el" href="index.html#md_README">`README.md`</a>.</p>
-<h1><a class="anchor" id="autotoc_md23"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md21"></a> This directory contains a set of biologically motivated example runs for RIKin, alongside the scripts used to reproduce them and the plots shown in the top-level <a class="el" href="index.html#md_README">`README.md`</a>.</p>
+<h1><a class="anchor" id="autotoc_md22"></a>
 Contents</h1>
 <ul>
 <li><b>FASTA files</b> — input sequences for each example (<code>exampleA.fasta</code>, <code>exampleB.fasta</code>, <code>HP1.fasta</code>, <code>HP2.fasta</code>, <code>HP3.fasta</code>, <code>MicA.fasta</code>, <code>OmpA.fasta</code>).</li>
@@ -129,9 +129,9 @@ Contents</h1>
 <li>**<code>plot_kinetics.py</code>** — a <a href="https://jupytext.readthedocs.io/">Jupytext</a> notebook (light-format <code>.py</code>, pairs with a <code>.ipynb</code>) that loads each example's results with <code>rikinplotlib.RikinRun</code> and regenerates the figures used throughout this repository.</li>
 <li>**<code>Plots/</code>** — the figures (SVG + PDF) produced by <code>plot_kinetics.py</code>, including the ones embedded in the top-level README.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md24"></a>
+<h1><a class="anchor" id="autotoc_md23"></a>
 Examples</h1>
-<h2><a class="anchor" id="autotoc_md25"></a>
+<h2><a class="anchor" id="autotoc_md24"></a>
 Toy example</h2>
 <p>A short synthetic RNA pair, used as the minimal illustrative example in the main README (see the <a href="../README.md#quick-example">Quick example</a> section there): </p><div class="fragment"><div class="line">rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC</div>
 </div><!-- fragment --><p> or equivalently, from the FASTA files in this directory: </p><div class="fragment"><div class="line">rikin_pipeline.py -o example --fastaA exampleA.fasta --fastaB exampleB.fasta</div>
@@ -141,7 +141,7 @@ Toy example</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><img src="example_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="Example kinetics"/>      </td><td class="markdownTableBodyNone"><img src="example_states.svg" alt="" style="pointer-events: none;" class="inline" title="Example states"/>      </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md26"></a>
+<h2><a class="anchor" id="autotoc_md25"></a>
 Kissing-hairpin (KHP) system</h2>
 <p>Two designed hairpins that interact via a "kissing" loop–loop interaction, run against two different partner hairpins:</p>
 <div class="fragment"><div class="line">rikin_pipeline.py --fastaA HP1.fasta --fastaB HP2.fasta -c khp.cfg -o HP1-HP2</div>
@@ -158,7 +158,7 @@ Kissing-hairpin (KHP) system</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><img src="HP3-HP2_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="HP3-HP2 kinetics"/>      </td><td class="markdownTableBodyNone"><img src="HP3-HP2_states.svg" alt="" style="pointer-events: none;" class="inline" title="HP3-HP2 states"/>      </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md27"></a>
+<h2><a class="anchor" id="autotoc_md26"></a>
 MicA–MicA homodimer</h2>
 <p><em>E. coli</em> MicA is a small regulatory sRNA; here its self-interaction (homodimerization) is analyzed: </p><div class="fragment"><div class="line">rikin_pipeline.py --fastaA MicA.fasta --fastaB MicA.fasta -c MicA-MicA.cfg -o MicA-MicA</div>
 </div><!-- fragment --><table class="markdownTable">
@@ -167,7 +167,7 @@ MicA–MicA homodimer</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><img src="micA_micA_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="MicA-MicA kinetics"/>      </td><td class="markdownTableBodyNone"><img src="micA_micA_states.svg" alt="" style="pointer-events: none;" class="inline" title="MicA-MicA states"/>      </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md28"></a>
+<h2><a class="anchor" id="autotoc_md27"></a>
 MicA–OmpA heterodimer</h2>
 <p>MicA's biological target: the 5′UTR of the <em>ompA</em> mRNA (translation of which MicA represses upon binding): </p><div class="fragment"><div class="line">rikin_pipeline.py --fastaA MicA.fasta --fastaB OmpA.fasta -c MicA-ompA.cfg -o MicA-OmpA</div>
 </div><!-- fragment --><table class="markdownTable">
@@ -176,10 +176,10 @@ MicA–OmpA heterodimer</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><img src="micA_ompA_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="MicA-OmpA kinetics"/>      </td><td class="markdownTableBodyNone"><img src="micA_ompA_states.svg" alt="" style="pointer-events: none;" class="inline" title="MicA-OmpA states"/>      </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md29"></a>
+<h1><a class="anchor" id="autotoc_md28"></a>
 Reproducing everything</h1>
 <p><code>run-all.sh</code> runs all of the above in sequence: </p><div class="fragment"><div class="line">bash run-all.sh</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md30"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md29"></a>
 Regenerating the plots</h1>
 <p>Once the runs above have produced their output directories, <code>plot_kinetics.py</code> loads each one and renders the full set of figures (state-probability kinetics, top-state structures, interaction dotplots, and per-nucleotide paired-probability kinetics) into <code>Plots/</code>.</p>
 <p>Open <code>plot_kinetics.ipynb</code> directly in Jupyter/JupyterLab and run it: </p><div class="fragment"><div class="line">jupyter notebook plot_kinetics.ipynb</div>

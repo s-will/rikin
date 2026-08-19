@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['oct_202023_0',['0.9.4 (Oct, 2023)',['../md_ChangeLog.html#autotoc_md17',1,'']]],
+  ['oct_202023_0',['0.9.4 (Oct, 2023)',['../md_ChangeLog.html#autotoc_md16',1,'']]],
   ['of_20contents_1',['Table of contents',['../index.html#autotoc_md1',1,'']]],
   ['operator_20value_5ft_2',['operator value_t',['../classOrderedSparseMatrix_1_1element.html#ad3c003bc459ecf055743cf392d33fba7',1,'OrderedSparseMatrix::element']]],
   ['operator_28_29_3',['operator()',['../classBarrierGraph_1_1compBasinIdxs.html#ac05af1be5b3ca930028750ff13bd0743',1,'BarrierGraph::compBasinIdxs::operator()()'],['../classConstSparseMatrix.html#a49f8eb86f80e13a74eaaf1185a513372',1,'ConstSparseMatrix::operator()()'],['../classHybEnsModel_1_1StateDescription_1_1code__t__hash.html#a6ca0e0b239ed44c12a7a70193654dbf4',1,'HybEnsModel::StateDescription::code_t_hash::operator()()'],['../structOrderedSparseMatrix_1_1key__compare.html#a2f370977220a7824b54bdbb7de31e822',1,'OrderedSparseMatrix::key_compare::operator()()'],['../classOrderedSparseMatrix.html#a859bd4420a8f074e77674030cf5e2b8f',1,'OrderedSparseMatrix::operator()(size_type i, size_type j)'],['../classOrderedSparseMatrix.html#afd450469a847c5c36bef4d9f5316de57',1,'OrderedSparseMatrix::operator()(size_type i, size_type j) const']]],

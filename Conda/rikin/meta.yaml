@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://github.com/s-will/rikin/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: f6af2eb87ccb55fb4e60abada67354d16bd831671bd8dd58e4ab68b7c7e0d6c0 
+  sha256: 6ec6c58a4d0d93b8fcc1a6727deee41bebc01379f24957f0ba7e9802c339520b
 
 build:
   number: 0
