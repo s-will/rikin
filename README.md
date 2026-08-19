@@ -11,6 +11,7 @@ possible interaction states evolves over time: which states form first,
 which are transient, and which the system ultimately settles into.
 
 ![Predicted state probabilities over time](Examples/Plots/example_kinetics.svg)
+
 *Predicted probabilities of the most prominent interaction states over time,
 for a small toy example (see [Quick example](#quick-example) below).*
 
@@ -246,12 +247,12 @@ plots produced by the final stage are the primary human-readable output.
 
 ## More examples
 
-The [`Examples`](Examples/README.md) directory contains several further,
+The [`Examples`](Examples/Examples.md) directory contains several further,
 biologically motivated examples — including a real bacterial sRNA–mRNA pair
 (*E. coli* MicA sRNA and the *ompA* mRNA 5′UTR) and a designed
 kissing-hairpin (KHP) system — along with a script to reproduce all of them
 and a notebook that regenerates the figures shown throughout this README.
-See [`Examples/README.md`](Examples/README.md) for details.
+See [`Examples/README.md`](Examples/Examples.md) for details.
 
 
 ## License

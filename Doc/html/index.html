@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RIkin: RNAInterKin</title>
+<title>RIkin: RNAInterKin (RIKin)</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -116,41 +116,66 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">RNAInterKin </div></div>
+  <div class="headertitle"><div class="title">RNAInterKin (RIKin) </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="md_README"></a> RNAInterKin (RIKin) implements tools for the fast computation of RNA-RNA interaction kinetics in a detailed RNAup/Intarna-inspired interaction model.</p>
-<p>It features accurate modeling of RNA structures and interaction complexes based on their secondary structure and the full Turner nearest neighbor energy model.</p>
+<div class="textblock"><p><a class="anchor" id="md_README"></a> RNAInterKin (RIKin) computes the <b>kinetics of RNA–RNA interaction</b> — how two RNAs find and settle into their interaction structure over time — using a detailed RNAup/IntaRNA-inspired interaction model built on RNA secondary structure and the full Turner nearest-neighbor energy model.</p>
+<p>Where most RNA–RNA interaction tools predict a single, most likely interaction structure, RIKin instead predicts how the <em>population</em> of possible interaction states evolves over time: which states form first, which are transient, and which the system ultimately settles into.</p>
+<div class="image">
+<object type="image/svg+xml" data="example_kinetics.svg" style="pointer-events: none;"></object>
+<div class="caption">
+Predicted state probabilities over time</div></div>
+    <p><em>Predicted probabilities of the most prominent interaction states over time, for a small toy example (see Quick example below).</em></p>
 <h1><a class="anchor" id="autotoc_md1"></a>
-Example</h1>
-<p>Our methods studies the dynamics of the interaction of two RNAs, given as sequences, e.g. </p><div class="fragment"><div class="line">AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA</div>
-</div><!-- fragment --><p> and </p><div class="fragment"><div class="line">CCCGCCC</div>
-</div><!-- fragment --><p>Figure: Kinetics of RNAs can be analyzed and visualized in many ways. The most direct result of the analysis are predicted probabilities over time of single interaction states. These probability progressions can be visualized for the most prominent states.</p>
-<p><img src="Doc/example.png" alt="" class="inline"/></p>
-<h1><a class="anchor" id="autotoc_md2"></a>
-Methods</h1>
-<p>The prediction of RNA kinetics is computationally challenging, and the dynamics of RNA-RNA interaction is even substantially more demanding, due to the huge space of possible conformations.</p>
-<p>Rikin takes a series of measures to tackle the computational problems:</p>
+Table of contents</h1>
 <ul>
-<li>RNA interactions are studied at the level of secondary structure with elementary step conformation changes (transitions).</li>
-<li>Secondary structure interaction states are abstracted as RNAup/Intarna like states that each represent an ensemble of interactions. The induced transitions between these states are directly computed by efficient algorithms.</li>
-<li>Sparsification techniques and constraints are applied to further restrict the size of the computational problem in controlled ways.</li>
-<li>The energy landscape of these states is further coarse-grained in two steps: a fast discrete coarse graining is followed by a novel continuous coarse-graining.</li>
-<li>The Master Equation of the corresponding Markov process is solved by the matrix exponentiation method of Padé.</li>
+<li>Background</li>
+<li>Installation<ul>
+<li>From the Bioconda package</li>
+<li>From source</li>
 </ul>
+</li>
+<li>Quick example</li>
+<li>Usage<ul>
+<li>Pipeline stages</li>
+<li>Configuration file</li>
+<li>Command-line tools</li>
+</ul>
+</li>
+<li>Output directory layout</li>
+<li>More examples</li>
+<li>License</li>
+<li>Authors and contacts</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md2"></a>
+Background</h1>
+<p>Predicting RNA kinetics is computationally challenging on its own; the dynamics of RNA–RNA <em>interaction</em> are substantially more demanding still, due to the huge space of possible joint conformations. RIKin tackles this with a series of measures:</p>
+<ul>
+<li>RNA interactions are studied at the level of secondary structure, with elementary step conformational changes (transitions) between states.</li>
+<li>Secondary structure interaction states are abstracted as RNAup/IntaRNA-like states, each representing an ensemble of interactions. The induced transitions between these states are computed directly by efficient algorithms.</li>
+<li>Sparsification techniques and constraints restrict the size of the computational problem in controlled ways.</li>
+<li>The energy landscape of these states is coarse-grained in two steps: a fast discrete coarse-graining, followed by a novel continuous coarse-graining.</li>
+<li>The resulting Master Equation of the Markov process is solved by matrix exponentiation, using the Padé method.</li>
+</ul>
+<p>RIKin implements this as a pipeline of C++ tools (state enumeration, coarse-graining), an Octave routine (solving the Master Equation), and Python tooling (pipeline orchestration and plotting), tied together by a single driver script, <code>rikin_pipeline.py</code>.</p>
 <h1><a class="anchor" id="autotoc_md3"></a>
 Installation</h1>
 <h2><a class="anchor" id="autotoc_md4"></a>
-Installation from Conda package</h2>
-<p>We recommend to install RNAInterKin from the conda package rikin.</p>
-<p>Possible create and activate an environment for rikin first: </p><div class="fragment"><div class="line">conda create rikin</div>
+Installation from the Conda package</h2>
+<p>We recommend installing RNAInterKin from the <code>rikin</code> Bioconda package.</p>
+<p>Create and activate a dedicated environment first: </p><div class="fragment"><div class="line">conda create -n rikin</div>
 <div class="line">conda activate rikin</div>
-</div><!-- fragment --><p>Then, install by</p>
-<div class="fragment"><div class="line">conda install -c bioconda rikin</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md5"></a>
+</div><!-- fragment --><p>Then install: </p><div class="fragment"><div class="line">conda install -c bioconda -c conda-forge rikin</div>
+</div><!-- fragment --><p>This pulls in all runtime dependencies automatically — including <a href="https://www.tbi.univie.ac.at/RNA/">ViennaRNA</a>, <a href="http://www.bioinf.uni-freiburg.de/Software/LocARNA/">LocARNA</a>, Octave, and the Python scientific stack (NumPy, pandas, SciPy, Matplotlib, seaborn) used by the plotting stage.</p>
+<h2><a class="anchor" id="autotoc_md5"></a>
 Compilation/installation from the source repository</h2>
-<p>The tools can be compiled and installed after cloning the source repository. This requires a build toolchain with C++ compiler and autotools. We describe the installation in a conda environment (and get further specific dependencies from bioconda).</p>
-<div class="fragment"><div class="line">conda create -n rikin -c bioconda -c conda-forge viennarna locarna</div>
+<p>The tools can also be compiled and installed after cloning the source repository. This requires a build toolchain with a C++ compiler and autotools. We describe installation into a Conda environment, pulling the ViennaRNA/LocARNA dependencies from Bioconda:</p>
+<div class="fragment"><div class="line">git clone https://github.com/s-will/rikin.git</div>
+<div class="line">cd rikin</div>
+<div class="line"> </div>
+<div class="line">conda create -n rikin -c bioconda -c conda-forge viennarna locarna \</div>
+<div class="line">    autoconf automake libtool pkg-config gengetopt \</div>
+<div class="line">    python numpy pandas scipy matplotlib seaborn octave</div>
 <div class="line"> </div>
 <div class="line">conda activate rikin</div>
 <div class="line"> </div>
@@ -159,29 +184,131 @@ Compilation/installation from the source repository</h2>
 <div class="line">make</div>
 <div class="line">make install</div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md6"></a>
-Usage</h1>
-<p>RIkin computes kinetics of RNA-RNA interaction in several stages. The complete pipeline consists of the stages</p>
-<ul>
-<li>state enumeration (rikin_enumerate)</li>
-<li>sorting of states (sort)</li>
-<li>first coarse graining (rikin_barriers)</li>
-<li>second coarse graining (rikin_prune)</li>
-<li>solving of the master equation (rikin_xrates.m)</li>
-<li>plotting (rikin_kinetics.R)</li>
-</ul>
-<p>We provide the script rikin_pipeline.sh to perform all these pipeline stages in coordination for a pair of given RNAs.</p>
-<p>For example </p><div class="fragment"><div class="line">rikin_pipeline.sh -o example \</div>
-<div class="line">CGGAGCGACGCUACGUACGGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGAGCUAGCUGAAACGUAGCAGACAGAUACUAGUUUCAAAACUUCCUUGACAGAACCAUUUCAUGUUCAAUAAUGAAAAUUACUUUCACAUGUUUUAGUGGAAAACGUACGUACGUAUCGUAGCGGUUGGACUUACGUAUAC \</div>
-<div class="line">GCUGCGAUGCAUGCCUCGAU \</div>
-<div class="line">| tee example.out</div>
-</div><!-- fragment --><p> predicts the kinetics of the interaction between the two given sequences using a set of default parameters. The results are written to subdirectory example and text output is redirected to example.out.</p>
-<p>Plots can then be generated using Python code as demonstrated in the provided Jupyter notebook.</p>
-<p>All command line tools can be further configured and provide detailed help with options &ndash;help or -h.</p>
+Quick example</h1>
+<p><code>rikin_pipeline.py</code> runs the complete pipeline — enumeration, coarse-graining, solving the Master Equation, and plotting — for a pair of RNA sequences:</p>
+<div class="fragment"><div class="line">rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC</div>
+</div><!-- fragment --><p>Results, including the plots below, are written to the <code>example/</code> output directory.</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone"></th><th class="markdownTableHeadNone"></th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><img src="example_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="State probabilities over time"/>      </td><td class="markdownTableBodyNone"><img src="example_states.svg" alt="" style="pointer-events: none;" class="inline" title="Most prominent interaction states"/>       </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Predicted state probabilities over time   </td><td class="markdownTableBodyNone">Structures of the most prominent states    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><img src="example_dotplot.svg" alt="" style="pointer-events: none;" class="inline" title="Interaction dotplot"/>      </td><td class="markdownTableBodyNone"><img src="example_paired_kinetics.svg" alt="" style="pointer-events: none;" class="inline" title="Per-nucleotide pairing probabilities over time"/>       </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Base pair probability dotplot   </td><td class="markdownTableBodyNone">Per-nucleotide pairing probabilities over time   </td></tr>
+</table>
+<p>Equivalently, sequences can be given via FASTA files instead of directly on the command line: </p><div class="fragment"><div class="line">rikin_pipeline.py -o example --fastaA Examples/exampleA.fasta --fastaB Examples/exampleB.fasta</div>
+</div><!-- fragment --><p>See More examples below for further, biologically motivated examples (with a real bacterial sRNA–mRNA pair) and how to reproduce all figures shown here.</p>
 <h1><a class="anchor" id="autotoc_md7"></a>
-Related publications</h1>
-<p>A manuscript describing RIkin is in preparation.</p>
-<h1><a class="anchor" id="autotoc_md8"></a>
-Authors and Contacts</h1>
+Usage</h1>
+<h2><a class="anchor" id="autotoc_md8"></a>
+Pipeline stages</h2>
+<p><code>rikin_pipeline.py</code> coordinates the following stages, in order:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Stage   </th><th class="markdownTableHeadNone">Tool   </th><th class="markdownTableHeadNone">What it does    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">1. State enumeration + sort   </td><td class="markdownTableBodyNone"><code>rikin_enum</code>   </td><td class="markdownTableBodyNone">Enumerates candidate interaction/structure states for the two input sequences    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">2. Discrete coarse-graining   </td><td class="markdownTableBodyNone"><code>rikin_barriers</code>   </td><td class="markdownTableBodyNone">Groups states into basins and computes the transitions between them    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">3. Continuous coarse-graining   </td><td class="markdownTableBodyNone"><code>rikin_prune</code>   </td><td class="markdownTableBodyNone">Further prunes/merges the basin graph, and computes partition functions and rates    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">4. Solve Master Equation   </td><td class="markdownTableBodyNone"><code>rikin_xrates.m</code> (Octave)   </td><td class="markdownTableBodyNone">Solves the resulting Master Equation via Padé matrix exponentiation, giving state probabilities over time    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">5. Plotting   </td><td class="markdownTableBodyNone"><code>rikin_plot.py</code>   </td><td class="markdownTableBodyNone">Renders the full set of kinetics plots from the run's result files   </td></tr>
+</table>
+<p><code>rikin_pipeline.py</code> is a convenience wrapper that runs these in sequence, with consistent file naming and the ability to skip stages whose output already exists.</p>
+<p>Useful <code>rikin_pipeline.py</code> options (<code>rikin_pipeline.py --help</code> for the complete, current list):</p>
+<ul>
+<li><code>-o, --outdir DIR</code> — output directory</li>
+<li><code>--seqA SEQ</code>, <code>--seqB SEQ</code> — the two sequences, given directly</li>
+<li><code>--fastaA FILE</code>, <code>--fastaB FILE</code> — the two sequences, given as FASTA files (mutually exclusive with <code>--seqA</code>/<code>--seqB</code> for the corresponding sequence)</li>
+<li><code>-c, --config FILE</code> — JSON file deep-merged on top of the global config (see below)</li>
+<li><code>--reuse</code> — skip stages whose output files already exist in <code>outdir</code>, to resume an interrupted run or re-plot without recomputing</li>
+<li><code>--dryrun</code> — print the commands that would be run, without executing them</li>
+<li><code>--bindir DIR</code> — look for the <code>rikin_*</code> tools in <code>DIR</code> instead of next to the script</li>
+<li><code>--global-config FILE</code> — override the default global config (<code>rikin_pipeline.cfg</code> next to the script)</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md9"></a>
+Configuration file</h2>
+<p>Pipeline parameters live in a JSON config file. On startup, <code>rikin_pipeline.py</code> loads <code>rikin_pipeline.cfg</code> from next to itself (override with <code>--global-config</code>), and optionally deep-merges a run-specific file passed via <code>-c/--config</code> on top of it. The schema:</p>
+<div class="fragment"><div class="line">{</div>
+<div class="line">  &quot;association_prefactor&quot;: 1.0,</div>
+<div class="line"> </div>
+<div class="line">  &quot;common_opts&quot;: [&quot;--verbose&quot;, &quot;--max-hyb-length-diff&quot;, &quot;8&quot;],</div>
+<div class="line"> </div>
+<div class="line">  &quot;enum_opts&quot;: [&quot;--max-hyb-energy&quot;, &quot;7&quot;, &quot;--max-total-energy&quot;, &quot;12&quot;],</div>
+<div class="line"> </div>
+<div class="line">  &quot;barriers_opts&quot;: [],</div>
+<div class="line"> </div>
+<div class="line">  &quot;prune_opts&quot;: [&quot;--min-rate&quot;, &quot;5e-8&quot;, &quot;--num-out&quot;, &quot;800&quot;, &quot;--num-pequ&quot;, &quot;800&quot;],</div>
+<div class="line"> </div>
+<div class="line">  &quot;xrates_opts&quot;: [&quot;--t8&quot;, &quot;1e15&quot;],</div>
+<div class="line"> </div>
+<div class="line">  &quot;plot_opts&quot;: {</div>
+<div class="line">    &quot;shown_state_threshold&quot;: 0.02,</div>
+<div class="line">    &quot;formats&quot;: [&quot;svg&quot;, &quot;pdf&quot;],</div>
+<div class="line">    &quot;plots&quot;: [&quot;all&quot;],</div>
+<div class="line">    &quot;config&quot;: null,</div>
+<div class="line">    &quot;output_dir&quot;: null</div>
+<div class="line">  }</div>
+<div class="line">}</div>
+</div><!-- fragment --><ul>
+<li><code>common_opts</code> are passed to both <code>rikin_enum</code> and <code>rikin_barriers</code>.</li>
+<li><code>enum_opts</code>, <code>barriers_opts</code>, <code>xrates_opts</code> are passed to the correspondingly named stage only.</li>
+<li><code>prune_opts</code> are passed to <code>rikin_prune</code>, alongside <code>--preexpf-first &lt;association_prefactor&gt;</code>.</li>
+<li><code>plot_opts</code> configures the final plotting stage.</li>
+</ul>
+<p>Only the keys you want to override need to be present in a run-specific <code>-c/--config</code> file — everything else falls back to <code>rikin_pipeline.cfg</code>. See Examples for several such override files in practice.</p>
+<h2><a class="anchor" id="autotoc_md10"></a>
+Command-line tools</h2>
+<p>Each stage's underlying tool can also be run standalone, e.g. for debugging or custom workflows. We only give a brief description here; run any tool with <code>--help</code> for the full, current option list, or see its source option definition (<code>.ggo</code> file) linked below for the same information.</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Tool   </th><th class="markdownTableHeadNone">Purpose   </th><th class="markdownTableHeadNone">Full option reference    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>rikin_enum</code>   </td><td class="markdownTableBodyNone">Enumerate candidate interaction/structure states for the two input RNAs   </td><td class="markdownTableBodyNone"><code>rikin_enum --help</code> / <a href="src/rikin_enum.ggo"><code>rikin_enum.ggo</code></a>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>rikin_barriers</code>   </td><td class="markdownTableBodyNone">Construct the discretely coarse-grained basin/state system   </td><td class="markdownTableBodyNone"><code>rikin_barriers --help</code> / <a href="src/rikin_barriers.ggo"><code>rikin_barriers.ggo</code></a>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>rikin_prune</code>   </td><td class="markdownTableBodyNone">Prune/continuously coarse-grain the state system and compute rates   </td><td class="markdownTableBodyNone"><code>rikin_prune --help</code> / <a href="src/rikin_prune.ggo"><code>rikin_prune.ggo</code></a>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>rikin_xrates.m</code>   </td><td class="markdownTableBodyNone">Solve the Master Equation (Octave; run via <code>octave rikin_xrates.m ...</code>)   </td><td class="markdownTableBodyNone"><code>octave rikin_xrates.m --help</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>rikin_plot.py</code>   </td><td class="markdownTableBodyNone">Render kinetics plots from a completed run's result files   </td><td class="markdownTableBodyNone"><code>rikin_plot.py --help</code>   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md11"></a>
+Output directory layout</h1>
+<p>A completed run's <code>outdir</code> contains, among others:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">File   </th><th class="markdownTableHeadNone">Contents    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>sorted_states.gz</code>   </td><td class="markdownTableBodyNone">Enumerated, sorted candidate states    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>bg</code>   </td><td class="markdownTableBodyNone"><a class="el" href="classBasin.html" title="A basin in the energy landscape.">Basin</a> graph after discrete coarse-graining    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>barriers_track.gz</code>, <code>track-ipps-barriers.gz</code>   </td><td class="markdownTableBodyNone">Barrier-stage tracking data    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>pf</code>, <code>bar</code>, <code>rates.gz</code>   </td><td class="markdownTableBodyNone">Partition functions, basins, and rates after pruning    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>kin</code>   </td><td class="markdownTableBodyNone">Solved kinetics (final result of the computation, state probabilities over time)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>*.svg</code>, <code>*.pdf</code>   </td><td class="markdownTableBodyNone">Plots of the RNA-RNA kinetics   </td></tr>
+</table>
+<p>These are intermediate/result files consumed by later pipeline stages; the plots produced by the final stage are the primary human-readable output.</p>
+<h1><a class="anchor" id="autotoc_md12"></a>
+More examples</h1>
+<p>The <a class="el" href="md_Examples_2Examples.html">`Examples`</a> directory contains several further, biologically motivated examples — including a real bacterial sRNA–mRNA pair (<em>E. coli</em> MicA sRNA and the <em>ompA</em> mRNA 5′UTR) and a designed kissing-hairpin (KHP) system — along with a script to reproduce all of them and a notebook that regenerates the figures shown throughout this README. See <a class="el" href="md_Examples_2Examples.html">`Examples/README.md`</a> for details.</p>
+<h1><a class="anchor" id="autotoc_md13"></a>
+License</h1>
+<p>RNAInterKin is distributed under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). See [<code>COPYING</code>](COPYING) for the full license text.</p>
+<h1><a class="anchor" id="autotoc_md14"></a>
+Authors and contacts</h1>
 <ul>
 <li>Rolf Backofen, University of Freiburg</li>
 <li>Sebastian Will, École Polytechnique </li>

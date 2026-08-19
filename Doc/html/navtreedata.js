@@ -25,13 +25,24 @@
 var NAVTREE =
 [
   [ "RIkin", "index.html", [
-    [ "RNAInterKin", "index.html", "index" ],
+    [ "RNAInterKin (RIKin)", "index.html", "index" ],
     [ "ChangeLog", "md_ChangeLog.html", [
-      [ "0.9.4 (Oct, 2023)", "md_ChangeLog.html#autotoc_md9", null ],
-      [ "0.9.3 (June, 2022)", "md_ChangeLog.html#autotoc_md10", null ],
-      [ "0.9.2 (Feb, 2017)", "md_ChangeLog.html#autotoc_md11", null ],
-      [ "0.9.1 (Feb, 2017)", "md_ChangeLog.html#autotoc_md12", null ],
-      [ "0.9 (Apr, 2016)", "md_ChangeLog.html#autotoc_md13", null ]
+      [ "0.9.4 (Oct, 2023)", "md_ChangeLog.html#autotoc_md15", null ],
+      [ "0.9.3 (June, 2022)", "md_ChangeLog.html#autotoc_md16", null ],
+      [ "0.9.2 (Feb, 2017)", "md_ChangeLog.html#autotoc_md17", null ],
+      [ "0.9.1 (Feb, 2017)", "md_ChangeLog.html#autotoc_md18", null ],
+      [ "0.9 (Apr, 2016)", "md_ChangeLog.html#autotoc_md19", null ]
+    ] ],
+    [ "RNA–RNA interaction examples", "md_Examples_2Examples.html", [
+      [ "Contents", "md_Examples_2Examples.html#autotoc_md21", null ],
+      [ "Examples", "md_Examples_2Examples.html#autotoc_md22", [
+        [ "Toy example", "md_Examples_2Examples.html#autotoc_md23", null ],
+        [ "Kissing-hairpin (KHP) system", "md_Examples_2Examples.html#autotoc_md24", null ],
+        [ "MicA–MicA homodimer", "md_Examples_2Examples.html#autotoc_md25", null ],
+        [ "MicA–OmpA heterodimer", "md_Examples_2Examples.html#autotoc_md26", null ]
+      ] ],
+      [ "Reproducing everything", "md_Examples_2Examples.html#autotoc_md27", null ],
+      [ "Regenerating the plots", "md_Examples_2Examples.html#autotoc_md28", null ]
     ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ]
@@ -55,7 +66,7 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "classHybridPF.html#af55e990756707df771577f3fdfbd149c",
-"structRRIBarrierGraph_1_1transition__t.html#ad8e8802bbfb3fe6d0755a4ade3d167e4"
+"structHybEnsModel_1_1StateDescription_1_1ISite.html#a6d442943d7b835053d2abe92c8ba5085"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
