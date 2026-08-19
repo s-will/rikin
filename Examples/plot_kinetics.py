@@ -8,7 +8,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.19.5
 #   kernelspec:
-#     display_name: infrared
+#     display_name: rikin
 #     language: python
 #     name: python3
 # ---
@@ -29,8 +29,7 @@ from rikinplotlib import *
 
 
 # +
-rkplt.output_directory = "Figs"
-#suffix = ".svg"
+rkplt.output_directory = "Plots"
 
 if rkplt.output_directory and not os.path.isdir(rkplt.output_directory):
     os.mkdir(rkplt.output_directory)
@@ -42,7 +41,7 @@ if rkplt.output_directory and not os.path.isdir(rkplt.output_directory):
 example = RikinRun(
     "AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA",
     "CCCGCCC",
-    "/home/will/Research/Projects/RIKinetics/RIkin/Doc/example",
+    "example",
     shown_state_threshold = 0.02,
     autosave="example"
 )
@@ -91,7 +90,7 @@ plt.show()
 # +
 seq="GAAAGACGCGCAUUUGUUAUCAUCAUCCCUGAAUUCAGAGAUGAAAUUUUGGCCACUCACGAGUGGCCUUUU" 
 micA_micA = RikinRun(
-    seq, seq, input_directory = "/home/will/Research/Projects/RIKinetics/Experiments/NEW/MicA/MicA-MicA",
+    seq, seq, input_directory = "MicA-MicA",
     shown_state_threshold = 0.05,
     autosave="micA_micA"
 )
@@ -128,54 +127,54 @@ plt.show()
 micA_micA.dotplot(figsize = (13.5,12), seqfs = 6, barsize=0.5, wspace=0.125, hspace=0.075)
 plt.show()
 
-# ## OmpA -- MicA
+# ## MicA -- OmpA
 
 # +
-ompA_micA = RikinRun(
-    input_directory = "/home/will/Research/Projects/RIKinetics/Experiments/NEW/MicA/ompA-MicA",
-    seqA="CUUUUUUUUCAUAUGCCUGACGGAGUUCACACUUGUAAGUUUUCAACUACGUUGUAGACUUUACAUCGCCAGGGGUGCUCGGCAUAAGCCGAAGAUAUCGGUAGAGUUAAUAUUGAGCAGAUCCCCCGGUGAAGGAUUUAACCGUGUUAUCUCGUUGGAGAUAUUCAUGGCGUAUUUUGGAUGAUAACGAGGCGCAAAAAAUGAAAAAGACAGCUAUCGCGAUUGCAGUGGCACUGGCUGGUUUCGCUACCGUAGCGCAGGCCGCUCCGAAAGAUAACACCUGGUACACUGGUGCUAAAC",
-    seqB="GAAAGACGCGCAUUUGUUAUCAUCAUCCCUGAAUUCAGAGAUGAAAUUUUGGCCACUCACGAGUGGCCUUUU",
+micA_ompA = RikinRun(
+    input_directory = "MicA-OmpA",
+    seqA="GAAAGACGCGCAUUUGUUAUCAUCAUCCCUGAAUUCAGAGAUGAAAUUUUGGCCACUCACGAGUGGCCUUUU",
+    seqB="CUUUUUUUUCAUAUGCCUGACGGAGUUCACACUUGUAAGUUUUCAACUACGUUGUAGACUUUACAUCGCCAGGGGUGCUCGGCAUAAGCCGAAGAUAUCGGUAGAGUUAAUAUUGAGCAGAUCCCCCGGUGAAGGAUUUAACCGUGUUAUCUCGUUGGAGAUAUUCAUGGCGUAUUUUGGAUGAUAACGAGGCGCAAAAAAUGAAAAAGACAGCUAUCGCGAUUGCAGUGGCACUGGCUGGUUUCGCUACCGUAGCGCAGGCCGCUCCGAAAGAUAACACCUGGUACACUGGUGCUAAAC",
     shown_state_threshold = 0.05,
-    autosave="ompA_micA"
+    autosave="micA_ompA"
 )
 
 #print(state_probabilities)
 fig,axs = plt.subplots(1,1,figsize=(6,6))
-ompA_micA.plot_state_probability_kinetics(ax=axs)
+micA_ompA.plot_state_probability_kinetics(ax=axs)
 
-ompA_micA.optsave("kinetics")
+micA_ompA.optsave("kinetics")
 plt.show()
 
 # -----
 
 
-ompA_micA.plot_states(figsize=(14,8), seqfs=6, wspace=0.15, hspace=0.3 )
+micA_ompA.plot_states(figsize=(14,8), seqfs=6, wspace=0.15, hspace=0.3 )
 plt.show()
 
 # -----
 
 #fig = plt.figure(figsize=(20,4))
-#ompA_micA.interaction_dotplot(seqfs=5, swap_axes=True)
+#micA_ompA.interaction_dotplot(seqfs=5, swap_axes=True)
 #plt.show()
 
 # -----
 
 #fig = plt.figure(figsize=(20,4))
-#ompA_micA.interaction_dotplot(kind="integrate", start_time=0, end_time=None, seqfs=5, swap_axes=True)
+#micA_ompA.interaction_dotplot(kind="integrate", start_time=0, end_time=None, seqfs=5, swap_axes=True)
 #plt.show()
 
-ompA_micA.plot_paired_probability_kinetics(figsize=(26,24), seqfs=5, wspace=0.2, hspace=0.07)
+micA_ompA.plot_paired_probability_kinetics(figsize=(26,24), seqfs=5, wspace=0.2, hspace=0.07)
 plt.show()
 
-ompA_micA.dotplot(figsize = (26,24), seqfs = 8, barsize=0.5, wspace=0.12, hspace=0.08)
+micA_ompA.dotplot(figsize = (26,24), seqfs = 8, barsize=0.5, wspace=0.12, hspace=0.08)
 plt.show()
 # -
 
-ompA_micA.plot_paired_probability_kinetics(figsize=(26,24), seqfs=5, wspace=0.2, hspace=0.07, show_pairing=False, suffix="paired_kinetics_interaction_only")
+micA_ompA.plot_paired_probability_kinetics(figsize=(26,24), seqfs=5, wspace=0.2, hspace=0.07, show_pairing=False, suffix="paired_kinetics_interaction_only")
 plt.show()
 
 # +
-ompA_micA.plot_paired_probability_kinetics(figsize = (12,4), seqfs = 6, hspace=0.25, wspace=0.25, show_rnas=[1], suffix="paired_kinetics_only_srna")
+micA_ompA.plot_paired_probability_kinetics(figsize = (12,4), seqfs = 6, hspace=0.25, wspace=0.25, show_rnas=[0], suffix="paired_kinetics_only_srna")
 
 plt.show()
 # -
@@ -183,8 +182,6 @@ plt.show()
 # ## KHP plots
 
 # +
-input_dir = "/home/will/Research/Projects/RIKinetics/Experiments/NEW/KHP-Kinetics"
-
 seqs = {
     "hp1": "GGACGAGGCAUUUCCCCUUGU",
     "hp2": "GGACAAGGGGAAAUGCCUUGU",
@@ -195,9 +192,9 @@ seqs = {
 
 
 
-for a,b in [(1,2),(2,3)]:
+for a,b in [(1,2),(3,2)]:
     khp = RikinRun(
-        input_directory = f"{input_dir}/HP{a}-HP{b}",
+        input_directory = f"HP{a}-HP{b}",
         seqA = seqs[f"hp{a}"],
         seqB = seqs[f"hp{b}"],
         shown_state_threshold = 0.02,
@@ -226,7 +223,7 @@ state_names = {0:"ED", 1:"Diss", 2:"KC1", 3:"KC2", 9:"OFF1", 15:"OFF2"}
 
 a,b = 1,2
 khp = RikinRun(
-    input_directory = f"{input_dir}/HP{a}-HP{b}",
+    input_directory = f"HP{a}-HP{b}",
     seqA = seqs[f"hp{a}"],
     seqB = seqs[f"hp{b}"],
     shown_state_threshold = 0.02,
@@ -245,9 +242,9 @@ plt.show()
 # +
 state_names = {0:"ED", 1:"Diss", 2:"KC1", 3:"KC2", 14:"OFF1", 29:"OFF2"}
 
-a,b = 2,3
+a,b = 3,2
 khp = RikinRun(
-    input_directory = f"{input_dir}/HP{a}-HP{b}",
+    input_directory = f"HP{a}-HP{b}",
     seqA = seqs[f"hp{a}"],
     seqB = seqs[f"hp{b}"],
     shown_state_threshold = 0.02,
@@ -261,12 +258,4 @@ print(f"HP{a} - HP{b}")
 
 khp.plot_states(figsize=(8,4.5),seqfs=8, rna_names=rna_names, state_names=state_names,row_gap=1,hspace=0.5,wspace=0.25)
 plt.show()
-
-# -
-
-xs= np.linspace(0.1, 4, 50)
-sns.lineplot(x=xs,y=[boltzmann_weight(x) for x in xs])
-
-boltzmann_weight(3)
-
 
