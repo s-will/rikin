@@ -15,7 +15,8 @@ var searchData=
   ['erase_5fbasin_12',['erase_basin',['../classBasinTransitions.html#aeab9e96bd21ae9346294e74cd1110461',1,'BasinTransitions']]],
   ['everything_13',['Reproducing everything',['../md_Examples_2Examples.html#autotoc_md28',1,'']]],
   ['example_14',['example',['../index.html#autotoc_md6',1,'Quick example'],['../md_Examples_2Examples.html#autotoc_md24',1,'Toy example']]],
-  ['examples_15',['examples',['../md_Examples_2Examples.html#autotoc_md23',1,'Examples'],['../index.html#autotoc_md12',1,'More examples'],['../md_Examples_2Examples.html',1,'RNA–RNA interaction examples']]],
-  ['exists_16',['exists',['../classConstSparseMatrix.html#ad2a0a9eb92ed3a3dc07c42e571bff13c',1,'ConstSparseMatrix']]],
-  ['exp_5filoope_17',['exp_ILoopE',['../classHybridPF.html#af55e990756707df771577f3fdfbd149c',1,'HybridPF']]]
+  ['examples_15',['examples',['../md_Examples_2Examples.html#autotoc_md23',1,'Examples'],['../index.html#autotoc_md12',1,'More examples']]],
+  ['examples_20of_20rri_20kinetics_16',['Examples of RRI kinetics',['../md_Examples_2Examples.html',1,'']]],
+  ['exists_17',['exists',['../classConstSparseMatrix.html#ad2a0a9eb92ed3a3dc07c42e571bff13c',1,'ConstSparseMatrix']]],
+  ['exp_5filoope_18',['exp_ILoopE',['../classHybridPF.html#af55e990756707df771577f3fdfbd149c',1,'HybridPF']]]
 ];

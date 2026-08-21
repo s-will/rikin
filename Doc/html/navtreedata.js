@@ -25,7 +25,24 @@
 var NAVTREE =
 [
   [ "RIkin", "index.html", [
-    [ "RNAInterKin (RIKin)", "index.html", "index" ],
+    [ "RNAInterKin (RIKin)", "index.html#autotoc_md0", [
+      [ "Table of contents", "index.html#autotoc_md1", null ],
+      [ "Background", "index.html#autotoc_md2", null ],
+      [ "Installation", "index.html#autotoc_md3", [
+        [ "Installation from the Conda package", "index.html#autotoc_md4", null ],
+        [ "Compilation/installation from the source repository", "index.html#autotoc_md5", null ]
+      ] ],
+      [ "Quick example", "index.html#autotoc_md6", null ],
+      [ "Usage", "index.html#autotoc_md7", [
+        [ "Pipeline stages", "index.html#autotoc_md8", null ],
+        [ "Configuration file", "index.html#autotoc_md9", null ],
+        [ "Command-line tools", "index.html#autotoc_md10", null ]
+      ] ],
+      [ "Output directory layout", "index.html#autotoc_md11", null ],
+      [ "More examples", "index.html#autotoc_md12", null ],
+      [ "License", "index.html#autotoc_md13", null ],
+      [ "Authors and contacts", "index.html#autotoc_md14", null ]
+    ] ],
     [ "ChangeLog", "md_ChangeLog.html", [
       [ "0.9.5 (Aug, 2026)", "md_ChangeLog.html#autotoc_md15", null ],
       [ "0.9.4 (Oct, 2023)", "md_ChangeLog.html#autotoc_md16", null ],
@@ -34,7 +51,7 @@ var NAVTREE =
       [ "0.9.1 (Feb, 2017)", "md_ChangeLog.html#autotoc_md19", null ],
       [ "0.9 (Apr, 2016)", "md_ChangeLog.html#autotoc_md20", null ]
     ] ],
-    [ "RNA–RNA interaction examples", "md_Examples_2Examples.html", [
+    [ "Examples of RRI kinetics", "md_Examples_2Examples.html", [
       [ "Contents", "md_Examples_2Examples.html#autotoc_md22", null ],
       [ "Examples", "md_Examples_2Examples.html#autotoc_md23", [
         [ "Toy example", "md_Examples_2Examples.html#autotoc_md24", null ],
@@ -44,6 +61,14 @@ var NAVTREE =
       ] ],
       [ "Reproducing everything", "md_Examples_2Examples.html#autotoc_md28", null ],
       [ "Regenerating the plots", "md_Examples_2Examples.html#autotoc_md29", null ]
+    ] ],
+    [ "CLI reference", "md_CliReference.html", [
+      [ "rikin_enum", "md_CliReference.html#autotoc_md31", null ],
+      [ "rikin_barriers", "md_CliReference.html#autotoc_md32", null ],
+      [ "rikin_prune", "md_CliReference.html#autotoc_md33", null ],
+      [ "rikin_pipeline.py", "md_CliReference.html#autotoc_md34", null ],
+      [ "rikin_plot.py", "md_CliReference.html#autotoc_md35", null ],
+      [ "rikin_xrates.m", "md_CliReference.html#autotoc_md36", null ]
     ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ]
@@ -67,7 +92,7 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "classHybridPF.html#af55e990756707df771577f3fdfbd149c",
-"structHybEnsModel_1_1StateDescription_1_1ISite.html#a541de35c70fa2bcb0bbe5329aae94b6e"
+"md_Examples_2Examples.html#autotoc_md29"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

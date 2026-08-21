@@ -1,4 +1,4 @@
-# RNA–RNA interaction examples
+# Examples of RRI kinetics
 
 This directory contains a set of biologically motivated example runs for
 RIKin, alongside the scripts used to reproduce them and the plots shown in

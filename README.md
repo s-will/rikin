@@ -1,3 +1,4 @@
+<a id="rnainterkin-rikin"></a>
 # RNAInterKin (RIKin)
 
 RNAInterKin (RIKin) computes the **kinetics of RNA–RNA interaction** — how
@@ -10,9 +11,13 @@ interaction structure, RIKin instead predicts how the *population* of
 possible interaction states evolves over time: which states form first,
 which are transient, and which the system ultimately settles into.
 
-![Predicted state probabilities over time](Examples/Plots/example_kinetics.svg)
-*Predicted probabilities of the most prominent interaction states over time,
-for a small toy example (see [Quick example](#quick-example) below).*
+| | |
+|---|---|
+| ![Predicted state probabilities over time](Examples/Plots/example_kinetics.svg) | ![Structures of the most prominent states](Examples/Plots/example_states.svg) |
+
+*Predicted probabilities of the most prominent interaction states over time
+(left), and the structures of those states (right), for a small toy example
+(see [Quick example](#quick-example) below).*
 
 
 ## Table of contents
@@ -32,6 +37,7 @@ for a small toy example (see [Quick example](#quick-example) below).*
 - [Authors and contacts](#authors-and-contacts)
 
 
+<a id="background"></a>
 ## Background
 
 Predicting RNA kinetics is computationally challenging on its own; the
@@ -59,8 +65,10 @@ Python tooling (pipeline orchestration and plotting), tied together by a
 single driver script, `rikin_pipeline.py`.
 
 
+<a id="installation"></a>
 ## Installation
 
+<a id="installation-from-the-conda-package"></a>
 ### Installation from the Conda package
 
 We recommend installing RNAInterKin from the `rikin` Bioconda package.
@@ -81,6 +89,7 @@ This pulls in all runtime dependencies automatically — including
 Octave, and the Python scientific stack (NumPy, pandas, SciPy, Matplotlib,
 seaborn) used by the plotting stage.
 
+<a id="compilationinstallation-from-the-source-repository"></a>
 ### Compilation/installation from the source repository
 
 The tools can also be compiled and installed after cloning the source
@@ -114,6 +123,7 @@ make install
 > way a system compiler won't.
 
 
+<a id="quick-example"></a>
 ## Quick example
 
 `rikin_pipeline.py` runs the complete pipeline — enumeration, coarse-graining,
@@ -124,14 +134,15 @@ rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --s
 ```
 
 Results, including the plots below, are written to the `example/` output
-directory.
+directory. The state-probability kinetics and top-state structures are the
+same plots already shown at the [top of this document](#rnainterkin-rikin).
 
 | | |
 |---|---|
 | ![State probabilities over time](Examples/Plots/example_kinetics.svg) | ![Most prominent interaction states](Examples/Plots/example_states.svg) |
 | Predicted state probabilities over time | Structures of the most prominent states |
-| ![Interaction dotplot](Examples/Plots/example_interaction.svg) | ![Per-nucleotide pairing probabilities over time](Examples/Plots/example_paired_kinetics.svg) |
-| Interaction probability dotplot | Per-nucleotide pairing probabilities over time |
+| ![Dotplot](Examples/Plots/example_dotplot.svg) | ![Per-nucleotide pairing probabilities over time](Examples/Plots/example_paired_kinetics.svg) |
+| Base-pair probability dotplot | Per-nucleotide pairing probabilities over time |
 
 Equivalently, sequences can be given via FASTA files instead of directly on
 the command line:
@@ -144,8 +155,10 @@ motivated examples (with a real bacterial sRNA–mRNA pair) and how to
 reproduce all figures shown here.
 
 
+<a id="usage"></a>
 ## Usage
 
+<a id="pipeline-stages"></a>
 ### Pipeline stages
 
 `rikin_pipeline.py` coordinates the following stages, in order:
@@ -155,15 +168,15 @@ reproduce all figures shown here.
 | 1. State enumeration + sort   | `rikin_enum`        | Enumerates candidate interaction/structure states for the two input sequences |
 | 2. Discrete coarse-graining   | `rikin_barriers`    | Groups states into basins and computes the transitions between them |
 | 3. Continuous coarse-graining | `rikin_prune`       | Further prunes/merges the basin graph, and computes partition functions and rates |
-| 4. Solve Master Equation      | `rikin_xrates.m` (Octave) | Solves the resulting Master Equation via Padé matrix exponentiation, giving state probabilities over time |
+| 4. Solve Master Equation      | `rikin_xrates.m` (Octave script) | Solves the resulting Master Equation via Padé matrix exponentiation, giving state probabilities over time |
 | 5. Plotting                   | `rikin_plot.py`     | Renders the full set of kinetics plots from the run's result files |
 
 `rikin_pipeline.py` is a convenience wrapper that runs these in sequence,
 with consistent file naming and the ability to skip stages whose output
 already exists.
 
-Useful `rikin_pipeline.py` options (`rikin_pipeline.py --help` for the
-complete, current list):
+Useful `rikin_pipeline.py` options (see [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_pipeline_py)
+for the complete, current list):
 
 * `-o, --outdir DIR` — output directory
 * `--seqA SEQ`, `--seqB SEQ` — the two sequences, given directly
@@ -178,6 +191,7 @@ complete, current list):
 * `--global-config FILE` — override the default global config
   (`rikin_pipeline.cfg` next to the script)
 
+<a id="configuration-file"></a>
 ### Configuration file
 
 Pipeline parameters live in a JSON config file. On startup,
@@ -220,22 +234,22 @@ Only the keys you want to override need to be present in a run-specific
 `-c/--config` file — everything else falls back to `rikin_pipeline.cfg`.
 See [Examples](#more-examples) for several such override files in practice.
 
+<a id="command-line-tools"></a>
 ### Command-line tools
 
 Each stage's underlying tool can also be run standalone, e.g. for debugging
-or custom workflows. We only give a brief description here; run any tool
-with `--help` for the full, current option list, or see its source option
-definition (`.ggo` file) linked below for the same information.
+or custom workflows. The table gives a brief description; see
+[CliReference.md](CliReference.md) for each tool's actual `--help` output.
 
 | Tool | Purpose | Full option reference |
 |------|---------|------------------------|
-| `rikin_enum` | Enumerate candidate interaction/structure states for the two input RNAs | `rikin_enum --help` / [`rikin_enum.ggo`](src/rikin_enum.ggo) |
-| `rikin_barriers` | Construct the discretely coarse-grained basin/state system | `rikin_barriers --help` / [`rikin_barriers.ggo`](src/rikin_barriers.ggo) |
-| `rikin_prune` | Prune/continuously coarse-grain the state system and compute rates | `rikin_prune --help` / [`rikin_prune.ggo`](src/rikin_prune.ggo) |
-| `rikin_xrates.m` | Solve the Master Equation (Octave; run via `octave rikin_xrates.m ...`) | `octave rikin_xrates.m --help` |
-| `rikin_plot.py` | Render kinetics plots from a completed run's result files | `rikin_plot.py --help` |
+| `rikin_enum` | Enumerate candidate interaction/structure states for the two input RNAs | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_enum) |
+| `rikin_barriers` | Construct the discretely coarse-grained basin/state system | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_barriers) |
+| `rikin_prune` | Prune/continuously coarse-grain the state system and compute rates | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_prune) |
+| `rikin_xrates.m` | Solve the Master Equation (Octave script, has its own shebang — run directly, not via `octave rikin_xrates.m`) | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_xrates_m) |
+| `rikin_plot.py` | Render kinetics plots from a completed run's result files | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_plot_py) |
 
-
+<a id="output-directory-layout"></a>
 ## Output directory layout
 
 A completed run's `outdir` contains, among others:
@@ -253,23 +267,26 @@ These are intermediate/result files consumed by later pipeline stages; the
 plots produced by the final stage are the primary human-readable output.
 
 
+<a id="more-examples"></a>
 ## More examples
 
-The [`Examples`](Examples/README.md) directory contains several further,
+The [Examples](Examples/Examples.md) directory contains several further,
 biologically motivated examples — including a real bacterial sRNA–mRNA pair
 (*E. coli* MicA sRNA and the *ompA* mRNA 5′UTR) and a designed
 kissing-hairpin (KHP) system — along with a script to reproduce all of them
 and a notebook that regenerates the figures shown throughout this README.
-See [`Examples/README.md`](Examples/README.md) for details.
+See [Examples/README.md](Examples/Examples.md) for details.
 
 
+<a id="license"></a>
 ## License
 
 RNAInterKin is distributed under the GNU Affero General Public License
-v3.0 or later (AGPL-3.0-or-later). See [`COPYING`](COPYING) for the full
+v3.0 or later (AGPL-3.0-or-later). See [`COPYING`](https://github.com/s-will/rikin/blob/master/COPYING) for the full
 license text.
 
 
+<a id="authors-and-contacts"></a>
 ## Authors and contacts
 
 * Rolf Backofen, University of Freiburg

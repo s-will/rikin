@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['examples_0',['RNA–RNA interaction examples',['../md_Examples_2Examples.html',1,'']]]
+  ['examples_20of_20rri_20kinetics_0',['Examples of RRI kinetics',['../md_Examples_2Examples.html',1,'']]]
 ];

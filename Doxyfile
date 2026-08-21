@@ -948,6 +948,7 @@ WARN_LOGFILE           =
 INPUT                  = README.md \
                          ChangeLog.md \
                          Examples/Examples.md \
+                         CliReference.md \
                          src/barrier_graph.cc src/barrier_graph.hh \
                          src/basin.cc src/basin.hh src/basin_info.cc \
                          src/basin_info.hh src/basin_pruning_info.cc \
