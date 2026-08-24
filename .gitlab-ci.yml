@@ -4,7 +4,7 @@ pages:
   tags: 
     - small
   only:
-    - tags
+    - master
   script: 
     - echo "Do nothing" 
   artifacts:
