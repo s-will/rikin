@@ -3,7 +3,7 @@ var searchData=
   ['capacity_0',['capacity',['../classConstSparseMatrix.html#a22f98edeb956dbb24959751ec3c0153c',1,'ConstSparseMatrix']]],
   ['changelog_1',['ChangeLog',['../md_ChangeLog.html',1,'']]],
   ['clear_2',['clear',['../classBasinPruningInfo.html#a873c7d346660a475d34388dd847a0725',1,'BasinPruningInfo::clear()'],['../classOrderedSparseMatrix.html#ad5824f6f1e5c8ed62befda5a04e72427',1,'OrderedSparseMatrix::clear()']]],
-  ['cli_20reference_3',['CLI reference',['../md_CliReference.html',1,'']]],
+  ['cli_20reference_3',['CLI reference',['../md_Help.html',1,'']]],
   ['code_5ft_4',['code_t',['../classHybEnsModel_1_1StateDescription.html#a662d7a05384d4ca88485067cb301e140',1,'HybEnsModel::StateDescription']]],
   ['code_5ft_5fhash_5',['code_t_hash',['../classHybEnsModel_1_1StateDescription_1_1code__t__hash.html',1,'HybEnsModel::StateDescription']]],
   ['command_20line_20tools_6',['Command-line tools',['../index.html#autotoc_md10',1,'']]],

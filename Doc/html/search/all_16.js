@@ -26,5 +26,5 @@ var searchData=
   ['prob_5ft_23',['prob_t',['../classUnpairedPF.html#a91a885d717f4b3200988f9190c513598',1,'UnpairedPF::prob_t'],['../classPairPfs.html#a3c18f294c07ef459ca90e737b57e02bf',1,'PairPfs::prob_t']]],
   ['prune_24',['prune',['../classBarrierGraph.html#a969f00163200e3de1a48f05b281a65b9',1,'BarrierGraph']]],
   ['push_5fback_5fbasin_25',['push_back_basin',['../classBarrierGraph.html#af50a798d627382a064549687c89002c8',1,'BarrierGraph']]],
-  ['py_26',['py',['../md_CliReference.html#autotoc_md34',1,'rikin_pipeline.py'],['../md_CliReference.html#autotoc_md35',1,'rikin_plot.py']]]
+  ['py_26',['py',['../md_Help.html#autotoc_md34',1,'rikin_pipeline.py'],['../md_Help.html#autotoc_md35',1,'rikin_plot.py']]]
 ];

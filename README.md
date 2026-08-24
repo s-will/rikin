@@ -175,7 +175,7 @@ reproduce all figures shown here.
 with consistent file naming and the ability to skip stages whose output
 already exists.
 
-Useful `rikin_pipeline.py` options (see [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_pipeline_py)
+Useful `rikin_pipeline.py` options (see [Pipeline Help](https://github.com/s-will/rikin/blob/master/Help.md#rikin_pipeline_py)
 for the complete, current list):
 
 * `-o, --outdir DIR` — output directory
@@ -239,15 +239,16 @@ See [Examples](#more-examples) for several such override files in practice.
 
 Each stage's underlying tool can also be run standalone, e.g. for debugging
 or custom workflows. The table gives a brief description; see
-[CliReference.md](CliReference.md) for each tool's actual `--help` output.
+[Help](Help.md) for each tool's actual `--help` output.
 
 | Tool | Purpose | Full option reference |
 |------|---------|------------------------|
-| `rikin_enum` | Enumerate candidate interaction/structure states for the two input RNAs | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_enum) |
-| `rikin_barriers` | Construct the discretely coarse-grained basin/state system | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_barriers) |
-| `rikin_prune` | Prune/continuously coarse-grain the state system and compute rates | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_prune) |
-| `rikin_xrates.m` | Solve the Master Equation (Octave script, has its own shebang — run directly, not via `octave rikin_xrates.m`) | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_xrates_m) |
-| `rikin_plot.py` | Render kinetics plots from a completed run's result files | [CliReference.md](https://github.com/s-will/rikin/blob/master/CliReference.md#rikin_plot_py) |
+| `rikin_pipeline.py` | Run the RIKin pipeline for two input RNAs | [Pipeline Help](https://github.com/s-will/rikin/blob/master/Help.md#rikin_pipeline_py) |
+| `rikin_enum` | Enumerate candidate interaction/structure states for the two input RNAs | [Enum Help](https://github.com/s-will/rikin/blob/master/Help.md#rikin_enum) |
+| `rikin_barriers` | Construct the discretely coarse-grained basin/state system | [Barriers Help](https://github.com/s-will/rikin/blob/master/Help.md#rikin_barriers) |
+| `rikin_prune` | Prune/continuously coarse-grain the state system and compute rates | [Prune Help](https://github.com/s-will/rikin/blob/master/Help.md#rikin_prune) |
+| `rikin_xrates.m` | Solve the Master Equation (Octave script, has its own shebang — run directly, not via `octave rikin_xrates.m`) | [XRates Help](https://github.com/s-will/rikin/blob/master/Help.md#rikin_xrates_m) |
+| `rikin_plot.py` | Render kinetics plots from a completed run's result files | [Plot Help](https://github.com/s-will/rikin/blob/master/Help.md#rikin_plot_py) |
 
 <a id="output-directory-layout"></a>
 ## Output directory layout

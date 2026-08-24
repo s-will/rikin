@@ -62,13 +62,13 @@ var NAVTREE =
       [ "Reproducing everything", "md_Examples_2Examples.html#autotoc_md28", null ],
       [ "Regenerating the plots", "md_Examples_2Examples.html#autotoc_md29", null ]
     ] ],
-    [ "CLI reference", "md_CliReference.html", [
-      [ "rikin_enum", "md_CliReference.html#autotoc_md31", null ],
-      [ "rikin_barriers", "md_CliReference.html#autotoc_md32", null ],
-      [ "rikin_prune", "md_CliReference.html#autotoc_md33", null ],
-      [ "rikin_pipeline.py", "md_CliReference.html#autotoc_md34", null ],
-      [ "rikin_plot.py", "md_CliReference.html#autotoc_md35", null ],
-      [ "rikin_xrates.m", "md_CliReference.html#autotoc_md36", null ]
+    [ "CLI reference", "md_Help.html", [
+      [ "rikin_enum", "md_Help.html#autotoc_md31", null ],
+      [ "rikin_barriers", "md_Help.html#autotoc_md32", null ],
+      [ "rikin_prune", "md_Help.html#autotoc_md33", null ],
+      [ "rikin_pipeline.py", "md_Help.html#autotoc_md34", null ],
+      [ "rikin_plot.py", "md_Help.html#autotoc_md35", null ],
+      [ "rikin_xrates.m", "md_Help.html#autotoc_md36", null ]
     ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ]
@@ -92,7 +92,7 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "classHybridPF.html#af55e990756707df771577f3fdfbd149c",
-"md_Examples_2Examples.html#autotoc_md29"
+"md_Help.html#autotoc_md36"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

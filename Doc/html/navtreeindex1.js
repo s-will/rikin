@@ -235,13 +235,6 @@ var NAVTREEINDEX1 =
 "md_ChangeLog.html#autotoc_md18":[1,3],
 "md_ChangeLog.html#autotoc_md19":[1,4],
 "md_ChangeLog.html#autotoc_md20":[1,5],
-"md_CliReference.html":[3],
-"md_CliReference.html#autotoc_md31":[3,0],
-"md_CliReference.html#autotoc_md32":[3,1],
-"md_CliReference.html#autotoc_md33":[3,2],
-"md_CliReference.html#autotoc_md34":[3,3],
-"md_CliReference.html#autotoc_md35":[3,4],
-"md_CliReference.html#autotoc_md36":[3,5],
 "md_Examples_2Examples.html":[2],
 "md_Examples_2Examples.html#autotoc_md22":[2,0],
 "md_Examples_2Examples.html#autotoc_md23":[2,1],
@@ -249,5 +242,12 @@ var NAVTREEINDEX1 =
 "md_Examples_2Examples.html#autotoc_md25":[2,1,1],
 "md_Examples_2Examples.html#autotoc_md26":[2,1,2],
 "md_Examples_2Examples.html#autotoc_md27":[2,1,3],
-"md_Examples_2Examples.html#autotoc_md28":[2,2]
+"md_Examples_2Examples.html#autotoc_md28":[2,2],
+"md_Examples_2Examples.html#autotoc_md29":[2,3],
+"md_Help.html":[3],
+"md_Help.html#autotoc_md31":[3,0],
+"md_Help.html#autotoc_md32":[3,1],
+"md_Help.html#autotoc_md33":[3,2],
+"md_Help.html#autotoc_md34":[3,3],
+"md_Help.html#autotoc_md35":[3,4]
 };
