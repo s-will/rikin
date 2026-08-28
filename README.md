@@ -1,6 +1,12 @@
 <a id="rnainterkin-rikin"></a>
 # RNAInterKin (RIKin)
 
+[![Bioconda version](https://anaconda.org/bioconda/rikin/badges/version.svg)](https://anaconda.org/bioconda/rikin)
+[![Platforms](https://anaconda.org/bioconda/rikin/badges/platforms.svg)](https://anaconda.org/bioconda/rikin)
+[![License](https://anaconda.org/bioconda/rikin/badges/license.svg)](https://anaconda.org/bioconda/rikin)
+[![GitHub](https://img.shields.io/badge/GitHub-repository-blue?logo=github&logoColor=white)](https://github.com/s-will/rikin)
+[![GitLab](https://img.shields.io/badge/GitLab-repository-orange?logo=gitlab&logoColor=white)](https://gitlab.inria.fr/swill/rikin)
+
 RNAInterKin (RIKin) computes the **kinetics of RNA–RNA interaction** — how
 two RNAs find and settle into their interaction structure over time — using
 a detailed RNAup/IntaRNA-inspired interaction model built on RNA secondary
