@@ -48,3 +48,27 @@
     width: 100%;
   }
 }
+
+/* Hide the redundant "RIkin" project-name header bar -- the markdown
+   mainpage (README.md) already has its own top-level heading. */
+#projectname {
+  display: none;
+}
+
+/* Hide the sidebar tree's own root-node label ("RIkin" / index.html) --
+   a second, separate occurrence from #projectname above. Only the row's
+   own arrow+label is hidden; its nested <ul> (everything else in the
+   sidebar) is a sibling element and stays fully visible. */
+#nav-tree > div#nav-tree-contents > ul > li > div.item:has(> span.label > a[href="index.html"]) {
+  display: none;
+}
+
+/* Hide the third "RIkin" occurrence: the generic per-page title header
+   (div.title), which every OTHER page uses legitimately (e.g. "Basin
+   Class Reference") but which falls back to PROJECT_NAME specifically
+   on index.html since README.md has no explicit \mainpage title.
+   Scoped via the md_README anchor, which only exists on that one page,
+   so no other page's title is affected. */
+div.header:has(+ div.contents #md_README) .title {
+  display: none;
+}

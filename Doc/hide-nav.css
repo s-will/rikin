@@ -1,0 +1,15 @@
+/* Hide the Namespaces and Classes entries from both the top nav-bar
+   dropdown and the sidebar tree, without touching Doxygen's actual page
+   generation (unlike LAYOUT_FILE's per-tab visible="no", which also
+   suppresses the underlying class/namespace page content -- this is
+   pure client-side styling of already-generated, fully-populated pages). */
+
+#nav-tree li:has(> div.item > span.label > a[href$="namespaces.html"]),
+#nav-tree li:has(> div.item > span.label > a[href$="annotated.html"]) {
+  display: none;
+}
+
+#main-menu > li:has(> a[href$="namespaces.html"]),
+#main-menu > li:has(> a[href$="annotated.html"]) {
+  display: none;
+}
