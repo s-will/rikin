@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RIkin: RIkin</title>
+<title>RNAInterKin: RNAInterKin</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -27,6 +27,7 @@ MathJax.Hub.Config({
 <!--  -->
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 <link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="hide-nav.css" rel="stylesheet" type="text/css"/>
 <link href="style.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
 <script type="text/javascript">
@@ -52,7 +53,7 @@ MathJax.Hub.Config({
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">RIkin
+   <div id="projectname">RNAInterKin
    </div>
   </td>
  </tr>
@@ -116,7 +117,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">RIkin </div></div>
+  <div class="headertitle"><div class="title">RNAInterKin </div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md_README"></a> <a class="anchor" id="rnainterkin-rikin"></a> </p>
@@ -239,7 +240,7 @@ Pipeline stages</h3>
 <td class="markdownTableBodyNone">5. Plotting   </td><td class="markdownTableBodyNone"><code>rikin_plot.py</code>   </td><td class="markdownTableBodyNone">Renders the full set of kinetics plots from the run's result files   </td></tr>
 </table>
 <p><code>rikin_pipeline.py</code> is a convenience wrapper that runs these in sequence, with consistent file naming and the ability to skip stages whose output already exists.</p>
-<p>Useful <code>rikin_pipeline.py</code> options (see <a href="https://github.com/s-will/rikin/blob/master/Help.md#rikin_pipeline_py">Pipeline Help</a> for the complete, current list):</p>
+<p>Useful <code>rikin_pipeline.py</code> options (see <a class="el" href="md_Help.html#rikin_pipeline_py">Pipeline Help</a> for the complete, current list):</p>
 <ul>
 <li><code>-o, --outdir DIR</code> — output directory</li>
 <li><code>--seqA SEQ</code>, <code>--seqB SEQ</code> — the two sequences, given directly</li>
@@ -290,17 +291,17 @@ Command-line tools</h3>
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Tool   </th><th class="markdownTableHeadNone">Purpose   </th><th class="markdownTableHeadNone">Full option reference    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>rikin_pipeline.py</code>   </td><td class="markdownTableBodyNone">Run the RIKin pipeline for two input RNAs   </td><td class="markdownTableBodyNone"><a href="https://github.com/s-will/rikin/blob/master/Help.md#rikin_pipeline_py">Pipeline Help</a>    </td></tr>
+<td class="markdownTableBodyNone"><code>rikin_pipeline.py</code>   </td><td class="markdownTableBodyNone">Run the RIKin pipeline for two input RNAs   </td><td class="markdownTableBodyNone"><a class="el" href="md_Help.html#rikin_pipeline_py">Pipeline Help</a>    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>rikin_enum</code>   </td><td class="markdownTableBodyNone">Enumerate candidate interaction/structure states for the two input RNAs   </td><td class="markdownTableBodyNone"><a href="https://github.com/s-will/rikin/blob/master/Help.md#rikin_enum">Enum Help</a>    </td></tr>
+<td class="markdownTableBodyNone"><code>rikin_enum</code>   </td><td class="markdownTableBodyNone">Enumerate candidate interaction/structure states for the two input RNAs   </td><td class="markdownTableBodyNone"><a class="el" href="md_Help.html#rikin_enum">Enum Help</a>    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>rikin_barriers</code>   </td><td class="markdownTableBodyNone">Construct the discretely coarse-grained basin/state system   </td><td class="markdownTableBodyNone"><a href="https://github.com/s-will/rikin/blob/master/Help.md#rikin_barriers">Barriers Help</a>    </td></tr>
+<td class="markdownTableBodyNone"><code>rikin_barriers</code>   </td><td class="markdownTableBodyNone">Construct the discretely coarse-grained basin/state system   </td><td class="markdownTableBodyNone"><a class="el" href="md_Help.html#rikin_barriers">Barriers Help</a>    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>rikin_prune</code>   </td><td class="markdownTableBodyNone">Prune/continuously coarse-grain the state system and compute rates   </td><td class="markdownTableBodyNone"><a href="https://github.com/s-will/rikin/blob/master/Help.md#rikin_prune">Prune Help</a>    </td></tr>
+<td class="markdownTableBodyNone"><code>rikin_prune</code>   </td><td class="markdownTableBodyNone">Prune/continuously coarse-grain the state system and compute rates   </td><td class="markdownTableBodyNone"><a class="el" href="md_Help.html#rikin_prune">Prune Help</a>    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>rikin_xrates.m</code>   </td><td class="markdownTableBodyNone">Solve the Master Equation (Octave script, has its own shebang — run directly, not via <code>octave rikin_xrates.m</code>)   </td><td class="markdownTableBodyNone"><a href="https://github.com/s-will/rikin/blob/master/Help.md#rikin_xrates_m">XRates Help</a>    </td></tr>
+<td class="markdownTableBodyNone"><code>rikin_xrates.m</code>   </td><td class="markdownTableBodyNone">Solve the Master Equation (Octave script, has its own shebang — run directly, not via <code>octave rikin_xrates.m</code>)   </td><td class="markdownTableBodyNone"><a class="el" href="md_Help.html#rikin_xrates_m">XRates Help</a>    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>rikin_plot.py</code>   </td><td class="markdownTableBodyNone">Render kinetics plots from a completed run's result files   </td><td class="markdownTableBodyNone"><a href="https://github.com/s-will/rikin/blob/master/Help.md#rikin_plot_py">Plot Help</a>   </td></tr>
+<td class="markdownTableBodyNone"><code>rikin_plot.py</code>   </td><td class="markdownTableBodyNone">Render kinetics plots from a completed run's result files   </td><td class="markdownTableBodyNone"><a class="el" href="md_Help.html#rikin_plot_py">Plot Help</a>   </td></tr>
 </table>
 <p><a class="anchor" id="output-directory-layout"></a> </p>
 <h2><a class="anchor" id="autotoc_md11"></a>

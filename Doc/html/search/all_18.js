@@ -20,16 +20,17 @@ var searchData=
   ['resize_17',['resize',['../classHybEnsModel_1_1StateDescription.html#a568fd21e4ddcc58bf75ad3458a1f775e',1,'HybEnsModel::StateDescription']]],
   ['reverse_18',['reverse',['../classHybEnsModel.html#a058f69dfca5259d24e66a9fda31c6b1c',1,'HybEnsModel::reverse()'],['../structRRIBarrierGraph_1_1transition__t.html#af5cfb33c6c5c55d61164c5f46eec43aa',1,'RRIBarrierGraph::transition_t::reverse()']]],
   ['reverse_5fcomplement_19',['reverse_complement',['../classHybEnsModel.html#a60754a6fcfe5e615f174ef36d241e50e',1,'HybEnsModel']]],
-  ['rikin_20',['rikin',['../index.html',1,'RIkin'],['../index.html#autotoc_md0',1,'RNAInterKin (RIKin)']]],
+  ['rikin_20',['RNAInterKin (RIKin)',['../index.html#autotoc_md0',1,'']]],
   ['rikin_5fbarriers_21',['rikin_barriers',['../md_Help.html#autotoc_md32',1,'']]],
   ['rikin_5fenum_22',['rikin_enum',['../md_Help.html#autotoc_md31',1,'']]],
   ['rikin_5fpipeline_20py_23',['rikin_pipeline.py',['../md_Help.html#autotoc_md34',1,'']]],
   ['rikin_5fplot_20py_24',['rikin_plot.py',['../md_Help.html#autotoc_md35',1,'']]],
   ['rikin_5fprune_25',['rikin_prune',['../md_Help.html#autotoc_md33',1,'']]],
   ['rikin_5fxrates_20m_26',['rikin_xrates.m',['../md_Help.html#autotoc_md36',1,'']]],
-  ['rnainterkin_20rikin_27',['RNAInterKin (RIKin)',['../index.html#autotoc_md0',1,'']]],
-  ['rri_20kinetics_28',['Examples of RRI kinetics',['../md_Examples_2Examples.html',1,'']]],
-  ['rribarriergraph_29',['rribarriergraph',['../classRRIBarrierGraph.html#addae27cc62d93932ef412930c417b040',1,'RRIBarrierGraph::RRIBarrierGraph()'],['../classRRIBarrierGraph.html',1,'RRIBarrierGraph']]],
-  ['rrienumeration_30',['rrienumeration',['../classRRIEnumeration.html#a2b4f7fa489342d81ffa39d603ba92913',1,'RRIEnumeration::RRIEnumeration()'],['../classRRIEnumeration.html',1,'RRIEnumeration']]],
-  ['rt_31',['rt',['../classUnpairedPF.html#a4ab33d88bbc2070e5168326224fe62f3',1,'UnpairedPF::RT()'],['../classHybridPF.html#aa5c951e267c3483aed1a92a6846fc774',1,'HybridPF::RT()'],['../classHybEnsModel.html#abed063fe6d75202e8a34c44a060c2f48',1,'HybEnsModel::RT()']]]
+  ['rnainterkin_27',['RNAInterKin',['../index.html',1,'']]],
+  ['rnainterkin_20rikin_28',['RNAInterKin (RIKin)',['../index.html#autotoc_md0',1,'']]],
+  ['rri_20kinetics_29',['Examples of RRI kinetics',['../md_Examples_2Examples.html',1,'']]],
+  ['rribarriergraph_30',['rribarriergraph',['../classRRIBarrierGraph.html#addae27cc62d93932ef412930c417b040',1,'RRIBarrierGraph::RRIBarrierGraph()'],['../classRRIBarrierGraph.html',1,'RRIBarrierGraph']]],
+  ['rrienumeration_31',['rrienumeration',['../classRRIEnumeration.html#a2b4f7fa489342d81ffa39d603ba92913',1,'RRIEnumeration::RRIEnumeration()'],['../classRRIEnumeration.html',1,'RRIEnumeration']]],
+  ['rt_32',['rt',['../classUnpairedPF.html#a4ab33d88bbc2070e5168326224fe62f3',1,'UnpairedPF::RT()'],['../classHybridPF.html#aa5c951e267c3483aed1a92a6846fc774',1,'HybridPF::RT()'],['../classHybEnsModel.html#abed063fe6d75202e8a34c44a060c2f48',1,'HybEnsModel::RT()']]]
 ];

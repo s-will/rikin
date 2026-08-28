@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "RIkin", "index.html", [
+  [ "RNAInterKin", "index.html", [
     [ "RNAInterKin (RIKin)", "index.html#autotoc_md0", [
       [ "Table of contents", "index.html#autotoc_md1", null ],
       [ "Background", "index.html#autotoc_md2", null ],
