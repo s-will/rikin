@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.9.6 (Aug, 2026)
+-----------------
+* Fixes and improvements of documentation pages
+
 0.9.5 (Aug, 2026)
 -----------------
 * Add rikin_pipeline.py that runs entire pipeline
