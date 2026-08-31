@@ -78,7 +78,13 @@ single driver script, `rikin_pipeline.py`.
 <a id="installation-from-the-conda-package"></a>
 ### Installation from the Conda package
 
-We recommend installing RNAInterKin from the `rikin` Bioconda package.
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/rikin/README.html)
+[![Platforms](https://anaconda.org/bioconda/rikin/badges/platforms.svg)](https://anaconda.org/bioconda/rikin)
+
+We recommend installing RNAInterKin from the `rikin` Bioconda package on
+the directly supported platforms. For installation on Windows, we recommend [Conda installation on Windows with WSL2](#windows-conda-installation).
+
+Here, we provide brief installation instructions that assume already working Conda and basic familiarity. You may still want to follow the elaborate [instructions by Bioconda](http://bioconda.github.io/recipes/rikin/README.html).
 
 Create and activate a dedicated environment first:
 ```bash
@@ -95,6 +101,17 @@ This pulls in all runtime dependencies automatically — including
 [ViennaRNA](https://www.tbi.univie.ac.at/RNA/), [LocARNA](http://www.bioinf.uni-freiburg.de/Software/LocARNA/),
 Octave, and the Python scientific stack (NumPy, pandas, SciPy, Matplotlib,
 seaborn) used by the plotting stage.
+
+<a id="windows-conda-installation"></a>
+#### Conda installation on Windows with WSL2
+
+Bioconda does not support Windows natively. Windows users can still install
+Bioconda packages using
+[WSL2](https://learn.microsoft.com/windows/wsl/install) — once set up,
+WSL2 runs genuine Linux, so the standard
+[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
+and [Bioconda](https://bioconda.github.io/) installation instructions
+apply unmodified inside the WSL2 terminal.
 
 <a id="compilationinstallation-from-the-source-repository"></a>
 ### Compilation/installation from the source repository
