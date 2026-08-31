@@ -1,20 +1,4 @@
 var searchData=
 [
-  ['_7ebarriergraph_0',['~BarrierGraph',['../classBarrierGraph.html#a35c5cad809c8da180fa017c8ea2ebc23',1,'BarrierGraph']]],
-  ['_7egrowshrinkmove_1',['~GrowShrinkMove',['../classGrowShrinkMove.html#a709936fd7b719a2c1541c13e92f763d3',1,'GrowShrinkMove']]],
-  ['_7egrowshrinkmovefl_2',['~GrowShrinkMoveFL',['../classGrowShrinkMoveFL.html#a6696dae6e856367547157448e3c3fed3',1,'GrowShrinkMoveFL']]],
-  ['_7egrowshrinkmovefr_3',['~GrowShrinkMoveFR',['../classGrowShrinkMoveFR.html#a28f1b01b28738f564b2fcf94de47642c',1,'GrowShrinkMoveFR']]],
-  ['_7egrowshrinkmovesl_4',['~GrowShrinkMoveSL',['../classGrowShrinkMoveSL.html#add3a09e65f18a186867a24f31d383a65',1,'GrowShrinkMoveSL']]],
-  ['_7egrowshrinkmovesr_5',['~GrowShrinkMoveSR',['../classGrowShrinkMoveSR.html#a9c6bd287dc46374e0a074e05b6fa785c',1,'GrowShrinkMoveSR']]],
-  ['_7ehybridpf_6',['~HybridPF',['../classHybridPF.html#afad767920bc28bc88c4930f097d1d960',1,'HybridPF']]],
-  ['_7emergemove_7',['~MergeMove',['../classMergeMove.html#ac74c14dc1add5130b97a54cca6518780',1,'MergeMove']]],
-  ['_7emove_8',['~Move',['../classMove.html#a84aad2ded122dc2184729b5a5adb5560',1,'Move']]],
-  ['_7enewsitemove_9',['~NewSiteMove',['../classNewSiteMove.html#a2f5f3152f49e6359cb706160707f7c39',1,'NewSiteMove']]],
-  ['_7enewsitemovef_10',['~NewSiteMoveF',['../classNewSiteMoveF.html#acbe2d75c50cef947c6370dffa37ac7d6',1,'NewSiteMoveF']]],
-  ['_7enewsitemovel_11',['~NewSiteMoveL',['../classNewSiteMoveL.html#af9fccd7f84a7d25b5d01fc8b18473cd5',1,'NewSiteMoveL']]],
-  ['_7enewsitemover_12',['~NewSiteMoveR',['../classNewSiteMoveR.html#a5414fd748611e3a5f32dd34a3e8df934',1,'NewSiteMoveR']]],
-  ['_7eremovesitemove_13',['~RemoveSiteMove',['../classRemoveSiteMove.html#af6dba3b40528bf9d49ed037ba751764d',1,'RemoveSiteMove']]],
-  ['_7erribarriergraph_14',['~RRIBarrierGraph',['../classRRIBarrierGraph.html#a424af41dfb6ccbad79b21d398d3393c7',1,'RRIBarrierGraph']]],
-  ['_7eshiftmove_15',['~ShiftMove',['../classShiftMove.html#a59f12b9a29e42734f40468fe99c818e8',1,'ShiftMove']]],
-  ['_7esplitmove_16',['~SplitMove',['../classSplitMove.html#a29b459297cb07a0516944c0066f505db',1,'SplitMove']]]
+  ['z_0',['z',['../classBasin.html#a6b0609c70ed00a45ff83180cc2915611',1,'Basin::Z()'],['../classPairPfs.html#a79f20cbdb633828ca32f8a9722fc2630',1,'PairPfs::Z()']]]
 ];

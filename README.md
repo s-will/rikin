@@ -1,6 +1,7 @@
 <a id="rnainterkin-rikin"></a>
 # RNAInterKin (RIKin)
 
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/rikin/README.html)
 [![Bioconda version](https://anaconda.org/bioconda/rikin/badges/version.svg)](https://anaconda.org/bioconda/rikin)
 [![Platforms](https://anaconda.org/bioconda/rikin/badges/platforms.svg)](https://anaconda.org/bioconda/rikin)
 [![License](https://anaconda.org/bioconda/rikin/badges/license.svg)](https://anaconda.org/bioconda/rikin)

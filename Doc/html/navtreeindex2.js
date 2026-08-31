@@ -1,6 +1,7 @@
 var NAVTREEINDEX2 =
 {
-"md_Help.html#autotoc_md36":[3,5],
+"md_Help.html#autotoc_md36":[3,4],
+"md_Help.html#autotoc_md37":[3,5],
 "namespaceLocARNA.html":[4,0,0],
 "namespaces.html":[4,0],
 "pages.html":[],

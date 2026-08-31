@@ -1,8 +1,21 @@
 var searchData=
 [
-  ['unpaired_5fprob_5fconditional_0',['unpaired_prob_conditional',['../classUnpairedPF.html#a199498dcf4381c12621023d992b21923',1,'UnpairedPF']]],
-  ['unpaired_5fprob_5fjoint_1',['unpaired_prob_joint',['../classUnpairedPF.html#a6c544b90d889ed4cbab8b02f59d74950',1,'UnpairedPF']]],
-  ['unpaired_5fprob_5fsingle_2',['unpaired_prob_single',['../classUnpairedPF.html#a46e87225fc4410c76a96bc3a8f06d906',1,'UnpairedPF']]],
-  ['unpairedpf_3',['unpairedpf',['../classUnpairedPF.html',1,'UnpairedPF'],['../classUnpairedPF.html#a1579e3005a2c11c9ee59e1e2c9adc40f',1,'UnpairedPF::UnpairedPF()']]],
-  ['usage_4',['Usage',['../index.html#autotoc_md7',1,'']]]
+  ['table_20of_20contents_0',['Table of contents',['../index.html#autotoc_md1',1,'']]],
+  ['target_5fbasin_5findex_1',['target_basin_index',['../structRRIBarrierGraph_1_1transition__t.html#a31613f41bfc231545562cebcad024837',1,'RRIBarrierGraph::transition_t']]],
+  ['target_5fstate_5fenergy_2',['target_state_energy',['../structRRIBarrierGraph_1_1transition__t.html#ad8e8802bbfb3fe6d0755a4ade3d167e4',1,'RRIBarrierGraph::transition_t']]],
+  ['the_20conda_20package_3',['Installation from the Conda package',['../index.html#autotoc_md4',1,'']]],
+  ['the_20plots_4',['Regenerating the plots',['../md_Examples_2Examples.html#autotoc_md30',1,'']]],
+  ['the_20source_20repository_5',['Compilation/installation from the source repository',['../index.html#autotoc_md5',1,'']]],
+  ['the_5fmap_5f_6',['the_map_',['../classOrderedSparseMatrix.html#a46bb57533fd45c3f32c0f210381b6540',1,'OrderedSparseMatrix']]],
+  ['to_5fdotbracket_7',['to_dotbracket',['../classHybEnsModel.html#a3e21dbebabd87257a1cadf6278191e65',1,'HybEnsModel']]],
+  ['to_5fstring_8',['to_string',['../classHybEnsModel_1_1StateDescription.html#ac8d44f7235e7fd64afb1cd20798762fc',1,'HybEnsModel::StateDescription']]],
+  ['tools_9',['Command-line tools',['../index.html#autotoc_md10',1,'']]],
+  ['toy_20example_10',['Toy example',['../md_Examples_2Examples.html#autotoc_md25',1,'']]],
+  ['track_5fbasins_11',['track_basins',['../classRRIBarrierGraph.html#adbdceda6ea9f2c668d2427ff429f8892',1,'RRIBarrierGraph']]],
+  ['track_5fpruning_5f_12',['track_pruning_',['../classBarrierGraph.html#aa5d5041763eac8b84d2892bc753b071c',1,'BarrierGraph']]],
+  ['transition_5fenergy_13',['transition_energy',['../structRRIBarrierGraph_1_1transition__t.html#a8a4bf07270896b19d25884b82738c5d9',1,'RRIBarrierGraph::transition_t']]],
+  ['transition_5ft_14',['transition_t',['../structRRIBarrierGraph_1_1transition__t.html',1,'RRIBarrierGraph::transition_t'],['../structRRIBarrierGraph_1_1transition__t.html#adb7e9f0bd2d3ebc6417bce4b0167152a',1,'RRIBarrierGraph::transition_t::transition_t(double source_state_energy_, size_t target_basin_index_, double target_state_energy_, double transition_energy_)'],['../structRRIBarrierGraph_1_1transition__t.html#a9b8069852587725a7fd90439398cca08',1,'RRIBarrierGraph::transition_t::transition_t(size_t source_basin_index_, double source_state_energy_, size_t target_basin_index_, double target_state_energy_, double transition_energy_)']]],
+  ['transitionenergy_15',['transitionenergy',['../classShiftMove.html#a88db8907b93a0ae8bb5be9cb72209c42',1,'ShiftMove::transitionEnergy()'],['../classMove.html#a28bbb37360c50cb2a065e3816d0a705b',1,'Move::transitionEnergy()'],['../classGrowShrinkMoveFL.html#a32c04a8835a972266923b0c486bc0ac7',1,'GrowShrinkMoveFL::transitionEnergy()'],['../classGrowShrinkMoveFR.html#a5c06cc0a4b2a7e2802d49de0152e5b3b',1,'GrowShrinkMoveFR::transitionEnergy()'],['../classGrowShrinkMoveSL.html#aa3e08ae40c06c4bb9d37d5e8d3818ed7',1,'GrowShrinkMoveSL::transitionEnergy()'],['../classSplitMove.html#a2921500cc9a31e972c6076aaf72728ab',1,'SplitMove::transitionEnergy()'],['../classMergeMove.html#a60c7d1802d46895669ad0852701a7ec0',1,'MergeMove::transitionEnergy()'],['../classNewSiteMoveR.html#a1e90a0ce9ae34a3104b114f0b90df76f',1,'NewSiteMoveR::transitionEnergy()'],['../classNewSiteMoveL.html#a3d016805be7a3f1e78a246fc471ee531',1,'NewSiteMoveL::transitionEnergy()'],['../classNewSiteMoveF.html#a300e7f912ddf7e87d6505a804a52ee18',1,'NewSiteMoveF::transitionEnergy()'],['../classRemoveSiteMove.html#a8a496f532519691a69648e4ba30a8678',1,'RemoveSiteMove::transitionEnergy()'],['../classGrowShrinkMoveSR.html#a1f42882156bcc0272cb6891beaf48d80',1,'GrowShrinkMoveSR::transitionEnergy()']]],
+  ['transitionenergygen_16',['transitionenergygen',['../classGrowShrinkMove.html#add80e26901afcd933e84de8e3dc489d9',1,'GrowShrinkMove::transitionEnergyGen(const StateDescription &amp;sd_small, const StateDescription &amp;sd_large, size_t loop_i1, size_t loop_i2, size_t loop_j1, size_t loop_j2) const'],['../classGrowShrinkMove.html#a50ab5ac0dcbff734cfb6a06f1c6696b3',1,'GrowShrinkMove::transitionEnergyGen(size_t site, size_t left) const']]],
+  ['transitions_5f_17',['transitions_',['../classBarrierGraph.html#a86f53c6c9e198fac96a5993fde81265d',1,'BarrierGraph']]]
 ];
