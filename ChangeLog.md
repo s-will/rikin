@@ -3,6 +3,11 @@ ChangeLog
 
 0.9.6 (Aug, 2026)
 -----------------
+* Fix shebang in xrates to avoid portability problem.
+  Specifically this failed with biocontainers/busybox.
+
+0.9.6 (Aug, 2026)
+-----------------
 * Fixes and improvements of documentation pages
 
 0.9.5 (Aug, 2026)
