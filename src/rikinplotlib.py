@@ -13,7 +13,7 @@ import copy
 suffix = [".svg", ".pdf"]
 output_directory = "."
 
-seqfontname = "FreeMono"
+seqfontname = "DejaVu Sans Mono"
 #import matplotlib.font_manager
 #matplotlib.font_manager.findSystemFonts(fontpaths=None)
 
