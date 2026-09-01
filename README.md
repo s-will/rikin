@@ -32,6 +32,7 @@ which are transient, and which the system ultimately settles into.
 - [Background](#background)
 - [Installation](#installation)
   - [From the Bioconda package](#installation-from-the-conda-package)
+  - [As Docker Container](#container)
   - [From source](#compilationinstallation-from-the-source-repository)
 - [Quick example](#quick-example)
 - [Usage](#usage)
@@ -112,6 +113,56 @@ WSL2 runs genuine Linux, so the standard
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
 and [Bioconda](https://bioconda.github.io/) installation instructions
 apply unmodified inside the WSL2 terminal.
+
+<a id="container"></a>
+### Installation/usage as Docker Container
+
+The tool can be run in a docker or singularity container thanks to 
+[BioContainers](https://biocontainers.pro). Note that there is no `latest` tag; browse the available tags at
+[quay.io/repository/biocontainers/rikin](https://quay.io/repository/biocontainers/rikin?tab=tags)
+(tag format: `<version>--<build-string>`, matching the corresponding Conda
+package build).
+
+```bash
+docker pull quay.io/biocontainers/rikin:<tag>
+```
+
+The container's entrypoint activates the Conda environment automatically, so
+the `rikin_*` tools can be run directly:
+
+```bash
+docker run --rm quay.io/biocontainers/rikin:<tag> rikin_pipeline.py --help
+```
+
+To run a full pipeline and get real output back on your host, three things
+are needed together: a bind mount so the container can actually reach your
+files, `-w` so relative output paths land inside that mount rather than
+being discarded with the container on exit, and `--user` so the resulting
+files are owned by you rather than root (containers run as root by
+default):
+
+```bash
+docker run --rm -v "$PWD:/data" -w /data --user "$(id -u):$(id -g)" \
+  quay.io/biocontainers/rikin:<tag> \
+  rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC
+```
+
+This produces `./example/` in your current directory, owned by you, exactly
+as running `rikin_pipeline.py` outside the container would.
+
+For HPC/cluster environments without Docker, the same image works via
+Singularity/Apptainer, which can pull Docker images directly:
+
+```bash
+singularity pull docker://quay.io/biocontainers/rikin:<tag>
+```
+
+**Known harmless message:** `rikin_xrates.m` (the Octave stage) may print
+`error: ignoring const execution_exception& while preparing to exit` after
+it has already finished its real work. This is a
+[known upstream Octave issue](https://savannah.gnu.org/bugs/?62515) that
+does not affect the actual computation.
+
 
 <a id="compilationinstallation-from-the-source-repository"></a>
 ### Compilation/installation from the source repository
