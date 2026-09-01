@@ -118,10 +118,14 @@ apply unmodified inside the WSL2 terminal.
 ### Installation/usage as Docker Container
 
 The tool can be run in a docker or singularity container thanks to 
-[BioContainers](https://biocontainers.pro). Note that there is no `latest` tag; browse the available tags at
-[quay.io/repository/biocontainers/rikin](https://quay.io/repository/biocontainers/rikin?tab=tags)
-(tag format: `<version>--<build-string>`, matching the corresponding Conda
-package build).
+[BioContainers](https://biocontainers.pro).
+
+**There is no `latest` tag, and the tag is not just the version number —
+guessing it will fail.** The tag must include the build string too:
+`<version>--<build-string>` (e.g. `0.9.7--py313h5814d7d_0`, *not* only `0.9.7`).
+Always look up the exact current tag first at
+ [quay.io/repository/biocontainers/rikin](https://quay.io/repository/biocontainers/rikin?tab=tags)
+— it matches the full build string of the corresponding Conda package release.
 
 ```bash
 docker pull quay.io/biocontainers/rikin:<tag>
