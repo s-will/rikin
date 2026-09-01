@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['m_0',['rikin_xrates.m',['../md_Help.html#autotoc_md38',1,'']]],
+  ['m_0',['rikin_xrates.m',['../md_Help.html#autotoc_md40',1,'']]],
   ['map_5ft_1',['map_t',['../classOrderedSparseMatrix.html#af25b60e1700d528dc4ca965d18e2437a',1,'OrderedSparseMatrix']]],
   ['mark_5fmerged_2',['mark_merged',['../classBasin.html#a6c6de28efd8f830cabd0c52bef2b7102',1,'Basin']]],
   ['max1_3',['max1',['../classGrowShrinkMove.html#acf04768ed4007e103992ccf91501a6cf',1,'GrowShrinkMove']]],
@@ -20,8 +20,8 @@ var searchData=
   ['merged_17',['merged',['../classBasin.html#af1f2d05be0a5ea333c0b42d600478fb3',1,'Basin']]],
   ['mergemove_18',['mergemove',['../classMergeMove.html',1,'MergeMove'],['../classMergeMove.html#a3075740201f1b6d0e74eddc931b290bb',1,'MergeMove::MergeMove()']]],
   ['mi_19',['mi',['../classMove.html#a4499e0a698445498b8616f7618e1d810',1,'Move']]],
-  ['mica–mica_20homodimer_20',['MicA–MicA homodimer',['../md_Examples_2Examples.html#autotoc_md28',1,'']]],
-  ['mica–ompa_20heterodimer_21',['MicA–OmpA heterodimer',['../md_Examples_2Examples.html#autotoc_md29',1,'']]],
+  ['mica–mica_20homodimer_20',['MicA–MicA homodimer',['../md_Examples_2Examples.html#autotoc_md30',1,'']]],
+  ['mica–ompa_20heterodimer_21',['MicA–OmpA heterodimer',['../md_Examples_2Examples.html#autotoc_md31',1,'']]],
   ['min1_22',['min1',['../classGrowShrinkMove.html#aeb2fa0d2e9e31765456d0f50187e7633',1,'GrowShrinkMove']]],
   ['min2_23',['min2',['../classGrowShrinkMove.html#a88264e098829433b902b0cc262e370e4',1,'GrowShrinkMove']]],
   ['min_5fcontribution_5f_24',['min_contribution_',['../classBarrierGraph.html#aceee6b5f84eb0438cadc305ab3802ab2',1,'BarrierGraph']]],
@@ -34,7 +34,7 @@ var searchData=
   ['minsitedist_31',['minsitedist',['../classHybEnsModel.html#a9303e666c5952d563b7755cd53e83be3',1,'HybEnsModel']]],
   ['minsitesize_32',['minsitesize',['../classHybEnsModel.html#a328a85f6e03b0f6458c2eadcb0c46afb',1,'HybEnsModel']]],
   ['model_33',['model',['../classRRIBarrierGraph.html#a69417e3966a92ee4e56639eccd522aac',1,'RRIBarrierGraph::model()'],['../classMoveIterator.html#a6e632902a32b9dec9e074c7822b8ab8e',1,'MoveIterator::model()']]],
-  ['more_20examples_34',['More examples',['../index.html#autotoc_md13',1,'']]],
+  ['more_20examples_34',['More examples',['../index.html#autotoc_md14',1,'']]],
   ['move_35',['move',['../classMove.html#a70b2b138f6373abd2ca7a76ae5c0aeed',1,'Move::Move()'],['../classMove.html',1,'Move']]],
   ['moveiterator_36',['moveiterator',['../classMoveIterator.html#ad3757e01a009bc3b9138c1a8c3ce1bb6',1,'MoveIterator::MoveIterator()'],['../classMoveIterator.html',1,'MoveIterator']]],
   ['multiply_37',['multiply',['../classBasinTransitions.html#a0b0af900940b06eed0f85cc83a250c6b',1,'BasinTransitions']]],

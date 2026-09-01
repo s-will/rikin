@@ -139,6 +139,7 @@ Table of contents</h2>
 <li><a class="el" href="index.html#background">Background</a></li>
 <li><a class="el" href="index.html#installation">Installation</a><ul>
 <li><a class="el" href="index.html#installation-from-the-conda-package">From the Bioconda package</a></li>
+<li><a class="el" href="index.html#container">As Docker Container</a></li>
 <li><a class="el" href="index.html#compilationinstallation-from-the-source-repository">From source</a></li>
 </ul>
 </li>
@@ -183,8 +184,23 @@ Installation from the Conda package</h3>
 <h4><a class="anchor" id="autotoc_md5"></a>
 Conda installation on Windows with WSL2</h4>
 <p>Bioconda does not support Windows natively. Windows users can still install Bioconda packages using <a href="https://learn.microsoft.com/windows/wsl/install">WSL2</a> — once set up, WSL2 runs genuine Linux, so the standard <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">Conda</a> and <a href="https://bioconda.github.io/">Bioconda</a> installation instructions apply unmodified inside the WSL2 terminal.</p>
-<p><a class="anchor" id="compilationinstallation-from-the-source-repository"></a> </p>
+<p><a class="anchor" id="container"></a> </p>
 <h3><a class="anchor" id="autotoc_md6"></a>
+Installation/usage as Docker Container</h3>
+<p>The tool can be run in a docker or singularity container thanks to <a href="https://biocontainers.pro">BioContainers</a>. Note that there is no <code>latest</code> tag; browse the available tags at <a href="https://quay.io/repository/biocontainers/rikin?tab=tags">quay.io/repository/biocontainers/rikin</a> (tag format: <code>&lt;version&gt;--&lt;build-string&gt;</code>, matching the corresponding Conda package build).</p>
+<div class="fragment"><div class="line">docker pull quay.io/biocontainers/rikin:&lt;tag&gt;</div>
+</div><!-- fragment --><p>The container's entrypoint activates the Conda environment automatically, so the <code>rikin_*</code> tools can be run directly:</p>
+<div class="fragment"><div class="line">docker run --rm quay.io/biocontainers/rikin:&lt;tag&gt; rikin_pipeline.py --help</div>
+</div><!-- fragment --><p>To run a full pipeline and get real output back on your host, three things are needed together: a bind mount so the container can actually reach your files, <code>-w</code> so relative output paths land inside that mount rather than being discarded with the container on exit, and <code>--user</code> so the resulting files are owned by you rather than root (containers run as root by default):</p>
+<div class="fragment"><div class="line">docker run --rm -v &quot;\f$PWD:/data&quot; -w /data --user &quot;\f$(id -u):$(id -g)&quot; \</div>
+<div class="line">  quay.io/biocontainers/rikin:&lt;tag&gt; \</div>
+<div class="line">  rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC</div>
+</div><!-- fragment --><p>This produces <code>./example/</code> in your current directory, owned by you, exactly as running <code>rikin_pipeline.py</code> outside the container would.</p>
+<p>For HPC/cluster environments without Docker, the same image works via Singularity/Apptainer, which can pull Docker images directly:</p>
+<div class="fragment"><div class="line">singularity pull docker://quay.io/biocontainers/rikin:&lt;tag&gt;</div>
+</div><!-- fragment --><p><b>Known harmless message:</b> <code>rikin_xrates.m</code> (the Octave stage) may print <code>error: ignoring const execution_exception&amp; while preparing to exit</code> after it has already finished its real work. This is a <a href="https://savannah.gnu.org/bugs/?62515">known upstream Octave issue</a> that does not affect the actual computation.</p>
+<p><a class="anchor" id="compilationinstallation-from-the-source-repository"></a> </p>
+<h3><a class="anchor" id="autotoc_md7"></a>
 Compilation/installation from the source repository</h3>
 <p>The tools can also be compiled and installed after cloning the source repository. This requires a build toolchain with a C++ compiler and autotools. We describe installation into a Conda environment, pulling the ViennaRNA/LocARNA dependencies from Bioconda:</p>
 <div class="fragment"><div class="line">git clone https://github.com/s-will/rikin.git</div>
@@ -205,7 +221,7 @@ Compilation/installation from the source repository</h3>
 <p>&zwj;<b>Note:</b> the <code>compilers</code> package (conda-forge's meta-package for a platform-matched C/C++ compiler) is required, not optional — RIKin's ViennaRNA/LocARNA dependencies are themselves built with the conda toolchain, and linking against them with a non-conda system compiler (e.g. plain <code>/usr/bin/clang++</code>) can fail with confusing linker errors, since conda's compiler-activation scripts translate certain flags in a way a system compiler won't. </p>
 </blockquote>
 <p><a class="anchor" id="quick-example"></a> </p>
-<h2><a class="anchor" id="autotoc_md7"></a>
+<h2><a class="anchor" id="autotoc_md8"></a>
 Quick example</h2>
 <p><code>rikin_pipeline.py</code> runs the complete pipeline — enumeration, coarse-graining, solving the Master Equation, and plotting — for a pair of RNA sequences:</p>
 <div class="fragment"><div class="line">rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC</div>
@@ -225,10 +241,10 @@ Quick example</h2>
 <p>Equivalently, sequences can be given via FASTA files instead of directly on the command line: </p><div class="fragment"><div class="line">rikin_pipeline.py -o example --fastaA Examples/exampleA.fasta --fastaB Examples/exampleB.fasta</div>
 </div><!-- fragment --><p>See <a class="el" href="index.html#more-examples">More examples</a> below for further, biologically motivated examples (with a real bacterial sRNA–mRNA pair) and how to reproduce all figures shown here.</p>
 <p><a class="anchor" id="usage"></a> </p>
-<h2><a class="anchor" id="autotoc_md8"></a>
+<h2><a class="anchor" id="autotoc_md9"></a>
 Usage</h2>
 <p><a class="anchor" id="pipeline-stages"></a> </p>
-<h3><a class="anchor" id="autotoc_md9"></a>
+<h3><a class="anchor" id="autotoc_md10"></a>
 Pipeline stages</h3>
 <p><code>rikin_pipeline.py</code> coordinates the following stages, in order:</p>
 <table class="markdownTable">
@@ -258,7 +274,7 @@ Pipeline stages</h3>
 <li><code>--global-config FILE</code> — override the default global config (<code>rikin_pipeline.cfg</code> next to the script)</li>
 </ul>
 <p><a class="anchor" id="configuration-file"></a> </p>
-<h3><a class="anchor" id="autotoc_md10"></a>
+<h3><a class="anchor" id="autotoc_md11"></a>
 Configuration file</h3>
 <p>Pipeline parameters live in a JSON config file. On startup, <code>rikin_pipeline.py</code> loads <code>rikin_pipeline.cfg</code> from next to itself (override with <code>--global-config</code>), and optionally deep-merges a run-specific file passed via <code>-c/--config</code> on top of it. The schema:</p>
 <div class="fragment"><div class="line">{</div>
@@ -290,7 +306,7 @@ Configuration file</h3>
 </ul>
 <p>Only the keys you want to override need to be present in a run-specific <code>-c/--config</code> file — everything else falls back to <code>rikin_pipeline.cfg</code>. See <a class="el" href="index.html#more-examples">Examples</a> for several such override files in practice.</p>
 <p><a class="anchor" id="command-line-tools"></a> </p>
-<h3><a class="anchor" id="autotoc_md11"></a>
+<h3><a class="anchor" id="autotoc_md12"></a>
 Command-line tools</h3>
 <p>Each stage's underlying tool can also be run standalone, e.g. for debugging or custom workflows. The table gives a brief description; see <a class="el" href="md_Help.html">Help</a> for each tool's actual <code>--help</code> output.</p>
 <table class="markdownTable">
@@ -310,7 +326,7 @@ Command-line tools</h3>
 <td class="markdownTableBodyNone"><code>rikin_plot.py</code>   </td><td class="markdownTableBodyNone">Render kinetics plots from a completed run's result files   </td><td class="markdownTableBodyNone"><a class="el" href="md_Help.html#rikin_plot_py">Plot Help</a>   </td></tr>
 </table>
 <p><a class="anchor" id="output-directory-layout"></a> </p>
-<h2><a class="anchor" id="autotoc_md12"></a>
+<h2><a class="anchor" id="autotoc_md13"></a>
 Output directory layout</h2>
 <p>A completed run's <code>outdir</code> contains, among others:</p>
 <table class="markdownTable">
@@ -331,15 +347,15 @@ Output directory layout</h2>
 </table>
 <p>These are intermediate/result files consumed by later pipeline stages; the plots produced by the final stage are the primary human-readable output.</p>
 <p><a class="anchor" id="more-examples"></a> </p>
-<h2><a class="anchor" id="autotoc_md13"></a>
+<h2><a class="anchor" id="autotoc_md14"></a>
 More examples</h2>
 <p>The <a class="el" href="md_Examples_2Examples.html">Examples</a> directory contains several further, biologically motivated examples — including a real bacterial sRNA–mRNA pair (<em>E. coli</em> MicA sRNA and the <em>ompA</em> mRNA 5′UTR) and a designed kissing-hairpin (KHP) system — along with a script to reproduce all of them and a notebook that regenerates the figures shown throughout this README. See <a class="el" href="md_Examples_2Examples.html">Examples/README.md</a> for details.</p>
 <p><a class="anchor" id="license"></a> </p>
-<h2><a class="anchor" id="autotoc_md14"></a>
+<h2><a class="anchor" id="autotoc_md15"></a>
 License</h2>
 <p>RNAInterKin is distributed under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). See <a href="https://github.com/s-will/rikin/blob/master/COPYING"><code>COPYING</code></a> for the full license text.</p>
 <p><a class="anchor" id="authors-and-contacts"></a> </p>
-<h2><a class="anchor" id="autotoc_md15"></a>
+<h2><a class="anchor" id="autotoc_md16"></a>
 Authors and contacts</h2>
 <ul>
 <li>Rolf Backofen, University of Freiburg</li>

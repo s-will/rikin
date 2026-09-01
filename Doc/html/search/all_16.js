@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['oct_202023_0',['0.9.4 (Oct, 2023)',['../md_ChangeLog.html#autotoc_md18',1,'']]],
+  ['oct_202023_0',['0.9.4 (Oct, 2023)',['../md_ChangeLog.html#autotoc_md20',1,'']]],
   ['of_20contents_1',['Table of contents',['../index.html#autotoc_md1',1,'']]],
   ['of_20rri_20kinetics_2',['Examples of RRI kinetics',['../md_Examples_2Examples.html',1,'']]],
   ['on_20windows_20with_20wsl2_3',['Conda installation on Windows with WSL2',['../index.html#autotoc_md5',1,'']]],
@@ -17,5 +17,5 @@ var searchData=
   ['origin_14',['origin',['../classMoveIterator.html#a51df84ed58d7ea71f39553523f37d8e8',1,'MoveIterator']]],
   ['outflow_5fpf_15',['outflow_pf',['../classBarrierGraph.html#afce13c368566b9cf63ff16cb9921afb9',1,'BarrierGraph']]],
   ['outflow_5frate_16',['outflow_rate',['../classBarrierGraph.html#a35782918454680f82881690e9edba06b',1,'BarrierGraph']]],
-  ['output_20directory_20layout_17',['Output directory layout',['../index.html#autotoc_md12',1,'']]]
+  ['output_20directory_20layout_17',['Output directory layout',['../index.html#autotoc_md13',1,'']]]
 ];

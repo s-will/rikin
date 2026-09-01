@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['feb_202017_0',['feb 2017',['../md_ChangeLog.html#autotoc_md21',1,'0.9.1 (Feb, 2017)'],['../md_ChangeLog.html#autotoc_md20',1,'0.9.2 (Feb, 2017)']]],
-  ['file_1',['Configuration file',['../index.html#autotoc_md10',1,'']]],
+  ['feb_202017_0',['feb 2017',['../md_ChangeLog.html#autotoc_md23',1,'0.9.1 (Feb, 2017)'],['../md_ChangeLog.html#autotoc_md22',1,'0.9.2 (Feb, 2017)']]],
+  ['file_1',['Configuration file',['../index.html#autotoc_md11',1,'']]],
   ['filter_2',['filter',['../classBasinTransitions.html#a67ea31c963d7f74508fd49edbcb38e9e',1,'BasinTransitions']]],
   ['filter_5fbasin_5ftransitions_3',['filter_basin_transitions',['../classBarrierGraph.html#a8e38a6959b27431a61c4b11405701169',1,'BarrierGraph']]],
   ['find_4',['find',['../classConstSparseMatrix.html#ac4ded505c23a46adda4fa805d67bf981',1,'ConstSparseMatrix']]],
@@ -11,5 +11,5 @@ var searchData=
   ['firstmove_8',['firstMove',['../classMoveIterator.html#a79538265a18c91223db8e73dd276fec1',1,'MoveIterator']]],
   ['firstright_9',['firstRight',['../classGrowShrinkMove.html#a0cd48d0473a4e221467adfc1a7827464',1,'GrowShrinkMove']]],
   ['from_20the_20conda_20package_10',['Installation from the Conda package',['../index.html#autotoc_md4',1,'']]],
-  ['from_20the_20source_20repository_11',['Compilation/installation from the source repository',['../index.html#autotoc_md6',1,'']]]
+  ['from_20the_20source_20repository_11',['Compilation/installation from the source repository',['../index.html#autotoc_md7',1,'']]]
 ];

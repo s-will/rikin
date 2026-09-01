@@ -120,9 +120,9 @@ $(document).ready(function(){initNavTree('md_Help.html',''); initResizable(); })
   <div class="headertitle"><div class="title">CLI reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md32"></a> Full <code>--help</code> output for each RIKin command-line tool. See the <a class="el" href="index.html#rnainterkin-rikin">main README</a> for a narrative overview and usage examples.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md34"></a> Full <code>--help</code> output for each RIKin command-line tool. See the <a class="el" href="index.html#rnainterkin-rikin">main README</a> for a narrative overview and usage examples.</p>
 <p><a class="anchor" id="rikin_enum"></a> </p>
-<h1><a class="anchor" id="autotoc_md33"></a>
+<h1><a class="anchor" id="autotoc_md35"></a>
 rikin_enum</h1>
 <p>Enumerate candidate interaction/structure states for the two input RNAs.</p>
 <div class="fragment"><div class="line">Usage: rikin_enum [options] seq1 seq2</div>
@@ -166,7 +166,7 @@ rikin_enum</h1>
 <div class="line">  seq1 first sequence in 5&#39;-&gt;3&#39; orientation</div>
 <div class="line">  seq2 second sequence in 5&#39;-&gt;3&#39; orientation</div>
 </div><!-- fragment --><p><a class="anchor" id="rikin_barriers"></a> </p>
-<h1><a class="anchor" id="autotoc_md34"></a>
+<h1><a class="anchor" id="autotoc_md36"></a>
 rikin_barriers</h1>
 <p>Construct the discretely coarse-grained basin/state system.</p>
 <div class="fragment"><div class="line">Usage: rikin_barriers [options] seq1 seq2</div>
@@ -226,7 +226,7 @@ rikin_barriers</h1>
 <div class="line">  seq1 first sequence in 5&#39;-&gt;3&#39; orientation</div>
 <div class="line">  seq2 second sequence in 5&#39;-&gt;3&#39; orientation</div>
 </div><!-- fragment --><p><a class="anchor" id="rikin_prune"></a> </p>
-<h1><a class="anchor" id="autotoc_md35"></a>
+<h1><a class="anchor" id="autotoc_md37"></a>
 rikin_prune</h1>
 <p>Prune/continuously coarse-grain the state system and compute rates.</p>
 <div class="fragment"><div class="line">Usage: rikin_prune [options] bgfile</div>
@@ -293,7 +293,7 @@ rikin_prune</h1>
 <div class="line">If more than one specification of outflow or pequ is provided, the strictest</div>
 <div class="line">filter is applied.</div>
 </div><!-- fragment --><p><a class="anchor" id="rikin_pipeline_py"></a> </p>
-<h1><a class="anchor" id="autotoc_md36"></a>
+<h1><a class="anchor" id="autotoc_md38"></a>
 rikin_pipeline.py</h1>
 <p>Run the complete pipeline (enumeration through plotting) for a pair of sequences.</p>
 <div class="fragment"><div class="line">usage: rikin_pipeline.py [-h] [-o OUTDIR] [-c CONFIG]</div>
@@ -327,7 +327,7 @@ rikin_pipeline.py</h1>
 <div class="line">   rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC</div>
 <div class="line">   rikin_pipeline.py -o example --fastaA exampleA.fasta --fastaB exampleB.fasta -c example_config.cfg -o example</div>
 </div><!-- fragment --><p><a class="anchor" id="rikin_plot_py"></a> </p>
-<h1><a class="anchor" id="autotoc_md37"></a>
+<h1><a class="anchor" id="autotoc_md39"></a>
 rikin_plot.py</h1>
 <p>Render kinetics plots from a completed run's result files.</p>
 <div class="fragment"><div class="line">usage: rikin_plot.py [-h] [--input-dir INPUT_DIR] [--name NAME]</div>
@@ -368,7 +368,7 @@ rikin_plot.py</h1>
 <div class="line">                        autosave name)</div>
 <div class="line">  --shown-state-threshold SHOWN_STATE_THRESHOLD</div>
 </div><!-- fragment --><p><a class="anchor" id="rikin_xrates_m"></a> </p>
-<h1><a class="anchor" id="autotoc_md38"></a>
+<h1><a class="anchor" id="autotoc_md40"></a>
 rikin_xrates.m</h1>
 <p>Solve the Master Equation via Padé matrix exponentiation. Has its own shebang; run directly, not via <code>octave rikin_xrates.m</code>.</p>
 <div class="fragment"><div class="line">XRates 0.2 -- Calculate kinetics from weights/pfs of states and transitions by solving</div>
