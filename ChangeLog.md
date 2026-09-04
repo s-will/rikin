@@ -1,7 +1,11 @@
 ChangeLog
 =========
 
-0.9.6 (Aug, 2026)
+0.9.8 (Sep, 2026)
+-----------------
+* Change to standard matplotlib font in plots
+
+0.9.7 (Sep, 2026)
 -----------------
 * Fix shebang in xrates to avoid portability problem.
   Specifically this failed with biocontainers/busybox.
