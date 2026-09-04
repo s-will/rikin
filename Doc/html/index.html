@@ -187,12 +187,13 @@ Conda installation on Windows with WSL2</h4>
 <p><a class="anchor" id="container"></a> </p>
 <h3><a class="anchor" id="autotoc_md6"></a>
 Installation/usage as Docker Container</h3>
-<p>The tool can be run in a docker or singularity container thanks to <a href="https://biocontainers.pro">BioContainers</a>. Note that there is no <code>latest</code> tag; browse the available tags at <a href="https://quay.io/repository/biocontainers/rikin?tab=tags">quay.io/repository/biocontainers/rikin</a> (tag format: <code>&lt;version&gt;--&lt;build-string&gt;</code>, matching the corresponding Conda package build).</p>
+<p>The tool can be run in a docker or singularity container thanks to <a href="https://biocontainers.pro">BioContainers</a>.</p>
+<p><b>There is no <code>latest</code> tag, and the tag is not just the version number — guessing it will fail.</b> The tag must include the build string too: <code>&lt;version&gt;--&lt;build-string&gt;</code> (e.g. <code>0.9.7--py313h5814d7d_0</code>, <em>not</em> only <code>0.9.7</code>). Always look up the exact current tag first at <a href="https://quay.io/repository/biocontainers/rikin?tab=tags">quay.io/repository/biocontainers/rikin</a> — it matches the full build string of the corresponding Conda package release.</p>
 <div class="fragment"><div class="line">docker pull quay.io/biocontainers/rikin:&lt;tag&gt;</div>
 </div><!-- fragment --><p>The container's entrypoint activates the Conda environment automatically, so the <code>rikin_*</code> tools can be run directly:</p>
 <div class="fragment"><div class="line">docker run --rm quay.io/biocontainers/rikin:&lt;tag&gt; rikin_pipeline.py --help</div>
 </div><!-- fragment --><p>To run a full pipeline and get real output back on your host, three things are needed together: a bind mount so the container can actually reach your files, <code>-w</code> so relative output paths land inside that mount rather than being discarded with the container on exit, and <code>--user</code> so the resulting files are owned by you rather than root (containers run as root by default):</p>
-<div class="fragment"><div class="line">docker run --rm -v &quot;\f$PWD:/data&quot; -w /data --user &quot;\f$(id -u):$(id -g)&quot; \</div>
+<div class="fragment"><div class="line">docker run --rm -v &quot;$PWD:/data&quot; -w /data --user &quot;$(id -u):$(id -g)&quot; \</div>
 <div class="line">  quay.io/biocontainers/rikin:&lt;tag&gt; \</div>
 <div class="line">  rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC</div>
 </div><!-- fragment --><p>This produces <code>./example/</code> in your current directory, owned by you, exactly as running <code>rikin_pipeline.py</code> outside the container would.</p>
@@ -214,7 +215,7 @@ Compilation/installation from the source repository</h3>
 <div class="line">conda activate rikin</div>
 <div class="line"> </div>
 <div class="line">autoreconf -i</div>
-<div class="line">./configure --prefix=\f$CONDA_PREFIX PKG_CONFIG_PATH=\f$CONDA_PREFIX/lib/pkgconfig</div>
+<div class="line">./configure --prefix=$CONDA_PREFIX PKG_CONFIG_PATH=$CONDA_PREFIX/lib/pkgconfig</div>
 <div class="line">make</div>
 <div class="line">make install</div>
 </div><!-- fragment --><blockquote class="doxtable">

@@ -47,33 +47,34 @@ var NAVTREE =
       [ "Authors and contacts", "index.html#autotoc_md16", null ]
     ] ],
     [ "ChangeLog", "md_ChangeLog.html", [
-      [ "0.9.6 (Aug, 2026)", "md_ChangeLog.html#autotoc_md17", null ],
-      [ "0.9.6 (Aug, 2026)", "md_ChangeLog.html#autotoc_md18", null ],
-      [ "0.9.5 (Aug, 2026)", "md_ChangeLog.html#autotoc_md19", null ],
-      [ "0.9.4 (Oct, 2023)", "md_ChangeLog.html#autotoc_md20", null ],
-      [ "0.9.3 (June, 2022)", "md_ChangeLog.html#autotoc_md21", null ],
-      [ "0.9.2 (Feb, 2017)", "md_ChangeLog.html#autotoc_md22", null ],
-      [ "0.9.1 (Feb, 2017)", "md_ChangeLog.html#autotoc_md23", null ],
-      [ "0.9 (Apr, 2016)", "md_ChangeLog.html#autotoc_md24", null ]
+      [ "0.9.8 (Sep, 2026)", "md_ChangeLog.html#autotoc_md17", null ],
+      [ "0.9.7 (Sep, 2026)", "md_ChangeLog.html#autotoc_md18", null ],
+      [ "0.9.6 (Aug, 2026)", "md_ChangeLog.html#autotoc_md19", null ],
+      [ "0.9.5 (Aug, 2026)", "md_ChangeLog.html#autotoc_md20", null ],
+      [ "0.9.4 (Oct, 2023)", "md_ChangeLog.html#autotoc_md21", null ],
+      [ "0.9.3 (June, 2022)", "md_ChangeLog.html#autotoc_md22", null ],
+      [ "0.9.2 (Feb, 2017)", "md_ChangeLog.html#autotoc_md23", null ],
+      [ "0.9.1 (Feb, 2017)", "md_ChangeLog.html#autotoc_md24", null ],
+      [ "0.9 (Apr, 2016)", "md_ChangeLog.html#autotoc_md25", null ]
     ] ],
     [ "Examples of RRI kinetics", "md_Examples_2Examples.html", [
-      [ "Contents", "md_Examples_2Examples.html#autotoc_md26", null ],
-      [ "Examples", "md_Examples_2Examples.html#autotoc_md27", [
-        [ "Toy example", "md_Examples_2Examples.html#autotoc_md28", null ],
-        [ "Kissing-hairpin (KHP) system", "md_Examples_2Examples.html#autotoc_md29", null ],
-        [ "MicA–MicA homodimer", "md_Examples_2Examples.html#autotoc_md30", null ],
-        [ "MicA–OmpA heterodimer", "md_Examples_2Examples.html#autotoc_md31", null ]
+      [ "Contents", "md_Examples_2Examples.html#autotoc_md27", null ],
+      [ "Examples", "md_Examples_2Examples.html#autotoc_md28", [
+        [ "Toy example", "md_Examples_2Examples.html#autotoc_md29", null ],
+        [ "Kissing-hairpin (KHP) system", "md_Examples_2Examples.html#autotoc_md30", null ],
+        [ "MicA–MicA homodimer", "md_Examples_2Examples.html#autotoc_md31", null ],
+        [ "MicA–OmpA heterodimer", "md_Examples_2Examples.html#autotoc_md32", null ]
       ] ],
-      [ "Reproducing everything", "md_Examples_2Examples.html#autotoc_md32", null ],
-      [ "Regenerating the plots", "md_Examples_2Examples.html#autotoc_md33", null ]
+      [ "Reproducing everything", "md_Examples_2Examples.html#autotoc_md33", null ],
+      [ "Regenerating the plots", "md_Examples_2Examples.html#autotoc_md34", null ]
     ] ],
     [ "CLI reference", "md_Help.html", [
-      [ "rikin_enum", "md_Help.html#autotoc_md35", null ],
-      [ "rikin_barriers", "md_Help.html#autotoc_md36", null ],
-      [ "rikin_prune", "md_Help.html#autotoc_md37", null ],
-      [ "rikin_pipeline.py", "md_Help.html#autotoc_md38", null ],
-      [ "rikin_plot.py", "md_Help.html#autotoc_md39", null ],
-      [ "rikin_xrates.m", "md_Help.html#autotoc_md40", null ]
+      [ "rikin_enum", "md_Help.html#autotoc_md36", null ],
+      [ "rikin_barriers", "md_Help.html#autotoc_md37", null ],
+      [ "rikin_prune", "md_Help.html#autotoc_md38", null ],
+      [ "rikin_pipeline.py", "md_Help.html#autotoc_md39", null ],
+      [ "rikin_plot.py", "md_Help.html#autotoc_md40", null ],
+      [ "rikin_xrates.m", "md_Help.html#autotoc_md41", null ]
     ] ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ]

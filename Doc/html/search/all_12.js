@@ -1,14 +1,22 @@
 var searchData=
 [
-  ['k1_0',['k1',['../classGrowShrinkMove.html#af98aec31a3b3ce708dd339e306f9237e',1,'GrowShrinkMove']]],
-  ['k2_1',['k2',['../classGrowShrinkMove.html#a8e042c814367c18c153881dba26eae9d',1,'GrowShrinkMove']]],
-  ['k_5f_2',['k_',['../classShiftMove.html#a1fb33f88982da5f5e1ac7ed9703949c3',1,'ShiftMove']]],
-  ['keep_5fsingle_5fcomponent_3',['keep_single_component',['../classBarrierGraph.html#ae9a82bc7adccd0e23f57c48aedf965cf',1,'BarrierGraph']]],
-  ['key_5fcompare_4',['key_compare',['../structOrderedSparseMatrix_1_1key__compare.html',1,'OrderedSparseMatrix&lt; _value_t &gt;::key_compare'],['../classConstSparseMatrix.html#a3a43b50f2da9841fbffbf90312431ff0',1,'ConstSparseMatrix::key_compare(const key_t &amp;x, const key_t &amp;y)']]],
-  ['key_5ft_5',['key_t',['../classConstSparseMatrix.html#a818ea658e122a4e460d78a4165b14dbb',1,'ConstSparseMatrix::key_t'],['../classOrderedSparseMatrix.html#ad773cbbdfea122db84a9112ed8c7f07e',1,'OrderedSparseMatrix::key_t']]],
-  ['key_5fvalue_5ft_6',['key_value_t',['../classConstSparseMatrix.html#a0c329bfce7f33fc7c88a8092761c0c3a',1,'ConstSparseMatrix']]],
-  ['key_5fvalue_5fvec_5ft_7',['key_value_vec_t',['../classConstSparseMatrix.html#a1e5940516de1a38c656c5e1fc0f8b9fe',1,'ConstSparseMatrix']]],
-  ['khp_20system_8',['Kissing-hairpin (KHP) system',['../md_Examples_2Examples.html#autotoc_md29',1,'']]],
-  ['kinetics_9',['Examples of RRI kinetics',['../md_Examples_2Examples.html',1,'']]],
-  ['kissing_20hairpin_20khp_20system_10',['Kissing-hairpin (KHP) system',['../md_Examples_2Examples.html#autotoc_md29',1,'']]]
+  ['i1_0',['i1',['../structHybEnsModel_1_1StateDescription_1_1ISite.html#a6d442943d7b835053d2abe92c8ba5085',1,'HybEnsModel::StateDescription::ISite::i1'],['../classGrowShrinkMove.html#a5e39397e06df178d66092390ed0e5ac7',1,'GrowShrinkMove::i1']]],
+  ['i2_1',['i2',['../structHybEnsModel_1_1StateDescription_1_1ISite.html#af563c453c0630e892968b23cd8affbab',1,'HybEnsModel::StateDescription::ISite::i2'],['../classGrowShrinkMove.html#a0a484f2053fdc01ac70c831e9b2a05d2',1,'GrowShrinkMove::i2']]],
+  ['i_5f_2',['i_',['../classShiftMove.html#a78acfc79aa69efc8e9dae2c9af4f4396',1,'ShiftMove']]],
+  ['idx_3',['idx',['../classBasin.html#adf57172a0841fabe033ca235a0b91d3a',1,'Basin']]],
+  ['iloope_4',['ILoopE',['../classHybridPF.html#a27cda4a4b3d0b2d40bea90cbd312ae2d',1,'HybridPF']]],
+  ['index_5ft_5',['index_t',['../classConstSparseMatrix.html#a6e00cd3290800463de85266d7d79f0aa',1,'ConstSparseMatrix']]],
+  ['installation_6',['Installation',['../index.html#autotoc_md3',1,'']]],
+  ['installation_20from_20the_20conda_20package_7',['Installation from the Conda package',['../index.html#autotoc_md4',1,'']]],
+  ['installation_20from_20the_20source_20repository_8',['Compilation/installation from the source repository',['../index.html#autotoc_md7',1,'']]],
+  ['installation_20on_20windows_20with_20wsl2_9',['Conda installation on Windows with WSL2',['../index.html#autotoc_md5',1,'']]],
+  ['installation_20usage_20as_20docker_20container_10',['Installation/usage as Docker Container',['../index.html#autotoc_md6',1,'']]],
+  ['interaction_5fpair_5fpfs_11',['interaction_pair_pfs',['../classBasinInfo.html#abe095ccac06a7e1f79b13cfa46158842',1,'BasinInfo']]],
+  ['interaction_5fprobability_12',['interaction_probability',['../classHybEnsModel.html#aeca5fe7d65b3052ca8301e817e3a6e82',1,'HybEnsModel']]],
+  ['is_13',['is',['../classNewSiteMove.html#afe87ad97504e114427980c278386ae24',1,'NewSiteMove']]],
+  ['is_5fhomodimer_14',['is_homodimer',['../classHybEnsModel.html#acbc19eca33bab5a4dd337e2e9b97bf12',1,'HybEnsModel']]],
+  ['is_5fsorted_15',['is_sorted',['../classConstSparseMatrix.html#a557877d99e8e408bbf3cb6a73a7bfd95',1,'ConstSparseMatrix']]],
+  ['is_5fvalid_16',['is_valid',['../classHybEnsModel_1_1StateDescription.html#afd2a0fce98d80ee8341a1922207b990e',1,'HybEnsModel::StateDescription']]],
+  ['isite_17',['isite',['../structHybEnsModel_1_1StateDescription_1_1ISite.html#ab92a7fea02b222a2630116cd8d791497',1,'HybEnsModel::StateDescription::ISite::ISite()'],['../structHybEnsModel_1_1StateDescription_1_1ISite.html#a852336ae561640c99ea08aee02fd66b1',1,'HybEnsModel::StateDescription::ISite::ISite(size_t i1_, size_t i2_, size_t j1_, size_t j2_)'],['../structHybEnsModel_1_1StateDescription_1_1ISite.html',1,'HybEnsModel::StateDescription::ISite']]],
+  ['isites_5ft_18',['isites_t',['../classHybEnsModel_1_1StateDescription.html#ab5144eed46619b0a343039899183bd33',1,'HybEnsModel::StateDescription']]]
 ];

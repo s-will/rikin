@@ -1,10 +1,11 @@
 var NAVTREEINDEX2 =
 {
-"md_Help.html#autotoc_md36":[3,1],
-"md_Help.html#autotoc_md37":[3,2],
-"md_Help.html#autotoc_md38":[3,3],
-"md_Help.html#autotoc_md39":[3,4],
-"md_Help.html#autotoc_md40":[3,5],
+"md_Help.html#autotoc_md36":[3,0],
+"md_Help.html#autotoc_md37":[3,1],
+"md_Help.html#autotoc_md38":[3,2],
+"md_Help.html#autotoc_md39":[3,3],
+"md_Help.html#autotoc_md40":[3,4],
+"md_Help.html#autotoc_md41":[3,5],
 "namespaceLocARNA.html":[4,0,0],
 "namespaces.html":[4,0],
 "pages.html":[],
