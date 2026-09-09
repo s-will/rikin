@@ -146,7 +146,7 @@ files are owned by you rather than root (containers run as root by
 default):
 
 ```bash
-docker run --rm -v "$PWD:/data" -w /data --user "$(id -u):$(id -g)" \
+docker run --rm -v "$PWD:/data" -w /data --user "$(id -u):$(id -g)" -e HOME=/tmp \
   quay.io/biocontainers/rikin:<tag> \
   rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC
 ```
