@@ -37,11 +37,11 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-VERSION = "0.9.5"
 
 DEFAULT_OUTDIR = "Rikin-results"
 DEFAULT_GLOBAL_CONFIG_NAME = "rikin_pipeline.cfg"
 
+sys.stdout.reconfigure(line_buffering=True)
 
 # --------------------------------------------------------------------------
 # Config handling
@@ -431,7 +431,7 @@ def main():
 
     version = get_tool_version(bindir)
     print("=" * 60)
-    print(f"RNAInterKin Pipeline ver {VERSION}")
+    print(f"RNAInterKin Pipeline ver {version}")
     print()
     print("Input:")
     print(f"  SeqA {nameA}:   {seqA}")
