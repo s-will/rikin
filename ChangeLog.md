@@ -5,6 +5,12 @@ ChangeLog
 -----------
 * Add explicit exit(0) to rikin_xrates.m to avoid error message 
   at Octave shutdown
+* Fix output order in non-TTY calls of rikin_pipeline.py:
+  Force line-buffered stdout in rikin_pipeline.py, so its own banner/status
+  messages interleave correctly with subprocess output when run without a TTY
+* Add HOME to docker run call in documentation
+  to avoid a fontconfig error and matplotlib warning
+* Fix documentation generation
 
 0.9.8 (Sep, 2026)
 -----------------
