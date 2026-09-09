@@ -1,6 +1,11 @@
 ChangeLog
 =========
 
+0.9.9 (Sep, 2026)
+-----------
+* Add explicit exit(0) to rikin_xrates.m to avoid error message 
+  at Octave shutdown
+
 0.9.8 (Sep, 2026)
 -----------------
 * Change to standard matplotlib font in plots

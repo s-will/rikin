@@ -675,3 +675,4 @@ endwhile
 printf("Computed distributions at %d time points\n",step);
 
 fclose(fout);
+exit(0);
