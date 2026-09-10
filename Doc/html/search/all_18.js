@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['oct_202023_0',['0.9.4 (Oct, 2023)',['../md_ChangeLog.html#autotoc_md21',1,'']]],
+  ['oct_202023_0',['0.9.4 (Oct, 2023)',['../md_ChangeLog.html#autotoc_md22',1,'']]],
   ['of_20contents_1',['Table of contents',['../index.html#autotoc_md1',1,'']]],
   ['of_20rri_20kinetics_2',['Examples of RRI kinetics',['../md_Examples_2Examples.html',1,'']]],
   ['on_20windows_20with_20wsl2_3',['Conda installation on Windows with WSL2',['../index.html#autotoc_md5',1,'']]],

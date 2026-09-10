@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['sep_202026_0',['sep 2026',['../md_ChangeLog.html#autotoc_md18',1,'0.9.7 (Sep, 2026)'],['../md_ChangeLog.html#autotoc_md17',1,'0.9.8 (Sep, 2026)']]],
+  ['sep_202026_0',['sep 2026',['../md_ChangeLog.html#autotoc_md19',1,'0.9.7 (Sep, 2026)'],['../md_ChangeLog.html#autotoc_md18',1,'0.9.8 (Sep, 2026)'],['../md_ChangeLog.html#autotoc_md17',1,'0.9.9 (Sep, 2026)']]],
   ['seq_5f_1',['seq_',['../classShiftMove.html#a8d44c03e80d1722ad5a84b3d758bc070',1,'ShiftMove']]],
   ['seqa_2',['seqA',['../classHybEnsModel.html#a86a7211e9932332444204b0057f8a440',1,'HybEnsModel']]],
   ['seqb_3',['seqB',['../classHybEnsModel.html#a2ae985244fc1c4cd1308fde59c52fd80',1,'HybEnsModel']]],
@@ -23,5 +23,5 @@ var searchData=
   ['swap_20',['swap',['../classBasinTransitions.html#aa471e0d6ff1eb9807c9132b924b438a2',1,'BasinTransitions']]],
   ['swap_5findices_21',['swap_indices',['../classBarrierGraph.html#a55ca38c9bbb7c7c203abcd74f3c9a67b',1,'BarrierGraph']]],
   ['symmetric_5fstate_22',['symmetric_state',['../classHybEnsModel_1_1StateDescription.html#a371f8148fdab541da1c5ad88b7a000af',1,'HybEnsModel::StateDescription']]],
-  ['system_23',['Kissing-hairpin (KHP) system',['../md_Examples_2Examples.html#autotoc_md30',1,'']]]
+  ['system_23',['Kissing-hairpin (KHP) system',['../md_Examples_2Examples.html#autotoc_md31',1,'']]]
 ];

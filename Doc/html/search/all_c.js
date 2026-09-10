@@ -24,5 +24,5 @@ var searchData=
   ['constsparsematrix_21',['constsparsematrix',['../classConstSparseMatrix.html#ab940023d13b32ea95945c722c7603a49',1,'ConstSparseMatrix::ConstSparseMatrix(const key_value_vec_t &amp;x)'],['../classConstSparseMatrix.html#aee5661ee0179fbeea963f16f5c44c306',1,'ConstSparseMatrix::ConstSparseMatrix()'],['../classConstSparseMatrix.html',1,'ConstSparseMatrix&lt; _index_t, _value_t &gt;']]],
   ['contacts_22',['Authors and contacts',['../index.html#autotoc_md16',1,'']]],
   ['container_23',['Installation/usage as Docker Container',['../index.html#autotoc_md6',1,'']]],
-  ['contents_24',['contents',['../md_Examples_2Examples.html#autotoc_md27',1,'Contents'],['../index.html#autotoc_md1',1,'Table of contents']]]
+  ['contents_24',['contents',['../md_Examples_2Examples.html#autotoc_md28',1,'Contents'],['../index.html#autotoc_md1',1,'Table of contents']]]
 ];

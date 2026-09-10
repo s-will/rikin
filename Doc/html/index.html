@@ -193,7 +193,7 @@ Installation/usage as Docker Container</h3>
 </div><!-- fragment --><p>The container's entrypoint activates the Conda environment automatically, so the <code>rikin_*</code> tools can be run directly:</p>
 <div class="fragment"><div class="line">docker run --rm quay.io/biocontainers/rikin:&lt;tag&gt; rikin_pipeline.py --help</div>
 </div><!-- fragment --><p>To run a full pipeline and get real output back on your host, three things are needed together: a bind mount so the container can actually reach your files, <code>-w</code> so relative output paths land inside that mount rather than being discarded with the container on exit, and <code>--user</code> so the resulting files are owned by you rather than root (containers run as root by default):</p>
-<div class="fragment"><div class="line">docker run --rm -v &quot;$PWD:/data&quot; -w /data --user &quot;$(id -u):$(id -g)&quot; \</div>
+<div class="fragment"><div class="line">docker run --rm -v &quot;$PWD:/data&quot; -w /data --user &quot;$(id -u):$(id -g)&quot; -e HOME=/tmp \</div>
 <div class="line">  quay.io/biocontainers/rikin:&lt;tag&gt; \</div>
 <div class="line">  rikin_pipeline.py -o example --seqA AAAGGGGGGAAAAAAAGGGUGGGAAAAAAAGGGCGGGAAA --seqB CCCGCCC</div>
 </div><!-- fragment --><p>This produces <code>./example/</code> in your current directory, owned by you, exactly as running <code>rikin_pipeline.py</code> outside the container would.</p>
