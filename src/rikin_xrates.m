@@ -369,7 +369,7 @@ function [v,d] = eigsort (v,d)
   for i=1:length(d)
     d(i,i) = - dd(i);
   end;
-  v = v(:,ix)
+  v = v(:,ix);
 endfunction
 
 ## force symmetrize (like done in treekin MxDiagonalize)
@@ -395,7 +395,7 @@ endif
 
 if (!binary)
   printf("Read text input from file %s\n",pffilename);
-  pfs = load("-ascii",pffilename)
+  pfs = load("-ascii",pffilename);
   dim=size(pfs,1);
 else
   printf("Read binary input from file %s\n",pffilename);
@@ -476,10 +476,7 @@ pi8 = basin_pfs / (ones(1,dim)*basin_pfs); ## pi after infinite time
 if (absorb>0)
   pi8=zeros(dim,1);
   pi8(absorb,1)=1;
-  R(absorb,absorb)=0; ## set outflow of absorbing state to 0
-  for i=1:dim
-      R(absorb,i)=0;
-  endfor
+  R(absorb,:)=0; ## set outflow of absorbing state to 0
 endif
 
 if (verbose)
@@ -621,11 +618,7 @@ if (mode=="diag")
   # control2 = expm(symmR-diag(ones(1,dim)));
   # disp(control2);
 
-  # printf("from diagonalization:\n");
-  control3 = eigvecs * expdiag(eigvals) * eigvecs_inv;
-  # disp(control3);
-  
-  dev_diag=norm(symmR - eigvecs * expdiag(eigvals) * eigvecs_inv,2);
+  dev_diag=norm(symmR - eigvecs * expdiag(eigvals) * eigvecs_inv, 2);
 
   printf("Control diagonalization: %g (value should be almost 0)\n",dev_diag);
 
