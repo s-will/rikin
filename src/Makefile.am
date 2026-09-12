@@ -2,7 +2,7 @@ SUBDIRS=Tests
 
 bin_PROGRAMS=rikin_enum rikin_barriers rikin_prune test_moves
 
-dist_bin_SCRIPTS=rikin_xrates.m rikin_plot.py\
+dist_bin_SCRIPTS=rikin_xrates.m rikin_xrates.py rikin_plot.py\
 	rikin_pipeline.py rikin_pipeline.cfg
 
 # importable Python module

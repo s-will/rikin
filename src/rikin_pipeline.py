@@ -41,6 +41,19 @@ from pathlib import Path
 DEFAULT_OUTDIR = "Rikin-results"
 DEFAULT_GLOBAL_CONFIG_NAME = "rikin_pipeline.cfg"
 
+# The master equation can be solved either by the original Octave script or
+# by the equivalent Python/NumPy/SciPy implementation. Both accept exactly
+# the same command-line options, so xrates_opts needs no translation.
+XRATES_IMPLS = {
+    "octave": "rikin_xrates.m",
+    "python": "rikin_xrates.py",
+}
+# In "auto" mode the implementations are tried in this order, and the first
+# one actually present in bindir wins. Octave comes first so that an
+# installation containing both behaves exactly as it did before this option
+# existed; the fallback matters for installs shipping only one of the two.
+XRATES_AUTO_ORDER = ("octave", "python")
+
 sys.stdout.reconfigure(line_buffering=True)
 
 # --------------------------------------------------------------------------
@@ -148,6 +161,40 @@ def remove_if_exists(path: Path):
         path.unlink()
 
 
+def resolve_xrates(bindir: Path, impl: str):
+    """Return (impl_name, path) for the master-equation solver to use.
+
+    `impl` is "auto", "octave" or "python". Exits with a clear message if the
+    requested implementation is not installed, rather than letting the stage
+    fail later with a bare "xrates died".
+    """
+    if impl in XRATES_IMPLS:
+        path = bindir / XRATES_IMPLS[impl]
+        if not path.exists():
+            sys.exit(
+                f"ERROR: --xrates-impl {impl} requested, but {path} does not "
+                f"exist. Installed alternatives in {bindir}: "
+                + (", ".join(
+                    name for name, fn in XRATES_IMPLS.items()
+                    if (bindir / fn).exists()
+                ) or "none")
+                + "."
+            )
+        return impl, path
+
+    # auto: first available wins, in XRATES_AUTO_ORDER
+    for name in XRATES_AUTO_ORDER:
+        path = bindir / XRATES_IMPLS[name]
+        if path.exists():
+            return name, path
+    sys.exit(
+        "ERROR: no master-equation solver found in "
+        f"{bindir} (looked for "
+        + " and ".join(XRATES_IMPLS[n] for n in XRATES_AUTO_ORDER)
+        + ")."
+    )
+
+
 def get_tool_version(bindir: Path) -> str:
     try:
         result = subprocess.run(
@@ -200,7 +247,8 @@ def build_arg_parser():
         "-c", "--config", type=Path,
         help="JSON file with pipeline configuration, deep-merged on top of the global config "
              "(rikin_pipeline.cfg next to this script). Comprises association_prefactor, "
-             "common_opts, enum_opts, barriers_opts, prune_opts, xrates_opts, plot_opts.",
+             "common_opts, enum_opts, barriers_opts, prune_opts, xrates_opts, xrates_impl, "
+             "plot_opts.",
     )
     parser.add_argument(
         "--global-config", type=Path, default=None,
@@ -208,6 +256,13 @@ def build_arg_parser():
     )
     parser.add_argument("--bindir", type=Path, default=None,
                          help="Directory containing the rikin_* tools (default: this script's directory)")
+    parser.add_argument(
+        "--xrates-impl", choices=("auto", "octave", "python"), default=None,
+        help="Which implementation solves the master equation: 'octave' "
+             "(rikin_xrates.m), 'python' (rikin_xrates.py), or 'auto' to use "
+             "whichever is installed, preferring octave. Overrides the "
+             "xrates_impl config setting (default: auto)",
+    )
     parser.add_argument("--dryrun", action="store_true", help="don't run commands and/or write files")
     parser.add_argument("--reuse", action="store_true", help="reuse existing partial results in the output directory")
     parser.add_argument("--fastaA", help="Fasta containing first sequence")
@@ -309,14 +364,14 @@ def stage_prune(outdir: Path, bindir: Path, cfg, reuse, dryrun) -> bool:
     return None
 
 
-def stage_solve_master_equation(outdir: Path, bindir: Path, cfg, reuse, dryrun) -> bool:
+def stage_solve_master_equation(outdir: Path, xrates: Path, cfg, reuse, dryrun) -> bool:
     kin = outdir / "kin"
     pf = outdir / "pf"
     error_file = outdir / "error"
     xrates_done = outdir / "xrates.done"
 
     if not reuse or not kin.exists():
-        cmd = [str(bindir / "rikin_xrates.m"), str(pf), "--out", str(kin), *cfg.get("xrates_opts", [])]
+        cmd = [str(xrates), str(pf), "--out", str(kin), *cfg.get("xrates_opts", [])]
         rc = tcall(cmd, dryrun)
         if rc != 0:
             if not dryrun:
@@ -429,6 +484,11 @@ def main():
 
 
 
+    # Which master-equation solver to use: CLI wins over config, config over
+    # the "auto" default.
+    xrates_impl_req = args.xrates_impl or cfg.get("xrates_impl", "auto")
+    xrates_impl, xrates_path = resolve_xrates(bindir, xrates_impl_req)
+
     version = get_tool_version(bindir)
     print("=" * 60)
     print(f"RNAInterKin Pipeline ver {version}")
@@ -449,7 +509,10 @@ def main():
     print(f'  barriers_opts = {cfg.get("barriers_opts", [])}  #(controls rikin_barriers)')
     print(f'  prune_opts = {cfg.get("prune_opts", [])}  #(controls rikin_prune; '
           f'association_prefactor={cfg.get("association_prefactor", 1.0)})')
-    print(f'  xrates_opts = {cfg.get("xrates_opts", [])}  #(controls solving of master equation by rikin_xrates.m)')
+    print(f'  xrates_opts = {cfg.get("xrates_opts", [])}  #(controls solving of master equation by {xrates_path.name})')
+    print(f'  xrates_impl = {xrates_impl}'
+          + (f' (requested: {xrates_impl_req})' if xrates_impl_req == "auto" else '')
+          + f'  #(master equation solved by {xrates_path})')
     print(f'  plot_opts = {cfg.get("plot_opts", {})}  #(controls plotting by rikin_plot.py)')
     print()
     print(f"Start date:  {datetime.now()}")
@@ -476,7 +539,7 @@ def main():
     if ran:
         reuse = False
 
-    ran = stage_solve_master_equation(outdir, bindir, cfg, reuse, dryrun)
+    ran = stage_solve_master_equation(outdir, xrates_path, cfg, reuse, dryrun)
     if ran is False:
         sys.exit(1)
     if ran:
