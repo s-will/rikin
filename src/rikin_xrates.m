@@ -369,7 +369,7 @@ function [v,d] = eigsort (v,d)
   for i=1:length(d)
     d(i,i) = - dd(i);
   end;
-  v = v(:,ix)
+  v = v(:,ix);
 endfunction
 
 ## force symmetrize (like done in treekin MxDiagonalize)
@@ -395,7 +395,7 @@ endif
 
 if (!binary)
   printf("Read text input from file %s\n",pffilename);
-  pfs = load("-ascii",pffilename)
+  pfs = load("-ascii",pffilename);
   dim=size(pfs,1);
 else
   printf("Read binary input from file %s\n",pffilename);
@@ -476,10 +476,7 @@ pi8 = basin_pfs / (ones(1,dim)*basin_pfs); ## pi after infinite time
 if (absorb>0)
   pi8=zeros(dim,1);
   pi8(absorb,1)=1;
-  R(absorb,absorb)=0; ## set outflow of absorbing state to 0
-  for i=1:dim
-      R(absorb,i)=0;
-  endfor
+  R(absorb,:)=0; ## set outflow of absorbing state to 0
 endif
 
 if (verbose)
@@ -610,24 +607,20 @@ if (mode=="diag")
   # compensate for translation of matrix
   eigvals = eigvals - diag(ones(1,dim));
 
-  # printf("Compute symmetrized rates from evecs and evals again:\n");
-  # control1 = eigvecs * eigvals * eigvecs_inv;
-  # disp(control1);
-
-  # printf("Compute desymmetrized rates from evecs and evals again:\n");
-  # disp(sqrPI_*(symmR-diag(ones(1,dim)))*_sqrPI);
-
-  # printf("direct matrix exponentiation:\n");
-  # control2 = expm(symmR-diag(ones(1,dim)));
-  # disp(control2);
-
-  # printf("from diagonalization:\n");
-  control3 = eigvecs * expdiag(eigvals) * eigvecs_inv;
-  # disp(control3);
+  ## Control: the code below uses transpose(eigvecs) as the inverse of
+  ## eigvecs, which is only valid if the eigenvectors are orthonormal.
+  ## This holds for the symmetrized (detailed-balance) rate matrix, but can
+  ## degrade numerically for ill-conditioned input -- in which case every
+  ## distribution computed from the decomposition is wrong. Measuring how
+  ## far transpose(eigvecs)*eigvecs is from the identity tests exactly that
+  ## assumption. Unlike a residual involving the rates themselves, this is
+  ## scale-free: it is near 0 whenever the decomposition is sound,
+  ## regardless of how large the rates are.
+  ## Note: The previous control compared (I+R) against expm(R),
+  ## which merely measured the size of R.
   
-  dev_diag=norm(symmR - eigvecs * expdiag(eigvals) * eigvecs_inv,2);
-
-  printf("Control diagonalization: %g (value should be almost 0)\n",dev_diag);
+  dev_diag = norm(eigvecs_inv * eigvecs - diag(ones(1,dim)), 2);
+  printf("Control diagonalization: %g (value should be almost 0)\n", dev_diag);
 
   
   ## precompute sub products
