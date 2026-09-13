@@ -607,20 +607,20 @@ if (mode=="diag")
   # compensate for translation of matrix
   eigvals = eigvals - diag(ones(1,dim));
 
-  # printf("Compute symmetrized rates from evecs and evals again:\n");
-  # control1 = eigvecs * eigvals * eigvecs_inv;
-  # disp(control1);
-
-  # printf("Compute desymmetrized rates from evecs and evals again:\n");
-  # disp(sqrPI_*(symmR-diag(ones(1,dim)))*_sqrPI);
-
-  # printf("direct matrix exponentiation:\n");
-  # control2 = expm(symmR-diag(ones(1,dim)));
-  # disp(control2);
-
-  dev_diag=norm(symmR - eigvecs * expdiag(eigvals) * eigvecs_inv, 2);
-
-  printf("Control diagonalization: %g (value should be almost 0)\n",dev_diag);
+  ## Control: the code below uses transpose(eigvecs) as the inverse of
+  ## eigvecs, which is only valid if the eigenvectors are orthonormal.
+  ## This holds for the symmetrized (detailed-balance) rate matrix, but can
+  ## degrade numerically for ill-conditioned input -- in which case every
+  ## distribution computed from the decomposition is wrong. Measuring how
+  ## far transpose(eigvecs)*eigvecs is from the identity tests exactly that
+  ## assumption. Unlike a residual involving the rates themselves, this is
+  ## scale-free: it is near 0 whenever the decomposition is sound,
+  ## regardless of how large the rates are.
+  ## Note: The previous control compared (I+R) against expm(R),
+  ## which merely measured the size of R.
+  
+  dev_diag = norm(eigvecs_inv * eigvecs - diag(ones(1,dim)), 2);
+  printf("Control diagonalization: %g (value should be almost 0)\n", dev_diag);
 
   
   ## precompute sub products
