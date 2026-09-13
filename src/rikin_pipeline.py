@@ -52,7 +52,7 @@ XRATES_IMPLS = {
 # one actually present in bindir wins. Octave comes first so that an
 # installation containing both behaves exactly as it did before this option
 # existed; the fallback matters for installs shipping only one of the two.
-XRATES_AUTO_ORDER = ("octave", "python")
+XRATES_AUTO_ORDER = ("python", "octave")
 
 sys.stdout.reconfigure(line_buffering=True)
 
@@ -260,7 +260,7 @@ def build_arg_parser():
         "--xrates-impl", choices=("auto", "octave", "python"), default=None,
         help="Which implementation solves the master equation: 'octave' "
              "(rikin_xrates.m), 'python' (rikin_xrates.py), or 'auto' to use "
-             "whichever is installed, preferring octave. Overrides the "
+             "whichever is installed, preferring python. Overrides the "
              "xrates_impl config setting (default: auto)",
     )
     parser.add_argument("--dryrun", action="store_true", help="don't run commands and/or write files")
