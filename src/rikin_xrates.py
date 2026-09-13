@@ -254,10 +254,16 @@ def main():
         eigvecs_inv = eigvecs.T
         eigvals = eigvals - 1.0  # compensate for the +I translation
 
-        # Control: for small rates, expm(symmR - I) ~ I + (symmR - I) =
-        # symmR, so this first-order check should be near 0.
-        recon = eigvecs @ np.diag(np.exp(eigvals)) @ eigvecs_inv
-        dev_diag = np.linalg.norm(symmR - recon, 2)
+        # Control: the code below uses eigvecs.T as the inverse of eigvecs,
+        # which is only valid if the eigenvectors are orthonormal. This holds
+        # for the symmetrized (detailed-balance) rate matrix, but can degrade
+        # numerically for ill-conditioned input -- in which case every
+        # distribution computed from the decomposition is wrong. Measuring how
+        # far eigvecs.T @ eigvecs is from the identity tests exactly that
+        # assumption. Unlike a residual involving the rates themselves, this is
+        # scale-free: it is near 0 whenever the decomposition is sound,
+        # regardless of how large the rates are.
+        dev_diag = np.linalg.norm(eigvecs_inv @ eigvecs - np.eye(dim), 2)
         print("Control diagonalization: %g (value should be almost 0)"
               % dev_diag)
 
